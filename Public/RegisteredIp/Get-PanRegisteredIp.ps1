@@ -1,0 +1,105 @@
+<#
+TODO
+#>
+function Get-PanRegisteredIp {
+   <#
+   .SYNOPSIS
+   Get current registered IP address (PAN-OS "registered-ip") and tag mappings. 
+   .DESCRIPTION
+   .NOTES
+   PAN-OS "registered-ip" is tagged with PAN-OS tag(s). The tag(s) do not have to exist in Objects > Tags.
+   DAG match criteria is based on PAN-OS tag(s). After tagging a "registered-ip", PAN-OS then computes to which DAG(s) the registered-ip is added. 
+   .INPUTS
+   .OUTPUTS
+   PowerPan.PanRegisteredIp
+   .EXAMPLE
+   Get-PanRegisteredIp -Device $Device
+   .EXAMPLE
+   Get-PanRegisteredIp -Device $Device -Ip "10.1.1.1"
+   .EXAMPLE
+   Get-PanRegisteredIp -Device $Device -Tag "HerTag"
+
+   #>
+   [CmdletBinding(DefaultParameterSetName='NoFilter')]
+   param(
+      [parameter(
+         Mandatory=$true,
+         Position=0,
+         ValueFromPipeline=$true,
+         HelpMessage='PanDevice against which registered-ip(s) will be retrieved.')]
+      [PanDevice] $Device,
+      [parameter(
+         Mandatory=$true,
+         Position=1,
+         ParameterSetName='FilterIp',
+         HelpMessage='IP address filter of registered-ip to be retrieved. Filter is applied remotely. No regex supported.')]
+      [String] $Ip,
+      [parameter(
+         Mandatory=$true,
+         Position=1,
+         ParameterSetName='FilterTag',
+         HelpMessage='Tag filter for registered-ip(s) to be retrieved. Filter is applied remotely. No regex supported.')]
+      [String] $Tag
+   )
+
+   Begin {
+      # If -Debug parameter, change to 'Continue' instead of 'Inquire'
+      if($PSBoundParameters['Debug']) {
+         $DebugPreference = 'Continue'
+      }
+      # If -Debug parameter, announce 
+      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      # No local filtering defined. Return everything.
+      if($PSCmdlet.ParameterSetName -eq 'NoFilter') {
+         Write-Debug ($MyInvocation.MyCommand.Name + ': No Filter Applied')
+         $Cmd = '<show><object><registered-ip><all/></registered-ip></object></show>'
+      }
+      # Filter $Ip is present, adjust our operational Cmd.
+      elseif($PSCmdlet.ParameterSetName -eq 'FilterIp') {
+         Write-Debug ($MyInvocation.MyCommand.Name + ': IP Filter Applied')
+         $Cmd = "<show><object><registered-ip><ip>$Ip</ip></registered-ip></object></show>"
+      }
+      # Only $Tag is defined. Can be an array.
+      elseif($PSCmdlet.ParameterSetName -eq 'FilterTag') {
+         Write-Debug ($MyInvocation.MyCommand.Name + ': Tag Filter Applied')
+         $Cmd = "<show><object><registered-ip><tag><entry name='$Tag'/></tag></registered-ip></object></show>"
+      }
+
+      # Define here, track aggregate device aggregate results in Process block.
+      $PanRegIpAgg = [System.Collections.Generic.List[PanRegisteredIp]]@()
+   } # Begin Block
+
+   Process {
+      foreach($DeviceCur in $Device) {
+         Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
+         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.response.status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.response.InnerXml)
+
+         # Define here, track an individual device number of registered-ip's.
+         $DeviceCurEntryCount = 0
+
+         if($PanResponse.response.status -eq 'success') {
+            foreach($EntryCur in $PanResponse.response.result.entry) {
+               # Increment individual device count of registered-ip's.
+               $DeviceCurEntryCount += 1
+               # Placeholder to aggregate multiple tag values should a single registered-ip have multiple tags.
+               $TagMemberAgg = @()
+               foreach($TagMemberCur in $EntryCur.tag.member) {
+                  $TagMemberAgg += $TagMemberCur
+               }
+               $PanRegIpAgg.Add( (New-PanRegisteredIp -Ip $EntryCur.ip -Tag $TagMemberAgg -ParentDevice $DeviceCur) )
+            }
+         }
+
+         Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' registered-ip count: ' + $DeviceCurEntryCount)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': Cumulative registered-ip count: ' + $PanRegIpAgg.Count)
+      } # foreach Device
+   } # Process block
+   End {
+      Write-Debug ($MyInvocation.MyCommand.Name + ': Final registered-ip count: ' + $PanRegIpAgg.Count)
+      return $PanRegIpAgg
+   } # End block
+} # Function 
