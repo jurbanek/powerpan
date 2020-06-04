@@ -6,7 +6,9 @@ function New-PanDevice {
       Creates a new PanDevice object and adds/persists to the PanDeviceDb.
    .NOTES
    .INPUTS
+   None
    .OUTPUTS
+   PowerPan.PanDevice or $false
    .EXAMPLE
       New-PanDevice -Name "fw.lab.local" -Username "admin" -Password "admin123" -Keygen
    .EXAMPLE

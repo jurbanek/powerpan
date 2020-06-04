@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Pre-Alpha] 2020-06-03
+
+### Added
+
+- New cmdlets `Get-PanLicenseApiKey`, `Set-PanLicenseApiKey`, and `Clear-PanLicenseApiKey`
+  - For get, set, and clear of license API key used to auto deactivate VM-Series firewalls within PAN Customer Support Portal
+  - Built as part of reinvigorated need to automate the relicensing of a PAN lab environment
+
+### Changed
+
+- Completed `Restart-PanDevice` making it actually perform a restart of the device, not just mock restart.
+  - Supports `SupportsShouldProcess` CmdletBinding enabling a confirmation prompt, support for `-WhatIf` and the ability to override the prompt with `-Force`.
+- Inline help documentation updates
+
 ## [Pre-Alpha] 2019-10-17
 
 ### Changed

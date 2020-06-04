@@ -39,10 +39,16 @@ function Restart-PanDevice {
          if($Force -or $PSCmdlet.ShouldProcess($DeviceCur.Name, 'request restart system')) {
             Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
             Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
-            # $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+            $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
             Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.response.status)
             Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.response.InnerXml)
+
+            # Output custom object with PanDevice Name and response status
+            [PSCustomObject]@{
+               Name = $DeviceCur.Name;
+               Status = $PanResponse.response.status
+            }
          } # if Force -or ShouldProcess
       } # foreach
    } # Process block

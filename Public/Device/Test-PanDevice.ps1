@@ -6,7 +6,10 @@ function Test-PanDevice {
    Test the API accessibility of a PanDevice.
    .NOTES
    .INPUTS
+   PowerPan.PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
+   PSCustomObject
    .EXAMPLE
    #>
    [CmdletBinding()]
@@ -38,7 +41,7 @@ function Test-PanDevice {
          if($PanResponse.response.status -eq 'success') {
             [PSCustomObject]@{
                'Name' = $DeviceCur.Name;
-               'TestStatus' = $true;
+               'Status' = 'success';
                'Model' = $PanResponse.response.result.model;
                'Serial' = $PanResponse.response.result.serial;
                'Swversion' = $PanResponse.response.result.'sw-version';
@@ -48,7 +51,7 @@ function Test-PanDevice {
          else {
             [PSCustomObject]@{
                'Name' = $DeviceCur.Name;
-               'TestStatus' = $false;
+               'Status' = 'error';
                'Model' = $null;
                'Serial' = $null;
                'Swversion' = $null;
