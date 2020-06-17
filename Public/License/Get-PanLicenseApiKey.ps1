@@ -50,26 +50,26 @@ function Get-PanLicenseApiKey{
          Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
          $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.response.status)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.response.InnerXml)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
 
          # Output custom object with PanDevice Name and LicenseApiKey
-         if($PanResponse.response.status -eq 'success') {
-            $PanResponse.response.result -match "API key: (?<key>\S*)" | Out-Null
+         if($PanResponse.Status -eq 'success') {
+            $PanResponse.Result -Match "API key: (?<key>\S*)" | Out-Null
             $LicenseApiKey = $Matches['key']
             $LicenseApiKeySecure = ConvertTo-SecureString -String $LicenseApiKey -AsPlainText -Force
 
             # PanDevice Name and SecureString LicenseApiKey 
             if($PSCmdlet.ParameterSetName -eq 'AsSecureString') {
                [PSCustomObject]@{
-                  Name = $DeviceCur.Name;
+                  Device = $DeviceCur;
                   LicenseApiKey = $LicenseApiKeySecure
                }
             }
             # PanDevice Name and standard string LicenseApiKey
             elseif($PSCmdlet.ParameterSetName -eq 'AsPlainText') {
                [PSCustomObject]@{
-                  Name = $DeviceCur.Name;
+                  Device = $DeviceCur;
                   LicenseApiKey = $LicenseApiKey
                }
             }
@@ -77,7 +77,7 @@ function Get-PanLicenseApiKey{
          # No license API key returned or error, output custom object with PanDevice Name and null
          else {
             [PSCustomObject]@{
-               Name = $DeviceCur.Name;
+               Device = $DeviceCur;
                LicenseApiKey = $null
             }
          }

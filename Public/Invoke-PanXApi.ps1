@@ -113,7 +113,7 @@ function Invoke-PanXApi {
          if ($PSCmdlet.ParameterSetName -eq 'Keygen') {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=keygen')
             $PanApiType = 'keygen'
-            $InvokeRestParams = @{
+            $InvokeParams = @{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
@@ -125,15 +125,15 @@ function Invoke-PanXApi {
                   'user' = $DeviceCur.Credential.UserName;
                   'password' = $DeviceCur.Credential.GetNetworkCredential().Password
                } # Body hash table
-            } # InvokeRestParams hash table
-         return Invoke-RestMethod @InvokeRestParams
+            } # InvokeParams hash table
+            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=keygen
 
          # API type=version
          elseif ($PSCmdlet.ParameterSetName -eq 'Version') {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=version')
             $PanApiType = 'version'
-            $InvokeRestParams = @{
+            $InvokeParams = @{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
@@ -144,8 +144,8 @@ function Invoke-PanXApi {
                   'type' = $PanApiType;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
-            } # InvokeRestParams hash table
-            return Invoke-RestMethod @InvokeRestParams
+            } # InvokeParams hash table
+            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=version
 
          # API type=op
@@ -153,7 +153,7 @@ function Invoke-PanXApi {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=op')
             $PanApiType = 'op'
             $PanApiCmd = $Cmd
-            $InvokeRestParams = @{
+            $InvokeParams = @{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
@@ -165,8 +165,8 @@ function Invoke-PanXApi {
                   'cmd' = $PanApiCmd;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
-            } # InvokeRestParams hash table
-            return Invoke-RestMethod @InvokeRestParams
+            } # InvokeParams hash table
+            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=op
 
          # API type=user-id
@@ -174,7 +174,7 @@ function Invoke-PanXApi {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=user-id')
             $PanApiType = 'user-id'
             $PanApiCmd = $Cmd
-            $InvokeRestParams = @{
+            $InvokeParams = @{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
@@ -186,8 +186,8 @@ function Invoke-PanXApi {
                   'cmd' = $PanApiCmd;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
-            } # InvokeRestParams hash table
-            return Invoke-RestMethod @InvokeRestParams
+            } # InvokeParams hash table
+            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=user-id
 
          # API type=commit
@@ -200,7 +200,7 @@ function Invoke-PanXApi {
             else {
                $PanApiCmd = '<commit></commit>'
             }
-            $InvokeRestParams = @{
+            $InvokeParams = @{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
@@ -212,8 +212,8 @@ function Invoke-PanXApi {
                   'cmd' = $PanApiCmd;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
-            } # InvokeRestParams hash table
-            return Invoke-RestMethod @InvokeRestParams
+            } # InvokeParams hash table
+            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=commit
 
          # API type=config
@@ -242,7 +242,7 @@ function Invoke-PanXApi {
 
             # Element is optional for several actions. If present, include in the Uri.
             if (-not [String]::IsNullOrEmpty($PanApiElement)) {
-               $InvokeRestParams = @{
+               $InvokeParams = @{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api' -f `
                      $DeviceCur.Protocol,
@@ -256,11 +256,11 @@ function Invoke-PanXApi {
                      'element' = $PanApiElement;
                      'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                   } # Body hash table
-               } # InvokeRestParams hash table
+               } # InvokeParams hash table
             }
             # Else, do not include element in the Uri
             else {
-               $InvokeRestParams = @{
+               $InvokeParams = @{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api/?type={3}&action={4}&xpath={5}&key={6}' -f `
                      $DeviceCur.Protocol,
@@ -273,9 +273,9 @@ function Invoke-PanXApi {
                      'xpath' = $PanApiXPath;
                      'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                   } # Body hash table
-               } # InvokeRestParams hash table
+               } # InvokeParams hash table
             }
-            return Invoke-RestMethod @InvokeRestParams
+            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=config
       } # Process block outermost foreach
    } # Process block

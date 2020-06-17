@@ -152,23 +152,23 @@ function New-PanDevice {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Generating API key')
          $PanResponse = Invoke-PanXApi -Device $Device -Keygen
 
-         if($PanResponse.response.status -eq 'success'){
+         if($PanResponse.Status -eq 'success'){
             Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: API key generation successful')
-            $Device.Key = ConvertTo-SecureString -String $PanResponse.response.result.key -AsPlainText -Force
+            $Device.Key = ConvertTo-SecureString -String $PanResponse.Result.key -AsPlainText -Force
 
             Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Testing generated API key')
             $PanResponse = Invoke-PanXApi -Device $Device -Op -Cmd '<show><system><info></info></system></show>'
-            if($PanResponse.response.status -eq 'success'){
+            if($PanResponse.Status -eq 'success'){
                Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Generated API key tested successfully')
-               Write-Debug ("`t" + 'Device Name: ' + $PanResponse.response.result.system.devicename)
-               Write-Debug ("`t" + 'Family: ' + $PanResponse.response.result.system.family)
-               Write-Debug ("`t" + 'Model: ' + $PanResponse.response.result.system.model)
-               if($PanResponse.response.result.system.family -eq 'vm') {
-                  Write-Debug ("`t" + 'VM-License: ' + $PanResponse.response.result.system.'vm-license')
-                  Write-Debug ("`t" + 'VM-Mode: ' + $PanResponse.response.result.system.'vm-mode')
+               Write-Debug ("`t" + 'Device Name: ' + $PanResponse.Result.system.devicename)
+               Write-Debug ("`t" + 'Family: ' + $PanResponse.Result.system.family)
+               Write-Debug ("`t" + 'Model: ' + $PanResponse.Result.system.model)
+               if($PanResponse.Result.system.family -eq 'vm') {
+                  Write-Debug ("`t" + 'VM-License: ' + $PanResponse.Result.system.'vm-license')
+                  Write-Debug ("`t" + 'VM-Mode: ' + $PanResponse.Result.system.'vm-mode')
                }
-               Write-Debug ("`t" + 'Serial: ' + $PanResponse.response.result.system.serial)
-               Write-Debug ("`t" + 'Software Version: ' + $PanResponse.response.result.system.'sw-version')
+               Write-Debug ("`t" + 'Serial: ' + $PanResponse.Result.system.serial)
+               Write-Debug ("`t" + 'Software Version: ' + $PanResponse.Result.system.'sw-version')
             }
             else { return $false }
          }

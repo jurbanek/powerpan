@@ -67,14 +67,11 @@ function Set-PanLicenseApiKey{
          Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
          $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.response.status)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.response.InnerXml)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
 
-         # Output custom object with PanDevice Name and response status
-         [PSCustomObject]@{
-            Name = $DeviceCur.Name;
-            Status = $PanResponse.response.status
-         }
+         # Output $PanResponse for feedback
+         $PanResponse
       } # foreach Device
    } # Process block
    End {

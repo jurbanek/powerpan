@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Pre-Alpha] 2020-06-12
+
+### Added
+
+- New [PanResponse] class and `New-PanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
+  - `Invoke-PanXApi` now returns `[PanResponse]`, which now includes HTTP response details, along with the results
+  - Refactored all relevant cmdlets in light of `[PanResponse]` object property name and structure changes
+- New `PanResponse.Format.ps1xml` and `PanDevice.Format.ps1xml` format files to simplify `[PanResponse]` and `[PanDevice]` default object property display
+  - <https://blog.mwpreston.net/2020/01/06/working-with-custom-typenames-in-powershell/>
+  - <http://ramblingcookiemonster.github.io/Decorating-Objects/>
+
+### Changed
+
+- Changes to near all cmdlets in response to new `[PanResponse]` class. See **Added** section for details.
+- Misc. inline documentation updates.
+
 ## [Pre-Alpha] 2020-06-03
 
 ### Added

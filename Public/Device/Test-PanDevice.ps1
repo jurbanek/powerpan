@@ -9,7 +9,7 @@ function Test-PanDevice {
    PowerPan.PanDevice[]
       You can pipe a PanDevice to this cmdlet
    .OUTPUTS
-   PSCustomObject
+   PowerPan.PanResponse
    .EXAMPLE
    #>
    [CmdletBinding()]
@@ -37,27 +37,7 @@ function Test-PanDevice {
 
    Process {
       foreach($DeviceCur in $Device) {
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Version
-         if($PanResponse.response.status -eq 'success') {
-            [PSCustomObject]@{
-               'Name' = $DeviceCur.Name;
-               'Status' = 'success';
-               'Model' = $PanResponse.response.result.model;
-               'Serial' = $PanResponse.response.result.serial;
-               'Swversion' = $PanResponse.response.result.'sw-version';
-               'Multivsys' = $PanResponse.response.result.'multi-vsys'
-            }
-         }
-         else {
-            [PSCustomObject]@{
-               'Name' = $DeviceCur.Name;
-               'Status' = 'error';
-               'Model' = $null;
-               'Serial' = $null;
-               'Swversion' = $null;
-               'Multivsys' = $null
-            }
-         }
+         Invoke-PanXApi -Device $DeviceCur -Version
       } # foreach
    } # Process block
 

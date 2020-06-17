@@ -1,7 +1,7 @@
 <#
 Generic PowerShell Module Loading Framework for .psm1
 Assumes:
-   Classes placed in .\Classes\*
+   Classes placed in .\Class\*
       One class per .ps1 file.
       Class name same as .ps1 file: MyClass -> MyClass.ps1
    Public (exported) functions/module members placed in .\Public\*
@@ -16,12 +16,12 @@ Assumes:
 
 # Determine class, public, and private function definition files 
 # Exclude Pester .Tests.ps1 files to avoid a "Modules can only be nested to 10 levels" import / dot-sourcing loop during Pester tests
-$Classes  = @( Get-ChildItem -Path "$PSScriptRoot\Classes\*.ps1" -Recurse -Exclude "*.Tests.ps1" -ErrorAction SilentlyContinue )
+$Class  = @( Get-ChildItem -Path "$PSScriptRoot\Class\*.ps1" -Recurse -Exclude "*.Tests.ps1" -ErrorAction SilentlyContinue )
 $Public  = @( Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" -Recurse -Exclude "*.Tests.ps1" -ErrorAction SilentlyContinue )
 $Private = @( Get-ChildItem -Path "$PSScriptRoot\Private\*.ps1" -Recurse -Exclude "*.Tests.ps1" -ErrorAction SilentlyContinue )
 
 # Dot source the .ps1 definition files
-foreach($f in @($Classes + $Public + $Private) ) {
+foreach($f in @($Class + $Public + $Private) ) {
     try {
         . $f.FullName
     }

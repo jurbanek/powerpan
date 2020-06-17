@@ -1,12 +1,5 @@
 # PowerPAN Todo
 
-## Add `Add-PanDeviceLabel` and `Remove-PanDeviceLabel`
-
-- Accepts `-Device` and `-Label`
-- For adding and removal labels without having to recreate PanDevice's
-- Finished updating `[PanDevice].Label` class property to be of type `[System.Collections.Generic.List[String]]`
-- When building `Add-` and `Remove-` cmdlets, use the .Add() and .Remove() methods native to `[System.Collections.Generic.List]`
-
 ## *Consider* refactor `-Device` Selection
 
 - Holding off as current `Get-PanDevice | Do-Something` works very well
@@ -17,17 +10,6 @@
   - *No* `-Name`, `-Label`, or `-Device` parameter implies `$Global:PanDefaultLabel` or `-Label "session-[Guid]"`, in order
   - `-Name`, `-Label`, and *none* dispatch to `Get-PanDevice`, no extensive local cmdlet logic
 
-## Build PowerPan.Format.ps1xml for `Test-PanDevice`
-
-- Create a type <http://ramblingcookiemonster.github.io/Decorating-Objects/>
-- Use api `type=version` instead of executing a `show system info`
-
-## Build `Restart-PanDevice`
-
-- Cannot reboot firewalls through Panorama currently, only as part of firewall upgrade.
-- Confirm PAN-OS *Restart* or *Reboot* verb. Verify PowerShell approved verb?
-- Require a confirmation by default. Add  `-NoConfirm` parameter.
-
 ## Use Cases
 
 ### Highest traffic flows over an interval
@@ -36,7 +18,7 @@
 - Parse PAN-OS session table frequently over the course of the interval.
 - When PAN-OS sessions are stored in PowerShell memory, they must be hashed and a hash value stored as well.
   - The PAN-OS session ID is re-used. Given a long enough interval, session 12486 will belong to disparate TCP virtual circuits.
-- Consider parameters to aggregate based on app-id, source user, source ip, dest ip, source port, dest port
+- Consider parameters to aggregate based on app-id, source user, source IP, destination IP, source port, destination port
 
 ### Output a list of objects with "n" or fewer references
 
@@ -49,13 +31,13 @@
 ### Realtime Interface Throughput Monitor
 
 - a la Pan(w)chrome
-- Limit to curses like update with realtime interface monitor.
+- Limit to curses like update with real-time interface monitor.
 
 ### Add log forwarding profile to every security rule without an existing log forwarding profile
 
 ### `Get-PanLog`
 
-- Application discovery for Foot Locker. Get-PanLog and specify DateTime or range, specify source/dest (check API limits), then perform additional filtering in PowerShell | Sort-Object - Property appid -Unique
+- Application discovery for Foot Locker. Get-PanLog and specify DateTime or range, specify source/destination (check API limits), then perform additional filtering in PowerShell `| Sort-Object - Property appid -Unique`
 
 ### `Get-PanUrlCategory`
 

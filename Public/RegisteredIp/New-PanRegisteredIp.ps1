@@ -3,10 +3,12 @@ function New-PanRegisteredIp {
    .SYNOPSIS
       Returns a PowerPAN.PanRegisteredIp object.
    .DESCRIPTION
-      Returns a PowerPAN.PanRegisteredIp object.
+      Returns a PowerPAN.PanRegisteredIp object. To apply PanRegisteredIp to NGFW, use Add-, Remove-, Clear- cmdlets.
    .NOTES
    .INPUTS
+      None
    .OUTPUTS
+      PowerPan.PanRegisteredIp
    .EXAMPLE
       New-PanRegisteredIp -Ip "1.1.1.1" -Tag "MyTag"
    .EXAMPLE
@@ -29,7 +31,7 @@ function New-PanRegisteredIp {
          Position=2,
          ParameterSetName='ParentDevice',
          HelpMessage='Optional ParentDevice. Internal use only.')]
-      [PanDevice] $ParentDevice
+      [PanDevice] $Device
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
@@ -41,7 +43,7 @@ function New-PanRegisteredIp {
 
    if($PSCmdlet.ParameterSetName -eq 'ParentDevice') {
       Write-Debug $($MyInvocation.MyCommand.Name + ': ParentDevice specified')
-      return [PanRegisteredIp]::new($Ip, $Tag, $ParentDevice)
+      return [PanRegisteredIp]::new($Ip, $Tag, $Device)
    }
    else {
       return [PanRegisteredIp]::new($Ip, $Tag)

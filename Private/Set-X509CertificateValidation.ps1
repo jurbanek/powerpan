@@ -1,18 +1,29 @@
 function Set-X509CertificateValidation {
    <#
    .SYNOPSIS
-      Enable (enable,true,yes,1) or disable (disable,false,no,0) x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+      Control x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
    .DESCRIPTION
-      Enable (enable,true,yes,1) or disable (disable,false,no,0) x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+      Control x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
    .NOTES
       A lot of headaches have been caused by PowerShell and x.509 certificate validation.
+
+      Uses two mutually exclusive switch parameters to require or disable x.509 switch validation.
    .INPUTS
       None
    .OUTPUTS
       None
-   .PARAMETER ValidateCertificate
-      Enable (enable,true,yes,1) or disable (disable,false,no,0) x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+   .PARAMETER Validate
+      Require x.509 certificate validation validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+   .PARAMETER NoValidate
+      Disable x.509 certificate validation validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
    .EXAMPLE
+      PS> Set-X509CertificateValidation -NoValidate
+
+      Disable x.509 certificate validation for subsequent .NET backed calls.
+   .EXAMPLE
+      PS> Set-X509CertificateValidation -Validate
+
+      Require x.509 certificate validation for subsequent .NET backed calls.
    #>
    [CmdletBinding()]
    param(

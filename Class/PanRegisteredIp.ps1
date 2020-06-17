@@ -4,7 +4,7 @@ class PanRegisteredIp {
    # Tag(s) applied to the registered-ip
    [String[]] $Tag
    # Optional Parent PanDevice from which the tag mapping was identified
-   [PanDevice] $ParentDevice
+   [PanDevice] $Device
 
    # Default Constructor
    PanRegisteredIp() {
@@ -13,13 +13,13 @@ class PanRegisteredIp {
    PanRegisteredIp([String] $Ip, [String[]] $Tag) {
       $this.Ip = $Ip
       $this.Tag = $Tag
-      $this.ParentDevice = $null
+      $this.Device = $null
    }
    # Constructor accepting...
-   PanRegisteredIp([String] $Ip, [String[]] $Tag, [PanDevice] $ParentDevice) {
+   PanRegisteredIp([String] $Ip, [String[]] $Tag, [PanDevice] $Device) {
       $this.Ip = $Ip
       $this.Tag = $Tag
-      $this.ParentDevice = $ParentDevice
+      $this.Device = $Device
    }
    # Oblitagory ToString() Method
    [String] ToString() {
