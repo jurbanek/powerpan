@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+   <ViewDefinitions>
+      <View>
+         <Name>DefaultTable</Name>
+         <ViewSelectedBy>
+            <TypeName>PanUrlResponse</TypeName>
+         </ViewSelectedBy>
+         <TableControl>
+            <TableHeaders>
+               <TableColumnHeader>
+                  <Label>Url</Label>
+               </TableColumnHeader>
+               <TableColumnHeader>
+                  <Label>BaseDbCat</Label>
+               </TableColumnHeader>
+               <TableColumnHeader>
+                  <Label>CloudDbCat</Label>
+               </TableColumnHeader>
+               <TableColumnHeader>
+                  <Label>Device</Label>
+               </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+               <TableRowEntry>
+                  <TableColumnItems>
+                        <TableColumnItem>
+                           <PropertyName>Url</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                           <PropertyName>BaseDbCat</PropertyName>
+                        </TableColumnItem>                            
+                        <TableColumnItem>
+                           <PropertyName>CloudDbCat</PropertyName>
+                        </TableColumnItem>                            
+                        <TableColumnItem>
+                           <PropertyName>Device</PropertyName>
+                        </TableColumnItem>                            
+                  </TableColumnItems>
+               </TableRowEntry>
+            </TableRowEntries>
+         </TableControl>
+      </View>
+   </ViewDefinitions>
+</Configuration>

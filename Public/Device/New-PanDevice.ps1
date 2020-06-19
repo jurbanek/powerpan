@@ -8,15 +8,15 @@ function New-PanDevice {
    .INPUTS
    None
    .OUTPUTS
-   PowerPan.PanDevice or $false
+   PanDevice or $false
    .EXAMPLE
-      New-PanDevice -Name "fw.lab.local" -Username "admin" -Password "admin123" -Keygen
+   PS> New-PanDevice -Name "fw.lab.local" -Username "admin" -Password "admin123" -Keygen
    .EXAMPLE
-      New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen -Label "PCI-Zone-1"
+   PS> New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen -Label "PCI-Zone-1"
    .EXAMPLE
-      New-PanDevice -Name "fw.lab.local" -Key "A1E2I3O4U5"
+   PS> New-PanDevice -Name "fw.lab.local" -Key "A1E2I3O4U5"
    .EXAMPLE
-      New-PanDevice -Name "acme-edge-fw1.acme.net" -Key "A1E2I3O4U5" -Label "acme-edge-fw1","Azure"
+   PS> New-PanDevice -Name "acme-edge-fw1.acme.net" -Key "A1E2I3O4U5" -Label "acme-edge-fw1","Azure"
    #>
    [CmdletBinding()]
    param(

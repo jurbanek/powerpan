@@ -8,9 +8,11 @@ function Get-PanDefaultLabel {
    See Set-PanDefaultLabel for details.
    .NOTES
    .INPUTS
+   None
    .OUTPUTS
+   System.String
    .EXAMPLE
-      Get-PanDefaultLabel
+   PS> Get-PanDefaultLabel
    #>
    [CmdletBinding()]
    param()

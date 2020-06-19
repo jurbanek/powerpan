@@ -6,7 +6,10 @@ function Add-PanDevice {
    Add a PanDevice to the PanDeviceDb, providing persistence across PowerShell sessions.
    .NOTES
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
+   None
    .EXAMPLE
    #>
    [CmdletBinding()]

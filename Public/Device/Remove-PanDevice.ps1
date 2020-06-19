@@ -6,7 +6,9 @@ function Remove-PanDevice {
    Remove a PanDevice from the PanDeviceDb, removes persistence across PowerShell sessions.
    .NOTES
    .INPUTS
+   PanDevice
    .OUTPUTS
+   None
    .EXAMPLE
    #>
    [CmdletBinding(DefaultParameterSetName='Empty')]

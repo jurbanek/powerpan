@@ -6,7 +6,10 @@ function Add-PanDeviceLabel {
    Add label(s) to a PanDevice in PanDeviceDb.
    .NOTES
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
+   None
    .EXAMPLE
    #>
    [CmdletBinding()]

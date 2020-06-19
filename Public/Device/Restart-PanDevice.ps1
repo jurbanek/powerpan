@@ -6,8 +6,16 @@ function Restart-PanDevice {
    Restart (reboot) a PanDevice.
    .NOTES
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
+   PanResponse
    .EXAMPLE
+   PS> Get-PanDevice '10.0.0.1' | Restart-PanDevice
+   Prompts for confirmation
+   .EXAMPLE
+   PS> Get-PanDevice '10.0.0.1' | Restart-PanDevice -Force
+   No prompt for confirmation
    #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(

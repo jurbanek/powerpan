@@ -10,6 +10,12 @@
   - *No* `-Name`, `-Label`, or `-Device` parameter implies `$Global:PanDefaultLabel` or `-Label "session-[Guid]"`, in order
   - `-Name`, `-Label`, and *none* dispatch to `Get-PanDevice`, no extensive local cmdlet logic
 
+## WildFire API Client
+
+- Submit files to WildFire
+- Submit URL's to WildFire
+- Submit hashes to WildFire for verdict
+
 ## Use Cases
 
 ### Highest traffic flows over an interval
@@ -39,22 +45,10 @@
 
 - Application discovery for Foot Locker. Get-PanLog and specify DateTime or range, specify source/destination (check API limits), then perform additional filtering in PowerShell `| Sort-Object - Property appid -Unique`
 
-### `Get-PanUrlCategory`
-
-- Foot Locker use case to use PANOS XML API instead of <https://urlfiltering.paloaltonetworks.com> (which has annoying CAPTCHA) to map URL to PAN-DB category.
-- Consider CSV input (script method only)
-- Consider CSV output (script method only)
-
 ### `Invoke-PanEdlRefresh`
 
 - Refresh is not an approved verb
 - Command to force an EDL refresh, useful when making changes to MineMeld and not waiting for built-in refresh
-
-### WildFire API Client
-
-- Submit files to WildFire
-- Submit URL's to WildFire
-- Submit hashes to WildFire for verdict
 
 ### Expedition Panorama Post-Import Object Revert and Move
 

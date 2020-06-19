@@ -1,14 +1,14 @@
 function New-PanResponse{
    <#
    .SYNOPSIS
-      Returns a PowerPAN.PanResponse object. Internal helper cmdlet.
+   Returns a PanResponse object. Internal helper cmdlet.
    .DESCRIPTION
-      Returns a PowerPAN.PanResponse object. Internal helper cmdlet.
+   Returns a PanResponse object. Internal helper cmdlet.
    .NOTES
    .INPUTS
-      None
+   None
    .OUTPUTS
-      PowerPan.PanResponse
+   PanResponse
    .EXAMPLE
    #>
    [CmdletBinding()]

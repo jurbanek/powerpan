@@ -2,11 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Pre-Alpha] 2020-06-17
+
+### Added
+
+- New `[PanUrlResponse]` class, `PanUrlResponse.Format.ps1xml` format spec, and `Resolve-PanUrlCategory` cmdlet to facilitate resolving URL's to PanDB categories.
+  - Uses PANOS XML API instead of <https://urlfiltering.paloaltonetworks.com> (which has annoying CAPTCHA) to map URL to PanDB category.
+  - Supports PAN-OS 9.0 multi-category
+
+### Changed
+
+- Numerous PowerShell inline help documentation updates.
+
 ## [Pre-Alpha] 2020-06-12
 
 ### Added
 
-- New [PanResponse] class and `New-PanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
+- New `[PanResponse]` class and `New-PanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
   - `Invoke-PanXApi` now returns `[PanResponse]`, which now includes HTTP response details, along with the results
   - Refactored all relevant cmdlets in light of `[PanResponse]` object property name and structure changes
 - New `PanResponse.Format.ps1xml` and `PanDevice.Format.ps1xml` format files to simplify `[PanResponse]` and `[PanDevice]` default object property display

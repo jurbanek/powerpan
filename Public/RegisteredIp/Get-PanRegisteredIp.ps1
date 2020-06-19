@@ -24,7 +24,7 @@ function Get-PanRegisteredIp {
          Position=0,
          ValueFromPipeline=$true,
          HelpMessage='PanDevice against which registered-ip(s) will be retrieved.')]
-      [PanDevice] $Device,
+      [PanDevice[]] $Device,
       [parameter(
          Mandatory=$true,
          Position=1,
@@ -87,16 +87,16 @@ function Get-PanRegisteredIp {
                foreach($TagMemberCur in $EntryCur.tag.member) {
                   $TagMemberAgg += $TagMemberCur
                }
-               $PanRegIpAgg.Add( (New-PanRegisteredIp -Ip $EntryCur.ip -Tag $TagMemberAgg -Device $DeviceCur) )
+               # Create new PanRegisteredIp object, output to pipeline (fast update for users), save to variable
+               New-PanRegisteredIp -Ip $EntryCur.ip -Tag $TagMemberAgg -Device $DeviceCur | Tee-Object -Variable 'RegIpFoo'
+               # Add the new PanRegisteredIp to aggregate. Will be counted in End block. Available for future feature as well
+               $PanRegIpAgg.Add($RegIpFoo)
             }
          }
-
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' registered-ip count: ' + $DeviceCurEntryCount)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Cumulative registered-ip count: ' + $PanRegIpAgg.Count)
       } # foreach Device
    } # Process block
    End {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Final registered-ip count: ' + $PanRegIpAgg.Count)
-      return $PanRegIpAgg
    } # End block
 } # Function 

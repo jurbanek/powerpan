@@ -6,39 +6,41 @@ function Get-PanDevice {
    PowerPAN function to return PanDevice(s) from the PanDeviceDb.
    .NOTES
    Nerd Notes: 
-      Multiple -Label (via array) is a logical AND match with NO regular expression support.
-      Multiple -Name (via array) is a logical OR match with regular expression support.
+   Multiple -Label (via array) is a logical AND match with NO regular expression support.
+   Multiple -Name (via array) is a logical OR match with regular expression support.
    
-      When -Session, -Label, -Name are used together, specific parameter AND/OR match behavior
-      still applies, but each parameter in use must match (AND across all in use parameters)
+   When -Session, -Label, -Name are used together, specific parameter AND/OR match behavior
+   still applies, but each parameter in use must match (AND across all in use parameters)
    .INPUTS
+   None
    .OUTPUTS
+   PanDevice[]
    .EXAMPLE
-      Get-PanDevice
-      With no parameters, returns the "default" PanDevice(s) based on $Global:PanDefaultLabel.
-      If $Global:PanDefaultLabel is empty, returns PanDevice(s) created in current PowerShell session.
+   PS> Get-PanDevice
+   With no parameters, returns the "default" PanDevice(s) based on $Global:PanDefaultLabel.
+   If $Global:PanDefaultLabel is empty, returns PanDevice(s) created in current PowerShell session.
    .EXAMPLE
-      Get-PanDevice -Session
-      Returns PanDevice(s) created in current PowerShell session.
+   PS> Get-PanDevice -Session
+   Returns PanDevice(s) created in current PowerShell session.
    .EXAMPLE
-      Get-PanDevice -Label "east-us-1","PCI"
-      Returns PanDevice(s) with "east-us-1" AND "PCI" Labels. Multiple -Label (via array) are an AND match.
-      For more complex match logic use Get-PanDevice -All | Where-Object ...
+   PS> Get-PanDevice -Label "east-us-1","PCI"
+   Returns PanDevice(s) with "east-us-1" AND "PCI" Labels. Multiple -Label (via array) are an AND match.
+   For more complex match logic use Get-PanDevice -All | Where-Object ...
    .EXAMPLE
-      Get-PanDevice -Name "firewall-01.acme.local","firewall-02.acme.local"
-      Returns PanDevice with case-insensitive match on -Name.
-      Multiple -Name (via array) are logical OR match to facilitate precise multi-select based on PanDevice Name.
-      For more complex match logic use Get-PanDevice -All | Where-Object ...
+   PS> Get-PanDevice -Name "firewall-01.acme.local","firewall-02.acme.local"
+   Returns PanDevice with case-insensitive match on -Name.
+   Multiple -Name (via array) are logical OR match to facilitate precise multi-select based on PanDevice Name.
+   For more complex match logic use Get-PanDevice -All | Where-Object ...
    .EXAMPLE
-      Get-PanDevice -All
-      Returns all PanDevice(s) within the PanDeviceDb.
-      Complex match criteria can be crafted using Get-PanDevice -All | Where-Object ... 
+   PS> Get-PanDevice -All
+   Returns all PanDevice(s) within the PanDeviceDb.
+   Complex match criteria can be crafted using Get-PanDevice -All | Where-Object ... 
    .EXAMPLE
-      Get-PanDevice -Session -Name "firewall-01.acme.local"
-      Matches -Session AND -Name parameters, both parameters must result in match.
+   PS> Get-PanDevice -Session -Name "firewall-01.acme.local"
+   Matches -Session AND -Name parameters, both parameters must result in match.
    .EXAMPLE
-      Get-PanDevice -Name "firewall-01.acme.local" -Label "PCI"
-      Matches -Name AND -Label parameters, both parameters must result in match. 
+   PS> Get-PanDevice -Name "firewall-01.acme.local" -Label "PCI"
+   Matches -Name AND -Label parameters, both parameters must result in match. 
    #>
    [CmdletBinding(DefaultParameterSetName='Empty')]
    param(

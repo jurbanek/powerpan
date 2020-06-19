@@ -1,4 +1,4 @@
-function Clear-PanLicenseApiKey{
+function Clear-PanLicenseApiKey {
    <#
    .SYNOPSIS
    Clear (remove) current license API key stored on the PanDevice
@@ -7,14 +7,14 @@ function Clear-PanLicenseApiKey{
    when the VM-Series licenses are revoked on the VM-Series firewall itself. 
    .NOTES
    .INPUTS
-   PowerPan.PanDevice[]
+   PanDevice[]
       You can pipe a PanDevice to this cmdlet
    .OUTPUTS
-   PSCustomObject
+   PanResponse
    .EXAMPLE
-   Clear-PanLicenseApiKey -Device $Device
+   PS> Clear-PanLicenseApiKey -Device $Device
    .EXAMPLE
-   Get-PanDevice -All | Clear-PanLicenseApiKey
+   PS> Get-PanDevice -All | Clear-PanLicenseApiKey
    #>
    [CmdletBinding(DefaultParameterSetName='AsSecureString')]
    param(

@@ -1,4 +1,4 @@
-function Get-PanLicenseApiKey{
+function Get-PanLicenseApiKey {
    <#
    .SYNOPSIS
    Get current license API key stored on the PanDevice
@@ -12,12 +12,10 @@ function Get-PanLicenseApiKey{
    .OUTPUTS
    PSCustomObject
    .EXAMPLE
-   Get-PanLicenseApiKey -Device $Device
-
+   PS> Get-PanLicenseApiKey -Device $Device
    Returns license API key as SecureString (default).
    .EXAMPLE
-   Get-PanDevice -All | Get-PanLicenseApiKey -AsPlainText
-
+   PS> Get-PanDevice -All | Get-PanLicenseApiKey -AsPlainText
    Returns license API key (or multiple if multiple PanDevice via pipeline) as standard string.
    #>
    [CmdletBinding(DefaultParameterSetName='AsSecureString')]

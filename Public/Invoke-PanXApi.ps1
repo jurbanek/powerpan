@@ -18,22 +18,24 @@ function Invoke-PanXApi {
    Config "set" actions are non-destructive and are only additive.
    Config "edit" actions can be destructive
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
-   .PARAMETER parameter
+   PanResponse
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Keygen
+   PS> Invoke-PanXApi -Device $Device -Keygen
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Version
+   PS> Invoke-PanXApi -Device $Device -Version
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
+   PS> Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Commit
+   PS> Invoke-PanXApi -Device $Device -Commit
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
+   PS> Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
+   PS> Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
    .EXAMPLE
-      Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
+   PS> Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
    #>
    [CmdletBinding()]
    param(

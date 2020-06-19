@@ -1,6 +1,3 @@
-<#
-TODO
-#>
 function Add-PanRegisteredIp {
    <#
    .SYNOPSIS
@@ -16,14 +13,17 @@ function Add-PanRegisteredIp {
    The tag(s) against which a registered-ip can be registered can be defined in Objects > Tags OR arbitrary string values that do not exist in Objects > Tags.
    DAG match criteria is based on tag(s). After registering a registered-ip with tag(s), PAN-OS then dynamically computes to which DAG(s) the registered-ip is added.
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
+   PanResponse
    .EXAMPLE
-   Add-PanRegisteredIp -Device $Device -Ip "1.1.1.1" -Tag "MyTag"
+   PS. Add-PanRegisteredIp -Device $Device -Ip "1.1.1.1" -Tag "MyTag"
    .EXAMPLE
-   Add-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2" -Tag "HerTag","HisTag"
+   PS> Add-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2" -Tag "HerTag","HisTag"
    "HerTag" and "HisTag" are both applied to both 1.1.1.1 and 2.2.2.2 registered-ip's.
    .EXAMPLE
-   Add-PanRegisteredIp -Device $Device -RegisteredIp $(New-PanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
+   PS> Add-PanRegisteredIp -Device $Device -RegisteredIp $(New-PanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
    "HerTag" and "HisTag" are both applied to 1.1.1.1 registered-ip.
    #>
    [CmdletBinding()]

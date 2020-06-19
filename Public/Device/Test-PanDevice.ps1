@@ -6,10 +6,10 @@ function Test-PanDevice {
    Test the API accessibility of a PanDevice.
    .NOTES
    .INPUTS
-   PowerPan.PanDevice[]
+   PanDevice[]
       You can pipe a PanDevice to this cmdlet
    .OUTPUTS
-   PowerPan.PanResponse
+   PanResponse
    .EXAMPLE
    #>
    [CmdletBinding()]

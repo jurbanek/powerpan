@@ -1,4 +1,4 @@
-function Set-PanLicenseApiKey{
+function Set-PanLicenseApiKey {
    <#
    .SYNOPSIS
    Set current license API key stored on the PanDevice
@@ -10,14 +10,12 @@ function Set-PanLicenseApiKey{
    PowerPan.PanDevice[]
       You can pipe a PanDevice to this cmdlet
    .OUTPUTS
-   PSCustomObject
+   PanResponse
    .EXAMPLE
-   Set-PanLicenseApiKey -Device $Device -LicenseApiKey $SecureKey
-
+   PS> Set-PanLicenseApiKey -Device $Device -LicenseApiKey $SecureKey
    Where $SecureKey is a SecureString
    .EXAMPLE
-   Get-PanDevice -All | Set-PanLicenseApiKey -LicenseApiKeyAsPlainText $StringKey
-
+   PS> Get-PanDevice -All | Set-PanLicenseApiKey -LicenseApiKeyAsPlainText $StringKey
    Where $StringKey is a standard string
    #>
    [CmdletBinding()]

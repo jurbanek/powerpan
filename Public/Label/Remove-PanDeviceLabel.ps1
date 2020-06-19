@@ -6,7 +6,10 @@ function Remove-PanDeviceLabel {
    Remove label(s) from a PanDevice in PanDeviceDb.
    .NOTES
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
+   None
    .EXAMPLE
    #>
    [CmdletBinding()]

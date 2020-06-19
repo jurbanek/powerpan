@@ -11,7 +11,7 @@ function Clear-PanDefaultLabel {
    .INPUTS
    .OUTPUTS
    .EXAMPLE
-      Clear-PanDefaultLabel
+   PS> Clear-PanDefaultLabel
    #>
    [CmdletBinding()]
    param()
