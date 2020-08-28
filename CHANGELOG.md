@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Pre-Alpha] 2020-08-27
+
+### Added
+
+- New `Resolve-PanTagColor` cmdlet to resolve PAN-OS tag color friendly and raw values. The former is used in the GUI to present friendly names while the latter is used via API, CLI, and found in XML configuration.
+
+### Changed
+
+- PowerShell module (.psm1) logic to support dot-sourcing *classes* in specific order if needed to resolve dependencies. Using the pre-existing module logic, classes were dot-sourced based on their alphanumeric filename sort order. Now, specific classes can be dot-sourced in specific order as needed.
+  - For example, if `[PanAddress]` (in `PanAddress.ps1`) depends on `[PanDevice]` (in `PanDevice.ps1`), alphanumerically `PanAddress.ps1` will dot-source first and fail given it references an unknown (at the time) `[PanDevice]` type.
+  - To resolve, add `PanDevice.ps1` to be dot-sourced first in module `.psm1`.
+
 ## [Pre-Alpha] 2020-06-17
 
 ### Added

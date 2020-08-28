@@ -16,6 +16,11 @@
 - Submit URL's to WildFire
 - Submit hashes to WildFire for verdict
 
+## Address Objects
+
+- Manipulate address objects
+- Create H- and N- objects per naming standard
+
 ## Use Cases
 
 ### Highest traffic flows over an interval
