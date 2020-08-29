@@ -7,7 +7,7 @@
   - `-Name "MyDevice"` parameter to resolve `[PanDevice]` based on name/IP (should be `[String[]]`)
   - `-Label "MyLabel"` parameter to resolve `[PanDevice]` based on `PanDevice.Label` property (should be `[String[]]`)
   - `-Device $Device` parameter to accept native `[PanDevice[]]` (already done)
-  - *No* `-Name`, `-Label`, or `-Device` parameter implies `$Global:PanDefaultLabel` or `-Label "session-[Guid]"`, in order
+  - *No* `-Name`, `-Label`, or `-Device` parameter implies `$Global:PanDeviceLabelDefault` or `-Label "session-[Guid]"`, in order
   - `-Name`, `-Label`, and *none* dispatch to `Get-PanDevice`, no extensive local cmdlet logic
 
 ## WildFire API Client

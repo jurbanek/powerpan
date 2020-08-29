@@ -1,4 +1,4 @@
-function Clear-PanDefaultLabel {
+function Clear-PanDeviceLabelDefault {
    <#
    .SYNOPSIS
    PowerPAN function to clear (reset to default) the current default Label(s) for auto-selecting PanDevice(s) from the PanDeviceDb.
@@ -11,7 +11,7 @@ function Clear-PanDefaultLabel {
    .INPUTS
    .OUTPUTS
    .EXAMPLE
-   PS> Clear-PanDefaultLabel
+   PS> Clear-PanDeviceLabelDefault
    #>
    [CmdletBinding()]
    param()
@@ -23,8 +23,8 @@ function Clear-PanDefaultLabel {
    # If -Debug parameter, announce 
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
-   if( -not [String]::IsNullOrEmpty($Global:PanDefaultLabel) ) {
-      $Global:PanDefaultLabel = $null
+   if( -not [String]::IsNullOrEmpty($Global:PanDeviceLabelDefault) ) {
+      $Global:PanDeviceLabelDefault = $null
    }
 
 } # Function

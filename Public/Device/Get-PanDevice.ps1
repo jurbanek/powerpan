@@ -17,8 +17,8 @@ function Get-PanDevice {
    PanDevice[]
    .EXAMPLE
    PS> Get-PanDevice
-   With no parameters, returns the "default" PanDevice(s) based on $Global:PanDefaultLabel.
-   If $Global:PanDefaultLabel is empty, returns PanDevice(s) created in current PowerShell session.
+   With no parameters, returns the "default" PanDevice(s) based on $Global:PanDeviceLabelDefault.
+   If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in current PowerShell session.
    .EXAMPLE
    PS> Get-PanDevice -Session
    Returns PanDevice(s) created in current PowerShell session.
@@ -79,8 +79,8 @@ function Get-PanDevice {
 
    # Fetch PanSessionGuid to be used throughout function. Avoids littering Debug logs with excessive calls to Get-PanSessionGuid
    $SessionGuid = Get-PanSessionGuid
-   # Fetch PanDefaultLabel to be used throughout function. Avoids littering Debug logs with excessive calls to Get-PanDefaultLabel
-   $DefaultLabel = Get-PanDefaultLabel
+   # Fetch PanDeviceLabelDefault to be used throughout function. Avoids littering Debug logs with excessive calls to Get-PanDeviceLabelDefaul
+   $LabelDefault = Get-PanDeviceLabelDefault
 
    # If the PanDeviceDb is NOT populated, no need to continue evaluating ParameterSets, answer is always empty
    if([String]::IsNullOrEmpty($Global:PanDeviceDb)) {
@@ -90,31 +90,31 @@ function Get-PanDevice {
    }
 
    # ParameterSetName 'Empty'
-   # Peference (most to least) is PanDefaultLabel, then session- label.
+   # Peference (most to least) is PanDeviceLabelDefault, then session- label.
    elseif($PSCmdlet.ParameterSetName -eq 'Empty') {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Empty ParameterSetName')
       # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
       $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
 
-      # If PanDefaultLabel is only the session- label (see function calls above to populate these variables), then there are no PanDefaultLabel(s)
+      # If PanDeviceLabelDefault is only the session- label (see function calls above to populate these variables), then there are no PanDeviceLabelDefault(s)
       # Send back only the session- matches. More common scenario and thus evaluated first.
-      if($DefaultLabel -eq "session-$SessionGuid") {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': No PanDefaultLabel(s) found. Using session-' + $SessionGuid )
+      if($LabelDefault -eq "session-$SessionGuid") {
+         Write-Debug ($MyInvocation.MyCommand.Name + ': No PanDeviceLabelDefault(s) found. Using session-' + $SessionGuid )
 
          foreach($DeviceCur in ($Global:PanDeviceDb | Where-Object { $_.Label -contains "session-$SessionGuid"})) {
             $DeviceAgg.Add($DeviceCur)
          }
       }
-      # PanDefaultLabel has content
+      # PanDeviceLabelDefault has content
       else {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Using PanDefaultLabel(s)')
+         Write-Debug ($MyInvocation.MyCommand.Name + ': Using PanDeviceLabelDefault(s)')
 
-         # For each PanDevice, prime Verdict as $true. Iterate through PanDefaultLabel(s) and look for matches one at a time.
+         # For each PanDevice, prime Verdict as $true. Iterate through PanDeviceLabelDefault(s) and look for matches one at a time.
          # If no match, $Verdict becomes false and the PanDevice will not be added to the aggregate to be returned.
-         # If all PanDefaultLabels are found, $Verdict stays $true and PanDevice will be added to aggregate to be returned.
+         # If all PanDeviceLabelDefault(s) are found, $Verdict stays $true and PanDevice will be added to aggregate to be returned.
          foreach($DeviceCur in $Global:PanDeviceDb) {
             $Verdict = $true
-            foreach($LabelCur in $DefaultLabel) {
+            foreach($LabelCur in $LabelDefault) {
                if($DeviceCur.Label -notcontains $LabelCur) {
                   $Verdict = $false
                   break
@@ -144,13 +144,13 @@ function Get-PanDevice {
          # Prime the Verdict
          $Verdict = $true
          # If Session filter is enabled and no session match, current PanDevice is not a filter match, break outer loop immediately
-         if($Session.IsPresent -and $DeviceCur.Label -notcontains "session-$SessionGuid") {
+         if($PSBoundParameters['Session'].IsPresent -and $DeviceCur.Label -notcontains "session-$SessionGuid") {
             $Verdict = $false
             continue
          }
          # If Label filter is enabled and every Label is not a match, current PanDevice is not a filter match, break outer loop immediately
-         if(-not [String]::IsNullOrEmpty($Label)) {
-            foreach($LabelCur in $Label) {
+         if(-not [String]::IsNullOrEmpty($PSBoundParameters['Label'])) {
+            foreach($LabelCur in $PSBoundParameters['Label']) {
                if($DeviceCur.Label -notcontains $LabelCur) {
                   $Verdict = $false
                   break
@@ -161,9 +161,9 @@ function Get-PanDevice {
             }
          }
          # If Name filter is enabled and at least one Name is not a match, current PanDevice is not a filter match, break outer loop immediately
-         if(-not [String]::IsNullOrEmpty($Name)) {
+         if(-not [String]::IsNullOrEmpty($PSBoundParameters['Name'])) {
             $Verdict = $false
-            foreach($NameCur in $Name) {
+            foreach($NameCur in $PSBoundParameters['Name']) {
                if($DeviceCur.Name -imatch "^$NameCur`$") {
                   $Verdict = $true
                }

@@ -1,18 +1,18 @@
-function Get-PanDefaultLabel {
+function Get-PanDeviceLabelDefault {
    <#
    .SYNOPSIS
    Return the default label used by Get-PanDevice
    .DESCRIPTION
    Return the default label used by Get-PanDevice
 
-   See Set-PanDefaultLabel for details.
+   See Set-PanDeviceLabelDefault for details.
    .NOTES
    .INPUTS
    None
    .OUTPUTS
    System.String
    .EXAMPLE
-   PS> Get-PanDefaultLabel
+   PS> Get-PanDeviceLabelDefault
    #>
    [CmdletBinding()]
    param()
@@ -24,12 +24,12 @@ function Get-PanDefaultLabel {
    # If -Debug parameter, announce 
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
-   if( [String]::IsNullOrEmpty($Global:PanDefaultLabel) ) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': $Global:PanDefaultLabel null or empty. Session is default')
+   if( [String]::IsNullOrEmpty($Global:PanDeviceLabelDefault) ) {
+      Write-Debug ($MyInvocation.MyCommand.Name + ': $Global:PanDeviceLabelDefault null or empty. Session is default')
       return "session-$(Get-PanSessionGuid)"
    }
    else {
-      return $Global:PanDefaultLabel
+      return $Global:PanDeviceLabelDefault
    }
 
 } # Function

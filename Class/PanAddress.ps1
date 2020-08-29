@@ -9,28 +9,12 @@ class PanAddress {
    [String] $Value
    # PAN-OS Tag(s) applied to the object
    [String[]] $Tag
-   # Optional Parent PanDevice from which was identified
+   # Parent PanDevice address references
    [PanDevice] $Device
+   # Location within parent PanDevice address references
+   [String] $Location
 
    # Default Constructor
    PanAddress() {
    }
-   <#
-   # Constructor accepting...
-   PanRegisteredIp([String] $Ip, [String[]] $Tag) {
-      $this.Ip = $Ip
-      $this.Tag = $Tag
-      $this.Device = $null
-   }
-   # Constructor accepting...
-   PanRegisteredIp([String] $Ip, [String[]] $Tag, [PanDevice] $Device) {
-      $this.Ip = $Ip
-      $this.Tag = $Tag
-      $this.Device = $Device
-   }
-   # Oblitagory ToString() Method
-   [String] ToString() {
-      return ($this.Ip + '->' + $this.Tag)
-   }
-   #>
 } # End class PanAddress

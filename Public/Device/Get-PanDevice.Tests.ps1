@@ -24,20 +24,20 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
       New-PanDevice -Name 'TheirFirewall' -Username 'xmlapiadmin' -Password 'tyui4783' -Label 'AngryBeaver','BuiltWithPride',"session-$(Get-PanSessionGuid)" -ImportMode
    
       Context "Parameter Set: Empty" {
-         It "$FunctionName with no DefaultLabel" {
-            Mock Get-PanDefaultLabel { return @("session-$(Get-PanSessionGuid)") }
+         It "$FunctionName with no LabelDefault" {
+            Mock Get-PanDeviceLabelDefault { return @("session-$(Get-PanSessionGuid)") }
             $(Get-PanDevice).Name | Compare-Object -ReferenceObject @('YourFirewall','TheirFirewall') | Should -Be $null
          }
-         It "$FunctionName with single valid DefaultLabel" {
-            Mock Get-PanDefaultLabel{ return @('AngryBeaver') }
+         It "$FunctionName with single valid LabelDefault" {
+            Mock Get-PanDeviceLabelDefault { return @('AngryBeaver') }
             $(Get-PanDevice).Name | Compare-Object -ReferenceObject @('MyFirewall01','YourFirewall','TheirFirewall') | Should -Be $null
          }
-         It "$FunctionName with double valid DefaultLabel" {
-            Mock Get-PanDefaultLabel { return @('AngryBeaver','BuiltWithPride') }
+         It "$FunctionName with double valid LabelDefault" {
+            Mock Get-PanDeviceLabelDefault { return @('AngryBeaver','BuiltWithPride') }
             $(Get-PanDevice).Name | Compare-Object -ReferenceObject @('TheirFirewall') | Should -Be $null
          }
-         It "$FunctionName with invalid DefaultLabel" {
-            Mock Get-PanDefaultLabel { return @('InvalidLabel') }
+         It "$FunctionName with invalid LabelDefault" {
+            Mock Get-PanDeviceLabelDefault { return @('InvalidLabel') }
             $(Get-PanDevice).Count | Should -Be 0
          }
       } # Context "Parameter Set: Empty"

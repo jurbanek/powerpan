@@ -1,42 +1,42 @@
-function Get-PanRegisteredIp {
+function Get-PanAddress {
    <#
    .SYNOPSIS
-   Get current registered IP address (PAN-OS "registered-ip") and tag mappings. 
+   Get address objects
    .DESCRIPTION
    .NOTES
-   PAN-OS "registered-ip" is tagged with PAN-OS tag(s). The tag(s) do not have to exist in Objects > Tags.
-   DAG match criteria is based on PAN-OS tag(s). After tagging a "registered-ip", PAN-OS then computes to which DAG(s) the registered-ip is added. 
    .INPUTS
+   PanDevice[]
+      You can pipe a PanDevice to this cmdlet
    .OUTPUTS
-   PowerPan.PanRegisteredIp
+   PanAddress
    .EXAMPLE
-   Get-PanRegisteredIp -Device $Device
+   PS> Get-PanDevice | Get-PanAddress
+
+   Retrieves address objects of all types in all locations (shared, vsys1, vsys2, etc.)
    .EXAMPLE
-   Get-PanRegisteredIp -Device $Device -Ip "10.1.1.1"
+   PS> Get-PanDevice | Get-PanAddress -Location 'shared','vsys2'
+
+   Retrieves address objects of all types in specified 'shared' location and 'vsys2' location.
    .EXAMPLE
-   Get-PanRegisteredIp -Device $Device -Tag "HerTag"
+   PS> Get-PanDevice | Get-PanAddress -Filter '192.168
 
    #>
    [CmdletBinding(DefaultParameterSetName='NoFilter')]
    param(
       [parameter(
          Mandatory=$true,
-         Position=0,
          ValueFromPipeline=$true,
-         HelpMessage='PanDevice against which registered-ip(s) will be retrieved.')]
+         HelpMessage='PanDevice against which address object(s) will be retrieved.')]
       [PanDevice[]] $Device,
-      [parameter(
-         Mandatory=$true,
-         Position=1,
-         ParameterSetName='FilterIp',
-         HelpMessage='IP address filter of registered-ip to be retrieved. Filter is applied remotely. No regex supported.')]
-      [String] $Ip,
-      [parameter(
-         Mandatory=$true,
-         Position=1,
-         ParameterSetName='FilterTag',
-         HelpMessage='Tag filter for registered-ip(s) to be retrieved. Filter is applied remotely. No regex supported.')]
-      [String] $Tag
+      [parameter( 
+         Position=0,
+         ParameterSetName='Filter',
+         HelpMessage='Name or value filter for address object(s) to be retrieved. Filter applied locally (not via API). Regex supported. Multiple String are logical OR.')]
+      [String[]] $Filter,
+      [parameter( 
+         ParameterSetName='Filter',
+         HelpMessage='Location filter (shared, vsys1, etc.) for address object(s) to be retrieved. Filter applied remotely (via API). Multiple String are logical OR.')]
+      [String[]] $Location
    )
 
    Begin {

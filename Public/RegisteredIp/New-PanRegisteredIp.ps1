@@ -48,4 +48,4 @@ function New-PanRegisteredIp {
    else {
       return [PanRegisteredIp]::new($Ip, $Tag)
    }
-}
+} # Function

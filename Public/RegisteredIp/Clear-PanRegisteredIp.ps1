@@ -61,4 +61,4 @@ function Clear-PanRegisteredIp {
 
    End {
    } # End
-}
+} # Function
