@@ -38,6 +38,13 @@ function Update-PanDeviceVsys {
 
       foreach($DeviceCur in $Device) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+         if($DeviceCur.VsysUpdated = $true) {
+            # If PanDevice has been updated this PowerShell session, no need to update again
+            Write-Debug ($MyInvocation.MyCommand.Name + ': Device updated already')
+            continue
+         }
+
+         # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
          $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry/@name"
          $DeviceCurVsysAgg = @()
 

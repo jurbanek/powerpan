@@ -21,11 +21,11 @@ Assumes:
 # Exclude Pester .Tests.ps1 files to avoid a "Modules can only be nested to 10 levels" import / dot-sourcing loop during Pester tests
 # See note above on $ClassDotSourceOrder and using it to resolve PowerShell class dot-source order dependency issues
 $Class = @()
-$ClassDotSourceOrder = @('PanDevice.ps1','PanResponse.ps1')
+$ClassDotSourceOrder = @('Enum.ps1','PanDevice.ps1','PanResponse.ps1')
 foreach($ClassDotSourceOrderCur in $ClassDotSourceOrder) {
    $Class += Get-ChildItem -Path "$PSScriptRoot\Class" -Recurse -Include $ClassDotSourceOrderCur -ErrorAction SilentlyContinue
 }
-# Exclude classes already loaded, in addition to Pester test files
+# Exclude classes already loaded. Exclude Pester test files
 $Class  += @( Get-ChildItem -Path "$PSScriptRoot\Class\*.ps1" -Recurse -Exclude ($ClassDotSourceOrder + "*.Tests.ps1") -ErrorAction SilentlyContinue )
 
 $Public  = @( Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" -Recurse -Exclude "*.Tests.ps1" -ErrorAction SilentlyContinue )

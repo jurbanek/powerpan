@@ -2,7 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Pre-Alpha] 2020-08-27
+## [Alpha] TBD DATE
+
+### Added
+
+- New `Get-PanAddress` and `Set-PanAddress` public cmdlets for retrieving and setting PAN-OS address objects, respectively.
+- New `[PanAddress]` class to represent PAN-OS address objects.
+- New `[PanAddressType]` *enum* type to represent the PAN-OS address object types.
+  - `[PanAddressType]::IpNetmask`
+  - `[PanAddressType]::IpRange`
+  - `[PanAddressType]::IpWildcardMask`
+  - `[PanAddressType]::Fqdn`
+
+### Changed
+
+- On `*-PanRegisteredIp` cmdlets the `-Device` parameter is no longer positional, only named. Since the `-Device` parameter is *often* fulfilled through pipeline input (via `Get-PanDevice "192.168.250.250" | Get-PanRegisteredIp ...`), other parameters are now available for the `0` (and `1`) position(s) making the cmdlets more friendly for quick CLI use.
+- File and folder hierarchy restructuring (again)
+- PowerShell inline help updates
+
+## [Alpha] 2020-08-27
 
 ### Added
 
@@ -14,7 +32,7 @@ All notable changes to this project will be documented in this file.
   - For example, if `[PanAddress]` (in `PanAddress.ps1`) depends on `[PanDevice]` (in `PanDevice.ps1`), alphanumerically `PanAddress.ps1` will dot-source first and fail given it references an unknown (at the time) `[PanDevice]` type.
   - To resolve, add `PanDevice.ps1` to be dot-sourced first in module `.psm1`.
 
-## [Pre-Alpha] 2020-06-17
+## [Alpha] 2020-06-17
 
 ### Added
 
@@ -26,7 +44,7 @@ All notable changes to this project will be documented in this file.
 
 - Numerous PowerShell inline help documentation updates.
 
-## [Pre-Alpha] 2020-06-12
+## [Alpha] 2020-06-12
 
 ### Added
 
@@ -42,7 +60,7 @@ All notable changes to this project will be documented in this file.
 - Changes to near all cmdlets in response to new `[PanResponse]` class. See **Added** section for details.
 - Misc. inline documentation updates.
 
-## [Pre-Alpha] 2020-06-03
+## [Alpha] 2020-06-03
 
 ### Added
 
@@ -56,7 +74,7 @@ All notable changes to this project will be documented in this file.
   - Supports `SupportsShouldProcess` CmdletBinding enabling a confirmation prompt, support for `-WhatIf` and the ability to override the prompt with `-Force`.
 - Inline help documentation updates
 
-## [Pre-Alpha] 2019-10-17
+## [Alpha] 2019-10-17
 
 ### Changed
 
@@ -64,7 +82,7 @@ All notable changes to this project will be documented in this file.
   - All parameters and references to `DeviceTag` changed to `Label`
   - Avoids word confusion with registered-IP tags and future Panorama managed device tags
 
-## [Pre-Alpha] 2019-05-27
+## [Alpha] 2019-05-27
 
 ### Added
 
@@ -119,7 +137,7 @@ All notable changes to this project will be documented in this file.
   - Keeps Passwords and API keys out of the Verbose logs
 - Reviewed and modified often-resized array logic to use `[System.Collections.Generic.List]` instead of PowerShell native arrays for performance improvement.
 
-## [Pre-Alpha] 2019-04-07
+## [Alpha] 2019-04-07
 
 ### Added
 

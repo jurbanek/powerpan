@@ -19,7 +19,6 @@ function Clear-PanRegisteredIp {
    param(
       [parameter(
          Mandatory=$true,
-         Position=0,
          ValueFromPipeline=$true,
          HelpMessage='PanDevice against which all registered-ip(s) will be cleared.')]
       [PanDevice[]] $Device

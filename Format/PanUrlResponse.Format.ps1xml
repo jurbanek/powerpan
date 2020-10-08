@@ -8,34 +8,18 @@
          </ViewSelectedBy>
          <TableControl>
             <TableHeaders>
-               <TableColumnHeader>
-                  <Label>Url</Label>
-               </TableColumnHeader>
-               <TableColumnHeader>
-                  <Label>BaseDbCat</Label>
-               </TableColumnHeader>
-               <TableColumnHeader>
-                  <Label>CloudDbCat</Label>
-               </TableColumnHeader>
-               <TableColumnHeader>
-                  <Label>Device</Label>
-               </TableColumnHeader>
+               <TableColumnHeader><Label>Url</Label></TableColumnHeader>
+               <TableColumnHeader><Label>BaseDbCat</Label></TableColumnHeader>
+               <TableColumnHeader><Label>CloudDbCat</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Device</Label></TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
                <TableRowEntry>
                   <TableColumnItems>
-                        <TableColumnItem>
-                           <PropertyName>Url</PropertyName>
-                        </TableColumnItem>
-                        <TableColumnItem>
-                           <PropertyName>BaseDbCat</PropertyName>
-                        </TableColumnItem>                            
-                        <TableColumnItem>
-                           <PropertyName>CloudDbCat</PropertyName>
-                        </TableColumnItem>                            
-                        <TableColumnItem>
-                           <PropertyName>Device</PropertyName>
-                        </TableColumnItem>                            
+                        <TableColumnItem><PropertyName>Url</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>BaseDbCat</PropertyName></TableColumnItem>                            
+                        <TableColumnItem><PropertyName>CloudDbCat</PropertyName></TableColumnItem>                            
+                        <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>                            
                   </TableColumnItems>
                </TableRowEntry>
             </TableRowEntries>

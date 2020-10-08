@@ -49,7 +49,7 @@ function New-PanResponse{
       # Populate with XML body details
       $PanResponse.Status = $XmlContentObj.response.status
       $PanResponse.Code = $XmlContentObj.response.code
-      $PanResponse.Message = $XmlContentObj.response.msg
+      $PanResponse.Message = $XmlContentObj.response.msg.InnerText
       $PanResponse.Result = $XmlContentObj.response.result
    }
    elseif ($WebResponse.Headers.'Content-Type' -Match 'application\/json') {

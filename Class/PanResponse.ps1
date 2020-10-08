@@ -24,7 +24,7 @@ class PanResponse {
 
    # PAN API response body status, examples "success" or "error"
    [String] $Status
-   # PAN API response body "code", not used in XML-API but used in REST API
+   # PAN API response body "code", used to further describe successes and errors
    [Int] $Code
    # PAN API response body "message", commonly populated during errors
    [String] $Message

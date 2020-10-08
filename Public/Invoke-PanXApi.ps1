@@ -12,11 +12,8 @@ function Invoke-PanXApi {
    Config "show" actions can use relative XPath.
    Config "get" actions require absolute XPath.
 
-   Config "set" is to add, update, or merge configuration nodes.
-   Config "edit" replaces configuration nodes.
-
-   Config "set" actions are non-destructive and are only additive.
-   Config "edit" actions can be destructive
+   Config "set" is to add, update, or merge configuration nodes. Config "set" actions are non-destructive and are only additive.
+   Config "edit" replaces configuration nodes. Config "edit" actions can be destructive.
    .INPUTS
    PanDevice[]
       You can pipe a PanDevice to this cmdlet
