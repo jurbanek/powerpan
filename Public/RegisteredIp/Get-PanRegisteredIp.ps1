@@ -21,21 +21,19 @@ function Get-PanRegisteredIp {
    param(
       [parameter(
          Mandatory=$true,
-         Position=0,
          ValueFromPipeline=$true,
-         HelpMessage='PanDevice against which registered-ip(s) will be retrieved.')]
+         HelpMessage='PanDevice against which registered-ip(s) will be retrieved')]
       [PanDevice[]] $Device,
       [parameter(
          Mandatory=$true,
-         Position=1,
+         Position=0,
          ParameterSetName='FilterIp',
-         HelpMessage='IP address filter of registered-ip to be retrieved. Filter is applied remotely. No regex supported.')]
+         HelpMessage='IP address filter of registered-ip to be retrieved. Filter is applied remotely. No regex supported')]
       [String] $Ip,
       [parameter(
          Mandatory=$true,
-         Position=1,
          ParameterSetName='FilterTag',
-         HelpMessage='Tag filter for registered-ip(s) to be retrieved. Filter is applied remotely. No regex supported.')]
+         HelpMessage='Tag filter for registered-ip(s) to be retrieved. Filter is applied remotely. No regex supported')]
       [String] $Tag
    )
 

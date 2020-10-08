@@ -46,7 +46,6 @@ function Remove-PanRegisteredIp {
    param(
       [parameter(
          Mandatory=$true,
-         Position=0,
          ValueFromPipeline=$true,
          HelpMessage='PanDevice against which IP unregistration and untagging will take place.')]
       [PanDevice[]] $Device,
@@ -62,7 +61,6 @@ function Remove-PanRegisteredIp {
       [String[]] $Tag,
       [parameter(
          Mandatory=$true,
-         Position=1,
          ParameterSetName='UnregisterWithPanRegisteredIp',
          HelpMessage='PanRegisteredIp object to unregister.')]
       [PanRegisteredIp[]] $RegisteredIp,

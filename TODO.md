@@ -1,5 +1,19 @@
 # PowerPAN Todo
 
+## Address Objects
+
+- `Set-PanAddress` and `Get-PanAddress` completed
+- Build `Rename-PanAddress`, `Remove-PanAddress`, and `Move-PanAddress`
+- Build Panorama support
+  - Abstract Panorama as `[PanDevice]`
+  - Abstract Panorama *Device Group* within a `[PanAddress]` object `Location` property
+
+## WildFire API Client
+
+- Submit files to WildFire
+- Submit URL's to WildFire
+- Submit hashes to WildFire for verdict
+
 ## *Consider* refactor `-Device` Selection
 
 - Holding off as current `Get-PanDevice | Do-Something` works very well
@@ -7,14 +21,8 @@
   - `-Name "MyDevice"` parameter to resolve `[PanDevice]` based on name/IP (should be `[String[]]`)
   - `-Label "MyLabel"` parameter to resolve `[PanDevice]` based on `PanDevice.Label` property (should be `[String[]]`)
   - `-Device $Device` parameter to accept native `[PanDevice[]]` (already done)
-  - *No* `-Name`, `-Label`, or `-Device` parameter implies `$Global:PanDefaultLabel` or `-Label "session-[Guid]"`, in order
+  - *No* `-Name`, `-Label`, or `-Device` parameter implies `$Global:PanDeviceLabelDefault` or `-Label "session-[Guid]"`, in order
   - `-Name`, `-Label`, and *none* dispatch to `Get-PanDevice`, no extensive local cmdlet logic
-
-## WildFire API Client
-
-- Submit files to WildFire
-- Submit URL's to WildFire
-- Submit hashes to WildFire for verdict
 
 ## Use Cases
 

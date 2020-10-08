@@ -63,13 +63,13 @@ function Resolve-PanUrlCategory {
                $SplitResult = $PanResponse.Result.split("`n")
 
                # First [0] is the Base Db (management-plane), grab a named capture group 'cat'
-               if( $SplitResult[0] -Match "$UrlCur (?<cat>[-\w\s]+) \(Base db\)" ) {
+               if( $SplitResult[0] -match "$UrlCur (?<cat>[-\w\s]+) \(Base db\)" ) {
                   Write-Debug ($MyInvocation.MyCommand.Name + ': Base Db: ' + $Matches['cat'])
                   $BaseDbCat = $Matches['cat']
                }
 
                # Second [1] is the Cloud Db (PanDb), grab a named capture group 'cat'
-               if( $SplitResult[1] -Match "$UrlCur (?<cat>[-\w\s]+) \(Cloud db\)" ) {
+               if( $SplitResult[1] -match "$UrlCur (?<cat>[-\w\s]+) \(Cloud db\)" ) {
                   Write-Debug ($MyInvocation.MyCommand.Name + ': Cloud Db: ' + $Matches['cat'])
                   $CloudDbCat = $Matches['cat']
                }

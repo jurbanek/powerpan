@@ -30,27 +30,26 @@ function Add-PanRegisteredIp {
    param(
       [parameter(
          Mandatory=$true,
-         Position=0,
          ValueFromPipeline=$true,
-         HelpMessage='PanDevice against which IP registration and tagging will take place.')]
+         HelpMessage='PanDevice against which IP registration and tagging will take place')]
       [PanDevice[]] $Device,
       [parameter(
          Mandatory=$true,
-         Position=1,
+         Position=0,
          ParameterSetName='RegisterWithStrings',
-         HelpMessage='IP address to register.')]
+         HelpMessage='IP address to register')]
       [String[]] $Ip,
       [parameter(
          Mandatory=$true,
-         Position=2,
+         Position=1,
          ParameterSetName='RegisterWithStrings',
-         HelpMessage='Tag(s) to apply to IP address.')]
+         HelpMessage='Tag(s) to apply to IP address')]
       [String[]] $Tag,
       [parameter(
          Mandatory=$true,
-         Position=1,
+         Position=0,
          ParameterSetName='RegisterWithPanRegisteredIp',
-         HelpMessage='PanRegisteredIp object to apply.')]
+         HelpMessage='PanRegisteredIp object to apply')]
       [PanRegisteredIp[]] $RegisteredIp
    )
 

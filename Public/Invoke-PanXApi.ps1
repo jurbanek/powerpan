@@ -12,11 +12,8 @@ function Invoke-PanXApi {
    Config "show" actions can use relative XPath.
    Config "get" actions require absolute XPath.
 
-   Config "set" is to add, update, or merge configuration nodes.
-   Config "edit" replaces configuration nodes.
-
-   Config "set" actions are non-destructive and are only additive.
-   Config "edit" actions can be destructive
+   Config "set" is to add, update, or merge configuration nodes. Config "set" actions are non-destructive and are only additive.
+   Config "edit" replaces configuration nodes. Config "edit" actions can be destructive.
    .INPUTS
    PanDevice[]
       You can pipe a PanDevice to this cmdlet
@@ -128,7 +125,6 @@ function Invoke-PanXApi {
                   'password' = $DeviceCur.Credential.GetNetworkCredential().Password
                } # Body hash table
             } # InvokeParams hash table
-            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=keygen
 
          # API type=version
@@ -147,7 +143,6 @@ function Invoke-PanXApi {
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
             } # InvokeParams hash table
-            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=version
 
          # API type=op
@@ -168,7 +163,6 @@ function Invoke-PanXApi {
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
             } # InvokeParams hash table
-            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=op
 
          # API type=user-id
@@ -189,7 +183,6 @@ function Invoke-PanXApi {
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
             } # InvokeParams hash table
-            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=user-id
 
          # API type=commit
@@ -215,7 +208,6 @@ function Invoke-PanXApi {
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
             } # InvokeParams hash table
-            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=commit
 
          # API type=config
@@ -264,7 +256,7 @@ function Invoke-PanXApi {
             else {
                $InvokeParams = @{
                   'Method' = 'Post';
-                  'Uri' = $('{0}://{1}:{2}/api/?type={3}&action={4}&xpath={5}&key={6}' -f `
+                  'Uri' = $('{0}://{1}:{2}/api' -f `
                      $DeviceCur.Protocol,
                      $DeviceCur.Name,
                      $DeviceCur.Port
@@ -277,8 +269,15 @@ function Invoke-PanXApi {
                   } # Body hash table
                } # InvokeParams hash table
             }
-            return New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
          } # End API type=config
+
+         # Call PAN-OS XML-API with PowerShell built-in Invoke-WebRequest, include some debug
+         # Invoke-WebRequest is preferred over Invoke-RestMethod. In PowerShell 5.1, Invoke-RestMethod does not make HTTP response
+         # *headers* available. Remedied in PowerShell 6+ with -ResponseHeadersVariable, but PowerShell 5.1 compatibility is needed for now
+         $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponse Status ' + $PanResponse.Status + ', Code ' + $PanResponse.Code)
+         return $PanResponse
+
       } # Process block outermost foreach
    } # Process block
 

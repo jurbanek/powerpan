@@ -1,11 +1,11 @@
-function Set-PanDefaultLabel{
+function Set-PanDeviceLabelDefault{
    <#
    .SYNOPSIS
    Modify the default Label used by Get-PanDevice
    .DESCRIPTION
    Modify the default Label used by Get-PanDevice
 
-   PS> Set-PanDefaultLabel -Label 'PCI'
+   PS> Set-PanDeviceLabelDefault -Label 'PCI'
    PS> Get-PanDevice
 
       is functionally the same as
@@ -25,18 +25,18 @@ function Set-PanDefaultLabel{
    By default, Get-PanDevice without additional parameters returns PanDevice(s) created in the current PowerShell
    session only.
    .EXAMPLE
-   PS> Set-PanDefaultLabel -Label 'PCI'
+   PS> Set-PanDeviceLabelDefault -Label 'PCI'
    PS> Get-PanDevice
 
    Get-PanDevice would return all PanDevice(s) with the 'PCI' label, without having to specify the -Label parameter.
    .EXAMPLE
-   PS> Set-PanDefaultLabel -Label 'PCI','us-central'
+   PS> Set-PanDeviceLabelDefault -Label 'PCI','us-central'
    PS> Get-PanDevice
 
    Get-PanDevice would return all PanDevice(s) with both 'PCI' and 'us-central' labels. Both labels must match.
    Multiple Label(s) (via array) is a logical AND match when selecting PanDevice(s)
    .EXAMPLE
-   PS> Set-PanDefaultLabel -Label $null
+   PS> Set-PanDeviceLabelDefault -Label $null
    PS> Get-PanDevice
 
    Restores Get-PanDevice default behavior of returning PanDevice(s) created in the current PowerShell session only.
@@ -57,5 +57,5 @@ function Set-PanDefaultLabel{
    # If -Debug parameter, announce 
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
-   Set-Variable -Name 'PanDefaultLabel' -Value $Label -Scope 'Global'
+   Set-Variable -Name 'PanDeviceLabelDefault' -Value $Label -Scope 'Global'
 } # Function
