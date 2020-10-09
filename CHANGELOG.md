@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Alpha] TBD DATE
+## [Alpha] 2020-10-08
 
 ### Added
 
