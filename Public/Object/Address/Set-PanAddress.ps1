@@ -58,6 +58,22 @@ function Set-PanAddress {
 
    Removes all tags and all descriptions from all address objects on 192.168.250.250 and 192.168.250.251 devices..
    Passing an empty string "" to both -Tag and -Description parameters will explicitly remove Tag(s) and Descriptions from the address object(s).
+   .EXAMPLE
+   PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Add("in") | Out-Null; $_ | Set-PanAddress }
+   
+   PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Add("in") | Out-Null; $AddrCur | Set-PanAddress }
+
+   Add a single tag to all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
+   The Out-Null is to eat the Boolean value returned by Add() method and keep the output clean.
+   In event the tag is already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
+   .EXAMPLE
+   PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Remove("in") | Out-Null; $_ | Set-PanAddress }
+
+   PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Remove("in") | Out-Null; $AddrCur | Set-PanAddress }
+
+   Remove a single tag from all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
+   The Out-Null is to eat the Boolean value returned by Remove() method and keep the output clean.
+   In event the tag is not already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
    #>
    [CmdletBinding()]
    param(
@@ -111,7 +127,7 @@ function Set-PanAddress {
                if($PSBoundParameters['Value']) { $PanObject.Value = $PSBoundParameters['Value'] }
                if($PSBoundParameters['Type']) { $PanObject.Type = $PSBoundParameters['Type'] }
                if($PSBoundParameters['Description'].Count) { $PanObject.Description = $PSBoundParameters['Description'] }
-               if($PSBoundParameters['Tag'].Count) { $PanObject.Tag = $PSBoundParameters['Tag'] }
+               if($PSBoundParameters['Tag'].Capacity) { $PanObject.Tag = $PSBoundParameters['Tag'] }
                if($PSBoundParameters['Location']) { 
                   Write-Warning $($MyInvocation.MyCommand.Name + ': Ignoring location parameter "' + $PSBoundParameters['Location'] + '" for existing object "' +
                      $PanObject.Name + '" on device "' + $DeviceCur.Name + '" To move, use Move- cmdlet.')
@@ -130,7 +146,7 @@ function Set-PanAddress {
                $PanObject = New-PanAddress -Name $PSBoundParameters['Name'] -Value $PSBoundParameters['Value'] -Device $DeviceCur
                if($PSBoundParameters['Type']) { $PanObject.Type = $PSBoundParameters['Type'] }
                if($PSBoundParameters['Description'].Count) { $PanObject.Description = $PSBoundParameters['Description'] }
-               if($PSBoundParameters['Tag'].Count) { $PanObject.Tag = $PSBoundParameters['Tag'] }
+               if($PSBoundParameters['Tag'].Capacity) { $PanObject.Tag = $PSBoundParameters['Tag'] }
                if($PSBoundParameters['Location']) {
                   $PanObject.Location = $PSBoundParameters['Location']
                }
@@ -161,7 +177,7 @@ function Set-PanAddress {
             if($PSBoundParameters['Value']) { $AddressCurClone.Value = $PSBoundParameters['Value'] }
             if($PSBoundParameters['Type']) { $AddressCurClone.Type = $PSBoundParameters['Type'] }
             if($PSBoundParameters['Description'].Count) { $AddressCurClone.Description = $PSBoundParameters['Description'] }
-            if($PSBoundParameters['Tag'].Count) { $AddressCurClone.Tag = $PSBoundParameters['Tag'] }
+            if($PSBoundParameters['Tag'].Capacity) { $AddressCurClone.Tag = $PSBoundParameters['Tag'] }
             # Location paramater not possible within Object ParameterSet based on Parameter() block definitions. To move objects, use Move- cmdlet
 
             # Call to helper which returns a PanResponse
