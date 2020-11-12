@@ -13,6 +13,8 @@ class PanDevice {
    [String] $Protocol = 'https'
    # Port number
    [Int] $Port = 443
+   # Device type is updated during device creation. Defaults to Ngfw
+   [PanDeviceType] $Type = [PanDeviceType]::Ngfw
    # Vsys layout for cmdlets that operate on multiple vsys. Not persisted to disk. Updated at runtime.
    [String[]] $Vsys = @('vsys1')
    # Vsys layout updated at runtime. Only needs to be done once per session. Track whether it has been done here.

@@ -56,7 +56,9 @@ function Import-PanDeviceDb {
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $Cur.Key
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential] and [SecureString]
-               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
+               $D = [PanDevice]::New($Cur.Name, $Credential, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port)
+               $D.Type = [PanDeviceType]$Cur.Type
+               $NewDevices.Add($D)
             }
    
             # Only Username and Password defined, build new [PanDevice] with just Username and Password
@@ -65,7 +67,9 @@ function Import-PanDeviceDb {
                # Create [PSCredential] from Username and encrypted string Password
                $Credential = New-Object -TypeName PSCredential -ArgumentList $Cur.Username,$(ConvertTo-SecureString -String $Cur.Password)
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential]
-               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
+               $D = [PanDevice]::New($Cur.Name, $Credential, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port)
+               $D.Type = [PanDeviceType]$Cur.Type
+               $NewDevices.Add($D) 
             }
    
             # Only Key defined, build new [PanDevice] with just Key
@@ -74,7 +78,9 @@ function Import-PanDeviceDb {
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $Cur.Key
                # Create new [PanDevice] using some original retrieved values and just created [SecureString]
-               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
+               $D = [PanDevice]::New($Cur.Name, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port)
+               $D.Type = [PanDeviceType]$Cur.Type
+               $NewDevices.Add($D) 
             }
 
          } # foreach

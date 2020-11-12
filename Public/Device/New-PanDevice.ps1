@@ -156,13 +156,19 @@ function New-PanDevice {
             Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: API key generation successful')
             $Device.Key = ConvertTo-SecureString -String $PanResponse.Result.key -AsPlainText -Force
 
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Testing generated API key')
+            # Determine PanDeviceType
+            Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Determine PanDeviceType')
             $PanResponse = Invoke-PanXApi -Device $Device -Op -Cmd '<show><system><info></info></system></show>'
             if($PanResponse.Status -eq 'success'){
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Generated API key tested successfully')
                Write-Debug ("`t" + 'Device Name: ' + $PanResponse.Result.system.devicename)
                Write-Debug ("`t" + 'Family: ' + $PanResponse.Result.system.family)
                Write-Debug ("`t" + 'Model: ' + $PanResponse.Result.system.model)
+               if($PanResponse.Result.system.model -eq 'Panorama') {
+                  $Device.Type = [PanDeviceType]::Panorama
+               }
+               else {
+                  $Device.Type = [PanDeviceType]::Ngfw
+               }
                if($PanResponse.Result.system.family -eq 'vm') {
                   Write-Debug ("`t" + 'VM-License: ' + $PanResponse.Result.system.'vm-license')
                   Write-Debug ("`t" + 'VM-Mode: ' + $PanResponse.Result.system.'vm-mode')
@@ -170,10 +176,14 @@ function New-PanDevice {
                Write-Debug ("`t" + 'Serial: ' + $PanResponse.Result.system.serial)
                Write-Debug ("`t" + 'Software Version: ' + $PanResponse.Result.system.'sw-version')
             }
-            else { return $false }
+            else { 
+               throw ($MyInvocation.MyCommand.Name + 'Keygen: Error determining PanDeviceType. Device: ' + $Device.Name + ' Message: ' + $PanResponse.Message)
+            }
          }
-         else { return $false }
-      }
+         else {
+            throw ($MyInvocation.MyCommand.Name + 'Keygen: Error generating API key. Device: ' + $Device.Name + ' Message: ' + $PanResponse.Message)
+         }
+      } # End Keygen
       # Completed building PanDevice within UserPass or Credential parameter set. Determine whether to add to PanDeviceDb.
       if($NoPersist.IsPresent) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': NoPersist: Not adding to PanDeviceDb')

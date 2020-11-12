@@ -50,7 +50,8 @@ function Export-PanDeviceDb {
             'Username' = $DeviceCur.Credential.UserName;
             'ValidateCertificate' = $DeviceCur.ValidateCertificate;
             'Protocol' = $DeviceCur.Protocol;
-            'Port' = $DeviceCur.Port
+            'Port' = $DeviceCur.Port;
+            'Type' = [int]$DeviceCur.Type
          } # End hash table         
 
          # Add the Credential.Password

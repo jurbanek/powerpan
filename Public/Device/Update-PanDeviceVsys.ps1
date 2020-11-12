@@ -17,7 +17,7 @@ function Update-PanDeviceVsys {
       [parameter(
          Mandatory=$true,
          ValueFromPipeline=$true,
-         HelpMessage='PanDevice(s) on which vsys layout will be determined and then PanDeviceDb updated')]
+         HelpMessage='PanDevice(s) on which vsys layout will be determined')]
       [PanDevice[]] $Device
    )
 
@@ -43,24 +43,30 @@ function Update-PanDeviceVsys {
             Write-Debug ($MyInvocation.MyCommand.Name + ': Device updated already')
             continue
          }
-
-         # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
-         $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry/@name"
-         $DeviceCurVsysAgg = @()
-
-         # Fetch a list of vsys names (not display-name)
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
-         if($PanResponse.Status -eq 'success') {
-            foreach($EntryCur in $PanResponse.Result.entry) {
-               # Add each entry's name to an aggregate. In most firewalls there is a single entry with name 'vsys1'
-               $DeviceCurVsysAgg += $EntryCur.name
-            }
-
-            # Update the PanDevice in PanDeviceDb
-            $DeviceCur.Vsys = $DeviceCurVsysAgg
+         elseif($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
+            # If Panorama, set to true and do nothing. Panorama *itself* does not have multi-vsys (Panorama Device Groups do)
             $DeviceCur.VsysUpdated = $true
          }
-      }
+         else {
+            # Update the Ngfw Vsys layout
+            # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
+            $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry/@name"
+            $DeviceCurVsysAgg = @()
+
+            # Fetch a list of vsys names (not display-name)
+            $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
+            if($PanResponse.Status -eq 'success') {
+               foreach($EntryCur in $PanResponse.Result.entry) {
+                  # Add each entry's name to an aggregate. In most firewalls there is a single entry with name 'vsys1'
+                  $DeviceCurVsysAgg += $EntryCur.name
+               }
+
+               # Update the PanDevice in PanDeviceDb
+               $DeviceCur.Vsys = $DeviceCurVsysAgg
+               $DeviceCur.VsysUpdated = $true
+            }
+         }
+      } # End foreach Device
    } # Process block
 
    End {
