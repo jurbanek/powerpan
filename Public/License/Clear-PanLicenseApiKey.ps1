@@ -4,7 +4,7 @@ function Clear-PanLicenseApiKey {
    Clear (remove) current license API key stored on the PanDevice
    .DESCRIPTION
    License API key is commonly used on VM-Series to automatically remove VM-Series firewalls from the Customer Support Portal
-   when the VM-Series licenses are revoked on the VM-Series firewall itself. 
+   when the VM-Series licenses are revoked on the VM-Series firewall itself.
    .NOTES
    .INPUTS
    PanDevice[]
@@ -27,10 +27,10 @@ function Clear-PanLicenseApiKey {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
    } # Begin Block
 
@@ -50,4 +50,4 @@ function Clear-PanLicenseApiKey {
    } # Process block
    End {
    } # End block
-} # Function 
+} # Function

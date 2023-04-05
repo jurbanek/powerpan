@@ -14,10 +14,10 @@ function Import-PanDeviceDb {
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    $StoredJsonPath = $env:USERPROFILE + '\.powerpan\device.json'
@@ -35,7 +35,7 @@ function Import-PanDeviceDb {
       }
       else {
          Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "$($StoredDevicesCustomObjs.Count) devices found. Creating")
-         
+
          # $NewDevices to hold unserialized [PanDevices] through iteration
          # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
          $NewDevices = [System.Collections.Generic.List[PanDevice]]@()
@@ -47,7 +47,7 @@ function Import-PanDeviceDb {
             if([String]::IsNullOrEmpty($Cur.Label)) {
                $Cur.Label = [System.Collections.Generic.List[String]]@()
             }
-   
+
             # Username, Password, and Key are defined, build a new [PanDevice] with all three
             if( -not [String]::IsNullOrEmpty($Cur.Username) -and -not [String]::IsNullOrEmpty($Cur.Password) -and -not [String]::IsNullOrEmpty($Cur.Key) ) {
                Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Building [PanDevice] $($Cur.Name) with Username, Password, and Key")
@@ -58,7 +58,7 @@ function Import-PanDeviceDb {
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential] and [SecureString]
                $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
             }
-   
+
             # Only Username and Password defined, build new [PanDevice] with just Username and Password
             elseif( -not [String]::IsNullOrEmpty($Cur.Username) -and -not [String]::IsNullOrEmpty($Cur.Password) ) {
                Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Building [PanDevice] $($Cur.Name) with Username and Password")
@@ -67,7 +67,7 @@ function Import-PanDeviceDb {
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential]
                $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
             }
-   
+
             # Only Key defined, build new [PanDevice] with just Key
             elseif( -not [String]::IsNullOrEmpty($Cur.Key) ) {
                Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Building [PanDevice] $($Cur.Name) with Key")

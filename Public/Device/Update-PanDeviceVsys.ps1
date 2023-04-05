@@ -12,7 +12,7 @@ function Update-PanDeviceVsys {
    None
    .EXAMPLE
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
          Mandatory=$true,
@@ -23,10 +23,10 @@ function Update-PanDeviceVsys {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
@@ -38,7 +38,7 @@ function Update-PanDeviceVsys {
 
       foreach($DeviceCur in $Device) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
-         if($DeviceCur.VsysUpdated = $true) {
+         if($DeviceCur.VsysUpdated -eq $true) {
             # If PanDevice has been updated this PowerShell session, no need to update again
             Write-Debug ($MyInvocation.MyCommand.Name + ': Device updated already')
             continue
@@ -57,8 +57,10 @@ function Update-PanDeviceVsys {
             }
 
             # Update the PanDevice in PanDeviceDb
-            $DeviceCur.Vsys = $DeviceCurVsysAgg
-            $DeviceCur.VsysUpdated = $true
+            if($PSCmdlet.ShouldProcess('PanDeviceDb','Update ' + $DeviceCur.Name + ' vsys layout')) {
+               $DeviceCur.Vsys = $DeviceCurVsysAgg
+               $DeviceCur.VsysUpdated = $true
+            }
          }
       }
    } # Process block

@@ -4,7 +4,7 @@ function Get-PanLicenseApiKey {
    Get current license API key stored on the PanDevice
    .DESCRIPTION
    License API key is commonly used on VM-Series to automatically remove VM-Series firewalls from the Customer Support Portal
-   when the VM-Series licenses are revoked on the VM-Series firewall itself. 
+   when the VM-Series licenses are revoked on the VM-Series firewall itself.
    .NOTES
    .INPUTS
    PowerPan.PanDevice[]
@@ -34,10 +34,10 @@ function Get-PanLicenseApiKey {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
    } # Begin Block
 
@@ -57,7 +57,7 @@ function Get-PanLicenseApiKey {
             $LicenseApiKey = $Matches['key']
             $LicenseApiKeySecure = ConvertTo-SecureString -String $LicenseApiKey -AsPlainText -Force
 
-            # PanDevice Name and SecureString LicenseApiKey 
+            # PanDevice Name and SecureString LicenseApiKey
             if($PSCmdlet.ParameterSetName -eq 'AsSecureString') {
                [PSCustomObject]@{
                   Device = $DeviceCur;

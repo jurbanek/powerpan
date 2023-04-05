@@ -36,12 +36,12 @@ function New-MultipartFormData {
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
-   
+
    # Structure of the returned object
    $MPFData = [PSCustomObject]@{
       'Header' = [PSCustomObject]@{
@@ -99,14 +99,14 @@ function New-MultipartFormData {
          # File Content
          # Read file as byte array
          $FileCurBin = [System.IO.File]::ReadAllBytes($FileCur.FullName)
-         # Convert to string without changing and add to body 
+         # Convert to string without changing and add to body
          $MPFData.Body += $([System.Text.Encoding]::GetEncoding('iso-8859-1')).GetString($FileCurBin) + "$LF"
       } # end if(Test-Path)
       else {
          Write-Error -Message "$($FileCur.FullName) not found"
       }
    }
-   
+
    # End INNER content boundary with final two dashes "--" after boundary value, unquoted per standard. No special changes for PAN-OS
    $MPFData.Body += "--$Boundary--$LF"
 

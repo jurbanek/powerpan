@@ -17,10 +17,10 @@ function Clear-PanDeviceLabelDefault {
    param()
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    if( -not [String]::IsNullOrEmpty($Global:PanDeviceLabelDefault) ) {

@@ -15,7 +15,7 @@ class PanResponse {
    [Int] $WRStatus
    # WebRequest/HTTP Status Description - comes directly from WebRequestObject
    [String] $WRStatusDescription
-   # WebRequest/HTTP Headers - comes directly from WebRequestObject. The *headers* 
+   # WebRequest/HTTP Headers - comes directly from WebRequestObject. The *headers*
    [Object] $WRHeaders
    # WebRequest/HTTP Content - comes directly from WebRequestObject. The raw content *body*
    [String] $WRContent

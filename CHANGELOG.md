@@ -2,11 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Alpha] 2023-04-05
+
+### Changed
+
+- Major updates in preparation for publishing to PowerShell Gallery
+- PSScriptAnalyzer cleanup
+  - `SupportsShouldProcess` additions to many cmdlets
+  - Significant formatting and whitespace cleanup
+
 ## [Alpha] 2023-04-04
 
 ### Added
 
-- New `New-MultipartFormData ` private helpers for building `multipart/form-data` POSTs.
+- New `New-MultipartFormData` private helpers for building `multipart/form-data` POSTs.
   - PAN-OS XML-API has trouble with quoted `boundary` declaration on the OUTER `Content-Type` header
   - Issue captures the challenge nicely <https://github.com/PowerShell/PowerShell/issues/9241>
   - In PowerShell 7+, Invoke-WebRequest -Form, Invoke-RestMethod -Form DO quote the boundary. Not an option.
@@ -17,7 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Updated `Invoke-PanXApi` $PSBoundParameter clarity and in-line help examples
+- Updated `Invoke-PanXApi` `$PSBoundParameter` clarity and in-line help examples
 
 ## [Alpha] 2020-10-08
 

@@ -24,10 +24,10 @@ function New-PanResponse{
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug $($MyInvocation.MyCommand.Name + ': ')
 
    $PanResponse = [PanResponse]::new()
@@ -37,8 +37,8 @@ function New-PanResponse{
    $PanResponse.WRHeaders = $WebResponse.Headers
    $PanResponse.WRContent = $WebResponse.Content
    $PanResponse.WRRawContent = $WebResponse.RawContent
-   if($PSBoundParameters['Device']) {
-      $PanResponse.Device = $PSBoundParameters['Device']
+   if($PSBoundParameters.Device) {
+      $PanResponse.Device = $PSBoundParameters.Device
    }
 
    if($WebResponse.Headers.'Content-Type' -Match 'application\/xml') {

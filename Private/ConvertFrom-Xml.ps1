@@ -20,15 +20,22 @@ function ConvertFrom-Xml {
       [Object] $XmlObject
    )
 
-   $CustomObject = New-Object -TypeName 'PSCustomObject'
+   Begin {
+      $CustomObject = New-Object -TypeName 'PSCustomObject'
+   }
 
-   foreach($MemberDefCur in ($XmlObject | Get-Member -MemberType 'Property')) {
-      if($XmlObject.($MemberDefCur.Name).GetType().Name -like '*Xml*') {
-         Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $(ConvertFrom-Xml -XmlObject $XmlObject.($MemberDefCur.Name) )
-      }
-      else {
-         Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $XmlObject.($MemberDefCur.Name)
+   Process {
+      foreach($MemberDefCur in ($XmlObject | Get-Member -MemberType 'Property')) {
+         if($XmlObject.($MemberDefCur.Name).GetType().Name -like '*Xml*') {
+            Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $(ConvertFrom-Xml -XmlObject $XmlObject.($MemberDefCur.Name) )
+         }
+         else {
+            Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $XmlObject.($MemberDefCur.Name)
+         }
       }
    }
-   return $CustomObject
+
+   End {
+      return $CustomObject
+   }
 }

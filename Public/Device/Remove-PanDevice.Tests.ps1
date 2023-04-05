@@ -16,7 +16,7 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
       # Mock Import-PanDeviceDb and Export-PanDeviceDb to neuter them. We are not testing import and export functionality
       Mock Import-PanDeviceDb {}
       Mock Export-PanDeviceDb {}
-   
+
       $Global:PanDeviceDb = [System.Collections.Generic.List[PanDevice]]@()
 
       # Function to be used to populate PanDeviceDb multiple times given the removal nature of Remove-PanDevice
@@ -47,7 +47,7 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
             $(Get-PanDevice -All).Name | Compare-Object -ReferenceObject @('MyFirewall01','MyFirewall02','YourFirewall','TheirFirewall') | Should -Be $null
          }
       }
-      
+
       Context "Parameter Set: Filter" {
          It "$FunctionName -Session" {
             InitializePanDeviceTest
@@ -71,7 +71,7 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
          }
          It "$FunctionName -Session -Label 'AngryBeaver' -Name 'TheirFirewall'" {
             InitializePanDeviceTest
-            Remove-PanDevice -Session -Label 'AngryBeaver' -Name 'TheirFirewall'            
+            Remove-PanDevice -Session -Label 'AngryBeaver' -Name 'TheirFirewall'
             $(Get-PanDevice -All).Name | Compare-Object -ReferenceObject @('MyFirewall01','MyFirewall02','YourFirewall') | Should -Be $null
          }
          It "$FunctionName -Label 'DesignedByApprentices','BuiltWithPride'" {

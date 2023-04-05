@@ -28,7 +28,7 @@ function Get-PanAddress {
          ValueFromPipeline=$true,
          HelpMessage='PanDevice against which address object(s) will be retrieved.')]
       [PanDevice[]] $Device,
-      [parameter( 
+      [parameter(
          Position=0,
          ParameterSetName='Filter',
          HelpMessage='Name or value filter for address object(s) to be retrieved. Filter applied remotely (via API) identical to filter bar behavior.')]
@@ -37,10 +37,10 @@ function Get-PanAddress {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
       # No local filtering defined. Return everything.
       if($PSCmdlet.ParameterSetName -eq 'NoFilter') {
@@ -167,7 +167,7 @@ function Get-PanAddress {
 
                   # Create new PanAddress object, output to pipeline (fast update for users), save to variable
                   New-PanAddress -Name $EntryCur.name -Value $Value -Type $Type -Description $Description -Tag $Member -Device $DeviceCur -Location $XPathCur.Name | Tee-Object -Variable 'AddressFoo'
-                  
+
                   # Add the new PanAddress object to aggregate. Will be counted in End block. Available for future feature as well
                   $PanAddressAgg.Add($AddressFoo)
                } # foreach entry
@@ -178,4 +178,4 @@ function Get-PanAddress {
    End {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Final address count: ' + $PanAddressAgg.Count)
    } # End block
-} # Function 
+} # Function

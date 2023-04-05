@@ -12,7 +12,7 @@ function Remove-PanDeviceLabel {
    None
    .EXAMPLE
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
          Mandatory=$true,
@@ -29,10 +29,10 @@ function Remove-PanDeviceLabel {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
@@ -57,9 +57,11 @@ function Remove-PanDeviceLabel {
                foreach($DeviceCurLabelCur in $DeviceCur.Label) {
                   # Case-insensitive match (we can't just use Contains())
                   if($LabelCur -imatch ('^' + $DeviceCurLabelCur + '$')) {
-                     $DeviceCur.Label.Remove($DeviceCurLabelCur) | Out-Null
-                     $Dirty = $true
-                     break
+                     if($PSCmdlet.ShouldProcess('PanDeviceDb','Remove ' + $DeviceCurLabelCur + ' label from ' + $DeviceCur.Name)) {
+                        $DeviceCur.Label.Remove($DeviceCurLabelCur) | Out-Null
+                        $Dirty = $true
+                        break
+                     }
                   }
                }
             }

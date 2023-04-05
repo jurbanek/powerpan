@@ -35,10 +35,10 @@ function Resolve-PanUrlCategory {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
@@ -53,11 +53,11 @@ function Resolve-PanUrlCategory {
             Write-Debug ($MyInvocation.MyCommand.Name + ': Url: ' + $UrlCur)
             $Cmd = '<test><url>{0}</url></test>' -f $UrlCur
             Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
-         
+
             $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
             Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
             Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
-         
+
             if($PanResponse.Status -eq 'success') {
                # Two lines of text returned, separated by newline
                $SplitResult = $PanResponse.Result.split("`n")
@@ -73,7 +73,7 @@ function Resolve-PanUrlCategory {
                   Write-Debug ($MyInvocation.MyCommand.Name + ': Cloud Db: ' + $Matches['cat'])
                   $CloudDbCat = $Matches['cat']
                }
-               
+
                # Return a PanUrlResponse
                [PanUrlResponse]::new($UrlCur, @($BaseDbCat.split()), @($CloudDbCat.split()), $DeviceCur)
             }

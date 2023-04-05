@@ -1,11 +1,11 @@
 function Get-PanRegisteredIp {
    <#
    .SYNOPSIS
-   Get current registered IP address (PAN-OS "registered-ip") and tag mappings. 
+   Get current registered IP address (PAN-OS "registered-ip") and tag mappings
    .DESCRIPTION
    .NOTES
    PAN-OS "registered-ip" is tagged with PAN-OS tag(s). The tag(s) do not have to exist in Objects > Tags.
-   DAG match criteria is based on PAN-OS tag(s). After tagging a "registered-ip", PAN-OS then computes to which DAG(s) the registered-ip is added. 
+   DAG match criteria is based on PAN-OS tag(s). After tagging a "registered-ip", PAN-OS then computes to which DAG(s) the registered-ip is added.
    .INPUTS
    .OUTPUTS
    PowerPan.PanRegisteredIp
@@ -39,10 +39,10 @@ function Get-PanRegisteredIp {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
       # No local filtering defined. Return everything.
       if($PSCmdlet.ParameterSetName -eq 'NoFilter') {
@@ -97,4 +97,4 @@ function Get-PanRegisteredIp {
    End {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Final registered-ip count: ' + $PanRegIpAgg.Count)
    } # End block
-} # Function 
+} # Function

@@ -5,10 +5,10 @@ function Get-PanDevice {
    .DESCRIPTION
    PowerPAN function to return PanDevice(s) from the PanDeviceDb.
    .NOTES
-   Nerd Notes: 
+   Nerd Notes:
    Multiple -Label (via array) is a logical AND match with NO regular expression support.
    Multiple -Name (via array) is a logical OR match with regular expression support.
-   
+
    When -Session, -Label, -Name are used together, specific parameter AND/OR match behavior
    still applies, but each parameter in use must match (AND across all in use parameters)
    .INPUTS
@@ -34,18 +34,18 @@ function Get-PanDevice {
    .EXAMPLE
    PS> Get-PanDevice -All
    Returns all PanDevice(s) within the PanDeviceDb.
-   Complex match criteria can be crafted using Get-PanDevice -All | Where-Object ... 
+   Complex match criteria can be crafted using Get-PanDevice -All | Where-Object ...
    .EXAMPLE
    PS> Get-PanDevice -Session -Name "firewall-01.acme.local"
    Matches -Session AND -Name parameters, both parameters must result in match.
    .EXAMPLE
    PS> Get-PanDevice -Name "firewall-01.acme.local" -Label "PCI"
-   Matches -Name AND -Label parameters, both parameters must result in match. 
+   Matches -Name AND -Label parameters, both parameters must result in match.
    #>
    [CmdletBinding(DefaultParameterSetName='Empty')]
    param(
       [parameter(
-         Position=0,   
+         Position=0,
          Mandatory=$false,
          ParameterSetName='Filter',
          HelpMessage='Case-insensitive exact match for Name. Multiple Name is logical OR match')]
@@ -68,10 +68,10 @@ function Get-PanDevice {
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    # Initialize PanDeviceDb
@@ -144,13 +144,13 @@ function Get-PanDevice {
          # Prime the Verdict
          $Verdict = $true
          # If Session filter is enabled and no session match, current PanDevice is not a filter match, break outer loop immediately
-         if($PSBoundParameters['Session'].IsPresent -and $DeviceCur.Label -notcontains "session-$SessionGuid") {
+         if($PSBoundParameters.Session.IsPresent -and $DeviceCur.Label -notcontains "session-$SessionGuid") {
             $Verdict = $false
             continue
          }
          # If Label filter is enabled and every Label is not a match, current PanDevice is not a filter match, break outer loop immediately
-         if(-not [String]::IsNullOrEmpty($PSBoundParameters['Label'])) {
-            foreach($LabelCur in $PSBoundParameters['Label']) {
+         if(-not [String]::IsNullOrEmpty($PSBoundParameters.Label)) {
+            foreach($LabelCur in $PSBoundParameters.Label) {
                if($DeviceCur.Label -notcontains $LabelCur) {
                   $Verdict = $false
                   break
@@ -161,9 +161,9 @@ function Get-PanDevice {
             }
          }
          # If Name filter is enabled and at least one Name is not a match, current PanDevice is not a filter match, break outer loop immediately
-         if(-not [String]::IsNullOrEmpty($PSBoundParameters['Name'])) {
+         if(-not [String]::IsNullOrEmpty($PSBoundParameters.Name)) {
             $Verdict = $false
-            foreach($NameCur in $PSBoundParameters['Name']) {
+            foreach($NameCur in $PSBoundParameters.Name) {
                if($DeviceCur.Name -imatch "^$NameCur`$") {
                   $Verdict = $true
                }

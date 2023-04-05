@@ -19,7 +19,7 @@ function Invoke-PanXApi {
 
    -Import -Category "certificate" is for uploading certificates WITHOUT private key (processes just the certificate)
    -Import -Category "keypair" is for uploading certificates WITH private key (processes both certificate and private key)
-      -File is the path or FileInfo object to the supported (PKCS12, Base64 encoded PEM) certificate on local disk 
+      -File is the path or FileInfo object to the supported (PKCS12, Base64 encoded PEM) certificate on local disk
       -CertName parameter is what is used for PAN-OS certificate name, the certificate filename on local disk is ignored
          -Periods (.) are ignored/removed by PAN-OS. Avoid them in CertName
       -CertPassphrase is used when importing the private key
@@ -51,7 +51,7 @@ function Invoke-PanXApi {
    Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
    PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertificateName "gp-portal-acme-com" -CertPassphrase "acme1234"
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='None')]
    param(
       # $Device required in all parameter sets.
       [parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,HelpMessage='PanDevice against which XML-API will be invoked.')]
@@ -147,10 +147,10 @@ function Invoke-PanXApi {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
    } # Begin block
 
@@ -390,13 +390,14 @@ function Invoke-PanXApi {
             } # end ParameterSetName Import-Cert-Key
          } # End API type=import
 
-         # Call PAN-OS XML-API with PowerShell built-in Invoke-WebRequest, include some debug
-         # Invoke-WebRequest is preferred over Invoke-RestMethod. In PowerShell 5.1, Invoke-RestMethod does not make HTTP response
-         # *headers* available. Remedied in PowerShell 6+ with -ResponseHeadersVariable, but PowerShell 5.1 compatibility is needed for now
-         $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponse Status ' + $PanResponse.Status + ', Code ' + $PanResponse.Code)
-         return $PanResponse
-
+         if($PSCmdlet.ShouldProcess($DeviceCur.Name,'PAN-OS XML-API call')) {
+            # Call PAN-OS XML-API with PowerShell built-in Invoke-WebRequest, include some debug
+            # Invoke-WebRequest is preferred over Invoke-RestMethod. In PowerShell 5.1, Invoke-RestMethod does not make HTTP response
+            # *headers* available. Remedied in PowerShell 6+ with -ResponseHeadersVariable, but PowerShell 5.1 compatibility is needed for now
+            $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponse Status ' + $PanResponse.Status + ', Code ' + $PanResponse.Code)
+            return $PanResponse
+         }
       } # Process block outermost foreach
    } # Process block
 

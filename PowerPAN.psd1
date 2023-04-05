@@ -23,7 +23,7 @@ Author = 'John Urbanek'
 CompanyName = 'URBANEK.IO'
 
 # Copyright statement for this module
-Copyright = '(c) 2018-2020 John Urbanek. All rights reserved.'
+Copyright = '(c) 2018-2023 John Urbanek. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'PowerShell module for Palo Alto Networks'
@@ -99,16 +99,16 @@ PrivateData = @{
         # Tags = @()
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        # LicenseUri = 'https://github.com/jurbanek/powerpan/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/jurbanek/powerpan'
 
         # A URL to an icon representing this module.
         # IconUri = ''
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        # ReleaseNotes = 'https://github.com/jurbanek/powerpan/blob/master/CHANGELOG.md'
 
     } # End of PSData hashtable
 

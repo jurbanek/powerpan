@@ -15,12 +15,12 @@ function Export-PanDeviceDb {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
- 
+
       $StoredDirectoryPath = $Env:USERPROFILE + '\.powerpan'
       $StoredJsonPath = $Env:USERPROFILE + '\.powerpan\device.json'
 
@@ -51,7 +51,7 @@ function Export-PanDeviceDb {
             'ValidateCertificate' = $DeviceCur.ValidateCertificate;
             'Protocol' = $DeviceCur.Protocol;
             'Port' = $DeviceCur.Port
-         } # End hash table         
+         } # End hash table
 
          # Add the Credential.Password
          if([String]::IsNullOrEmpty($DeviceCur.Credential.Password)) {
