@@ -25,7 +25,7 @@ function Set-X509CertificateValidation {
 
       Require x.509 certificate validation for subsequent .NET backed calls.
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
          Mandatory=$true,
@@ -42,14 +42,14 @@ function Set-X509CertificateValidation {
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug $($MyInvocation.MyCommand.Name + ':')
 
    ## Disable x.509 certificate validation
-   if ($NoValidate.IsPresent) {
+   if ($PSBoundParameters.NoValidate.IsPresent -and $PSCmdlet.ShouldProcess('this session','Disable x.509 Certificate Validation')) {
       Write-Debug $($MyInvocation.MyCommand.Name + ': Disabling x.509 Certificate Validation')
 
       # Method 1 - Works on some older versions of Powershell
@@ -78,7 +78,7 @@ function Set-X509CertificateValidation {
       [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
    }
    # Enable x.509 certificate validation
-   elseif ($Validate.IsPresent) {
+   elseif ($PSBoundParameters.Validate.IsPresent -and $PSCmdlet.ShouldProcess('this session','Enable x.509 Certificate Validation')) {
       Write-Debug $($MyInvocation.MyCommand.Name + ': Enabling x.509 Certificate Validation')
       [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $null
       [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'

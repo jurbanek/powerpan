@@ -13,7 +13,7 @@ function Remove-PanRegisteredIp {
 
    If a single -RegisteredIp is passed, the tag(s) within the PanRegisteredIp object are removed from the IP within the PanRegisteredIp object.
    If multiple -RegisteredIp are passed (via array), each PanRegisteredIp object is treated as an individual action (different behavior from passing multiple -Ip and -Tag).
-   
+
    If multiple -Device are passed (via array), the registered-ip and tags unregistration logic is applied to each device individually.
    .NOTES
    PAN-OS registered-ip is not added to a Dynamic Address Group (DAG) directly. Instead, a PAN-OS registered-ip is registered with tag(s). Multiple tags can be registered to a single registered-ip.
@@ -42,7 +42,7 @@ function Remove-PanRegisteredIp {
    Remove-PanRegisteredIp -Device $Device -All
    All tags are unregistered from all registered-ip's.
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
       [parameter(
          Mandatory=$true,
@@ -73,10 +73,10 @@ function Remove-PanRegisteredIp {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
    }
 
@@ -88,8 +88,10 @@ function Remove-PanRegisteredIp {
 
          # -All switch parameter indicating all registered-ip's are to be unregistered.
          if($PSCmdlet.ParameterSetName -eq 'UnregisterAll') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Unregistering ALL IP:TAG registration(s)')
-            return Clear-PanRegisteredIp -Device $Device
+            if($PSCmdlet.ShouldProcess($Device.Name,'Unregister ALL IP:TAG registration(s)')) {
+               Write-Debug ($MyInvocation.MyCommand.Name + ': Unregister ALL IP:TAG registration(s)')
+               return Clear-PanRegisteredIp -Device $Device
+            }
          }
          # -RegisteredIp providing the exact set of unregistration actions.
          elseif($PSCmdlet.ParameterSetName -eq 'UnregisterWithPanRegisteredIp') {
@@ -121,7 +123,7 @@ function Remove-PanRegisteredIp {
                         }
                      }
                      # If tags need to be unregistered, build new [PanRegisteredIp] with ONLY necessary tags to unregister.
-                     # Add new [PanRegisteredIp] to the blueprint to be unregistered later. 
+                     # Add new [PanRegisteredIp] to the blueprint to be unregistered later.
                      if(-not [String]::IsNullOrEmpty($TagAgg) ) {
                         $RegisteredIpAgg.Add( (New-PanRegisteredIp -Ip $IpCur -Tag $TagAgg) )
                      }
@@ -141,7 +143,7 @@ function Remove-PanRegisteredIp {
                   $RegisteredIpResult = Get-PanRegisteredIp -Device $DeviceCur -Ip $IpCur
                   if(-not [String]::IsNullOrEmpty($RegisteredIpResult) ) {
                      Write-Debug ($MyInvocation.MyCommand.Name + ": registered-ip $IpCur FOUND on device $($DeviceCur.Name)")
-                     # Add the [PanRegisteredIp] to the blueprint to be unregistered later. 
+                     # Add the [PanRegisteredIp] to the blueprint to be unregistered later.
                      $RegisteredIpAgg.Add($RegisteredIpResult)
                   } # if $RegisteredIpResult
                } # foreach $IpCur in $Ip
@@ -167,7 +169,7 @@ function Remove-PanRegisteredIp {
                         if($HashTableAgg.Contains($RegisteredIpResultCur.Ip) ) {
                            $HashTableAgg[$RegisteredIpResultCur.Ip] = $HashTableAgg[$RegisteredIpResultCur.Ip] + $TagCur
                         }
-                        # IP not a key in hash table, add the new k->v. Value must be added as array despite being a single tag at this point. 
+                        # IP not a key in hash table, add the new k->v. Value must be added as array despite being a single tag at this point.
                         else {
                            $HashTableAgg.Add($RegisteredIpResultCur.Ip, @($TagCur))
                         }
@@ -185,7 +187,7 @@ function Remove-PanRegisteredIp {
             } # -Tag parameter simultaneously
          } # elseif UnregisterWithStrings
 
-         # Convert $RegisteredIpAgg blueprint to XML uid-message and send API request to unregister. 
+         # Convert $RegisteredIpAgg blueprint to XML uid-message and send API request to unregister.
          # For -RegisteredIp, -Ip/-Tag, -Ip, and -Tag Cases, $RegisteredIpAgg is blueprint for unregistrations.
          if([String]::IsNullOrEmpty($RegisteredIpAgg) ) {
             Write-Debug ($MyInvocation.MyCommand.Name + ": Searches resulted in ZERO unregistrations to process")
@@ -222,15 +224,17 @@ function Remove-PanRegisteredIp {
 </uid-message>
 
 '@
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Prepared uid-message: ' + $CmdCur)
-            $PanResponse = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+            if($PSCmdlet.ShouldProcess($DeviceCur.Name,'Unregister IP:TAG registrations ')) {
+               Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+               Write-Debug ($MyInvocation.MyCommand.Name + ': Prepared uid-message: ' + $CmdCur)
+               $PanResponse = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
+               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
+               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+            }
          } # else Convert $RegisteredIpAgg blueprint to XML uid-message and send API request to unregister
       } # foreach Device
    } # Process block
 
    End {
-   } # End block 
+   } # End block
 } # Function

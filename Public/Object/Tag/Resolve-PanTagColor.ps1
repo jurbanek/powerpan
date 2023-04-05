@@ -19,6 +19,7 @@ function Resolve-PanTagColor {
    Hashtable is returned without modification, reflecting how it is retrieved from memory (NOT sorted alphanumerically).
    #>
    [CmdletBinding(DefaultParameterSetName='Empty')]
+   [OutputType([String],[Hashtable])]
    param(
       [parameter(
          Mandatory=$true,
@@ -31,10 +32,10 @@ function Resolve-PanTagColor {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb

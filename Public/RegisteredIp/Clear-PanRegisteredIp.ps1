@@ -1,12 +1,12 @@
 function Clear-PanRegisteredIp {
    <#
    .SYNOPSIS
-   Clears all registered-ip's on a PAN-OS firewall. 
+   Clears all registered-ip's on a PAN-OS firewall
    .DESCRIPTION
    .NOTES
    This cmdlet removes all registered-ip's a PAN-OS firewall. This cmdlet should be used carefully. If individual registered-ip's need to be removed, use Remove-PanRegisteredIp instead.
    Important to understand that a PAN-OS "registered-ip" is not added to a DAG directly. Instead, a PAN-OS "registered-ip" is tagged with PAN-OS tag(s).
-   DAG match criteria is based on PAN-OS tag(s). After tagging a "registered-ip", PAN-OS then computes to which DAG(s) the registered-ip is added. 
+   DAG match criteria is based on PAN-OS tag(s). After tagging a "registered-ip", PAN-OS then computes to which DAG(s) the registered-ip is added.
 
    "debug object registered-ip clear all" can be used from CLI.
    Unfortunately, debug CLI commands are not available via XML-API. A special uid-message achieves the objective.
@@ -26,10 +26,10 @@ function Clear-PanRegisteredIp {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Seed a herestring with XML-API "uid-message" elements needed to unregister all registered-ip(s).

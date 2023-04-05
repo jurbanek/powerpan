@@ -19,6 +19,8 @@ function New-PanDevice {
    PS> New-PanDevice -Name "acme-edge-fw1.acme.net" -Key "A1E2I3O4U5" -Label "acme-edge-fw1","Azure"
    #>
    [CmdletBinding()]
+   # OutputType of [PanDevice] fails given typing issues
+   [OutputType([Bool])]
    param(
       [parameter(
          Mandatory=$true,
@@ -79,10 +81,10 @@ function New-PanDevice {
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    # Update -Label parameter based on -ImportMode parameter
@@ -93,7 +95,7 @@ function New-PanDevice {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Adding session-based Label')
       $Label.Add("session-$(Get-PanSessionGuid)")
    }
-   
+
    # Key parameter set :: -Key parameter present. API key previously generated, does not need to be created.
    if($PSCmdlet.ParameterSetName -eq 'Key') {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Key parameter set')

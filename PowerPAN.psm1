@@ -4,8 +4,8 @@ Assumes:
    Classes placed in .\Class\*
       One class per .ps1 file.
       Class name same as .ps1 file: MyClass -> MyClass.ps1
-      Classes are dot-sourced in alphanumeric filename order. To modify the class dot-source order and/or resolve dependency 
-      issues, add class filenames to $ClassDotSourceOrder, in desired order. $ClassDotSourceOrder filenames will be dot-sourced 
+      Classes are dot-sourced in alphanumeric filename order. To modify the class dot-source order and/or resolve dependency
+      issues, add class filenames to $ClassDotSourceOrder, in desired order. $ClassDotSourceOrder filenames will be dot-sourced
       first, in specified order, before all remaining class filenames.
    Public (exported) functions/module members placed in .\Public\*
       One function per .ps1 file.

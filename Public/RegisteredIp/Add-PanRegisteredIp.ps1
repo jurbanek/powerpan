@@ -55,10 +55,10 @@ function Add-PanRegisteredIp {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
    }
 
@@ -85,7 +85,7 @@ function Add-PanRegisteredIp {
                   Write-Debug ($MyInvocation.MyCommand.Name + ":       tag: $TagCur")
                   $CmdCur += "     <member>$TagCur</member>`n"
                }
-               
+
                $CmdCur += "    </tag>`n"
                $CmdCur += "   </entry>`n"
             }
@@ -100,11 +100,11 @@ function Add-PanRegisteredIp {
                   Write-Debug ($MyInvocation.MyCommand.Name + ":       tag: $RegisteredIpCurTagCur")
                   $CmdCur += "     <member>$RegisteredIpCurTagCur</member>`n"
                }
-               
+
                $CmdCur += "    </tag>`n"
                $CmdCur += "   </entry>`n"
             }
-         }        
+         }
          # Complete the XML-API "uid-message" ending elements.
          $CmdCur += @'
   </register>
@@ -121,5 +121,5 @@ function Add-PanRegisteredIp {
    } # Process block
 
    End {
-   } # End block 
+   } # End block
 } # Function

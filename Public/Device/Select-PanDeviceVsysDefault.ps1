@@ -28,10 +28,10 @@ function Select-PanDeviceVsysDefault {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
@@ -41,7 +41,7 @@ function Select-PanDeviceVsysDefault {
 
    Process {
       foreach($DeviceCur in $Device) {
-         $DeviceCur.VsysDefault = $PSBoundParameters['Vsys']
+         $DeviceCur.VsysDefault = $PSBoundParameters.Vsys
       }
    } # Process block
 

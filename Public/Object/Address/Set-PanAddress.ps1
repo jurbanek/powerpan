@@ -60,7 +60,7 @@ function Set-PanAddress {
    Passing an empty string "" to both -Tag and -Description parameters will explicitly remove Tag(s) and Descriptions from the address object(s).
    .EXAMPLE
    PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Add("in") | Out-Null; $_ | Set-PanAddress }
-   
+
    PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Add("in") | Out-Null; $AddrCur | Set-PanAddress }
 
    Add a single tag to all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
@@ -75,7 +75,7 @@ function Set-PanAddress {
    The Out-Null is to eat the Boolean value returned by Remove() method and keep the output clean.
    In event the tag is not already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
       [parameter( Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='Device', HelpMessage='PanDevice against which object will be created or updated')]
       [PanDevice[]] $Device,
@@ -104,10 +104,10 @@ function Set-PanAddress {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug $($MyInvocation.MyCommand.Name + ': ')
    }
 
@@ -116,79 +116,84 @@ function Set-PanAddress {
       # Device ParameterSet, when PanDevice is present from call or from pipeline
       if($PSCmdlet.ParameterSetName -eq 'Device') {
          Write-Debug $($MyInvocation.MyCommand.Name + ': Device ParameterSetName')
-         foreach($DeviceCur in $PSBoundParameters['Device']) {
+         foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
 
             # Determine if there is a current object with this exact Name. If so, update only properties specified by caller
-            $PanObject = Get-PanAddress -Device $DeviceCur -Filter $PSBoundParameters['Name'] | Where-Object {$_.Name -ceq $PSBoundParameters['Name']}
+            $PanObject = Get-PanAddress -Device $DeviceCur -Filter $PSBoundParameters.Name | Where-Object {$_.Name -ceq $PSBoundParameters.Name}
             if($PanObject) {
-               Write-Debug $($MyInvocation.MyCommand.Name + ': Object "' + $PSBoundParameters['Name'] + '" found, updating')
+               Write-Debug $($MyInvocation.MyCommand.Name + ': Object "' + $PSBoundParameters.Name + '" found, updating')
                # Update object properties only for those arguments specified. Parameters with default values (like Type in this function) do NOT populate PSBoundParameters
-               if($PSBoundParameters['Value']) { $PanObject.Value = $PSBoundParameters['Value'] }
-               if($PSBoundParameters['Type']) { $PanObject.Type = $PSBoundParameters['Type'] }
-               if($PSBoundParameters['Description'].Count) { $PanObject.Description = $PSBoundParameters['Description'] }
-               if($PSBoundParameters['Tag'].Capacity) { $PanObject.Tag = $PSBoundParameters['Tag'] }
-               if($PSBoundParameters['Location']) { 
-                  Write-Warning $($MyInvocation.MyCommand.Name + ': Ignoring location parameter "' + $PSBoundParameters['Location'] + '" for existing object "' +
+               if($PSBoundParameters.Value) { $PanObject.Value = $PSBoundParameters.Value }
+               if($PSBoundParameters.Type) { $PanObject.Type = $PSBoundParameters.Type }
+               if($PSBoundParameters.Description.Count) { $PanObject.Description = $PSBoundParameters.Description }
+               if($PSBoundParameters.Tag.Capacity) { $PanObject.Tag = $PSBoundParameters.Tag }
+               if($PSBoundParameters.Location) {
+                  Write-Warning $($MyInvocation.MyCommand.Name + ': Ignoring location parameter "' + $PSBoundParameters.Location + '" for existing object "' +
                      $PanObject.Name + '" on device "' + $DeviceCur.Name + '" To move, use Move- cmdlet.')
                }
             }
             # No object with the exact Name. Create one
             else {
-               Write-Debug $($MyInvocation.MyCommand.Name + ': Object "' + $PSBoundParameters['Name'] + '" not found, creating')
-               # Verify a Value has been specified to continue creating object. 
-               if([String]::IsNullOrEmpty($PSBoundParameters['Value'])) {
+               Write-Debug $($MyInvocation.MyCommand.Name + ': Object "' + $PSBoundParameters.Name + '" not found, creating')
+               # Verify a Value has been specified to continue creating object.
+               if([String]::IsNullOrEmpty($PSBoundParameters.Value)) {
                   Write-Error $($MyInvocation.MyCommand.Name + ': Unable to create an object without a Value')
                   # Break current loop iteration, continue to next Device
                   continue
                }
                # Create a minimum viable object. Then update only the properties specified by caller
-               $PanObject = New-PanAddress -Name $PSBoundParameters['Name'] -Value $PSBoundParameters['Value'] -Device $DeviceCur
-               if($PSBoundParameters['Type']) { $PanObject.Type = $PSBoundParameters['Type'] }
-               if($PSBoundParameters['Description'].Count) { $PanObject.Description = $PSBoundParameters['Description'] }
-               if($PSBoundParameters['Tag'].Capacity) { $PanObject.Tag = $PSBoundParameters['Tag'] }
-               if($PSBoundParameters['Location']) {
-                  $PanObject.Location = $PSBoundParameters['Location']
+               $PanObject = New-PanAddress -Name $PSBoundParameters.Name -Value $PSBoundParameters.Value -Device $DeviceCur
+               if($PSBoundParameters.Type) { $PanObject.Type = $PSBoundParameters.Type }
+               if($PSBoundParameters.Description.Count) { $PanObject.Description = $PSBoundParameters.Description }
+               if($PSBoundParameters.Tag.Capacity) { $PanObject.Tag = $PSBoundParameters.Tag }
+               if($PSBoundParameters.Location) {
+                  $PanObject.Location = $PSBoundParameters.Location
                }
                else {
-                  $PanObject.Location = 'local/' + $PSBoundParameters['Device'].VsysDefault
+                  $PanObject.Location = 'local/' + $PSBoundParameters.Device.VsysDefault
                }
             }
 
-            # Call to helper which returns a PanResponse
-            $PanResponse = Set-PanAddressHelper -Address $PanObject
-            # When successful send object to pipeline as confirmation. Failures will have errors written
-            if($PanResponse.Status -eq 'success') { $PanObject }
-            else {
-               Write-Error $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' Object: ' + $PanObject.Name + ' Message: ' + $PanResponse.Message)
+            if($PSCmdlet.ShouldProcess($PanObject.Device.Name,'Create/Update ' + $PanObject.Name)) {
+               # Call to helper which returns a PanResponse
+               $PanResponse = Set-PanAddressHelper -Address $PanObject
+               # When successful send object to pipeline as confirmation. Failures will have errors written
+               if($PanResponse.Status -eq 'success') { $PanObject }
+               else {
+                  Write-Error $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' Object: ' + $PanObject.Name + ' Message: ' + $PanResponse.Message)
+               }
             }
-         }
-      }
+         } # end foreach
+      } # end ParameterSetName Device
+
       # Object ParameterSet, when PanAddress is specified from call or pipeline
       elseif($PSCmdlet.ParameterSetName -eq 'Object') {
          Write-Debug $($MyInvocation.MyCommand.Name + ': Object ParameterSetName')
-         foreach($AddressCur in $PSBoundParameters['Address']) {
+         foreach($AddressCur in $PSBoundParameters.Address) {
             # AddressCur tracks the current passed-by-reference address
             # AddressCurClone is a clone used to merge in additional requested changes from other parameters. Don't want to change original Address object passed-by-reference
             Write-Debug $($MyInvocation.MyCommand.Name + ': Object: ' + $AddressCur.Name)
 
             # Update object properties only for those arguments specified. Parameters with default values (like Type in this function) do NOT populate PSBoundParameters
             $AddressCurClone = $AddressCur.Clone()
-            if($PSBoundParameters['Value']) { $AddressCurClone.Value = $PSBoundParameters['Value'] }
-            if($PSBoundParameters['Type']) { $AddressCurClone.Type = $PSBoundParameters['Type'] }
-            if($PSBoundParameters['Description'].Count) { $AddressCurClone.Description = $PSBoundParameters['Description'] }
-            if($PSBoundParameters['Tag'].Capacity) { $AddressCurClone.Tag = $PSBoundParameters['Tag'] }
+            if($PSBoundParameters.Value) { $AddressCurClone.Value = $PSBoundParameters.Value }
+            if($PSBoundParameters.Type) { $AddressCurClone.Type = $PSBoundParameters.Type }
+            if($PSBoundParameters.Description.Count) { $AddressCurClone.Description = $PSBoundParameters.Description }
+            if($PSBoundParameters.Tag.Capacity) { $AddressCurClone.Tag = $PSBoundParameters.Tag }
             # Location paramater not possible within Object ParameterSet based on Parameter() block definitions. To move objects, use Move- cmdlet
 
-            # Call to helper which returns a PanResponse
-            $PanResponse = Set-PanAddressHelper -Address $AddressCurClone
-            # When successful send object to pipeline as confirmation. Failures will have errors written
-            if($PanResponse.Status -eq 'success') { $AddressCurClone }
-            else {
-               Write-Error $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' Object: ' + $AddressCurClone.Name + ' Message: ' + $PanResponse.Message)
+            if($PSCmdlet.ShouldProcess($AddressCurClone.Device.Name,'Create/Update ' + $AddressCurClone.Name)) {
+               # Call to helper which returns a PanResponse
+               $PanResponse = Set-PanAddressHelper -Address $AddressCurClone
+               # When successful send object to pipeline as confirmation. Failures will have errors written
+               if($PanResponse.Status -eq 'success') { $AddressCurClone }
+               else {
+                  Write-Error $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' Object: ' + $AddressCurClone.Name + ' Message: ' + $PanResponse.Message)
+               }
             }
-         }
-      }
+         } # end foreach
+      } # end ParameterSetName Object
    }
 
    End {

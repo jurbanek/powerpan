@@ -11,7 +11,7 @@ function Remove-PanDevice {
    None
    .EXAMPLE
    #>
-   [CmdletBinding(DefaultParameterSetName='Empty')]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low',DefaultParameterSetName='Empty')]
    param(
       [parameter(
          Mandatory=$true,
@@ -39,10 +39,10 @@ function Remove-PanDevice {
 
    Begin {
       # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters['Debug']) {
+      if($PSBoundParameters.Debug) {
          $DebugPreference = 'Continue'
       }
-      # If -Debug parameter, announce 
+      # If -Debug parameter, announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
@@ -123,7 +123,7 @@ function Remove-PanDevice {
                   continue
                }
             }
-   
+
             # Process the verdict
             if($Verdict) {
                $DeviceAgg.Add($DeviceCur)
@@ -137,7 +137,9 @@ function Remove-PanDevice {
       if($DeviceAgg.Count -gt 0) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Removing ' + $DeviceAgg.Count + ' from PanDeviceDb' )
          foreach($DeviceCur in $DeviceAgg) {
-            $Global:PanDeviceDb.Remove($DeviceCur) | Out-Null
+            if($PSCmdlet.ShouldProcess('PanDeviceDb','Remove ' + $DeviceCur.Name)) {
+               $Global:PanDeviceDb.Remove($DeviceCur) | Out-Null
+            }
          }
          Write-Debug ($MyInvocation.MyCommand.Name + ': Serializing')
          Export-PanDeviceDb

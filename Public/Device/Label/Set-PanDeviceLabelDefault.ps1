@@ -9,9 +9,9 @@ function Set-PanDeviceLabelDefault{
    PS> Get-PanDevice
 
       is functionally the same as
-   
+
    PS> Get-PanDevice -Label 'PCI'
-   
+
    If a default Label is not explicitly set, then the default Label defaults to PanDevice(s) created in the
    current PowerShell session.
    .NOTES
@@ -41,7 +41,7 @@ function Set-PanDeviceLabelDefault{
 
    Restores Get-PanDevice default behavior of returning PanDevice(s) created in the current PowerShell session only.
    #>
-   [CmdletBinding()]
+   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
          Mandatory=$true,
@@ -51,11 +51,13 @@ function Set-PanDeviceLabelDefault{
    )
 
    # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters['Debug']) {
+   if($PSBoundParameters.Debug) {
       $DebugPreference = 'Continue'
    }
-   # If -Debug parameter, announce 
+   # If -Debug parameter, announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
-   Set-Variable -Name 'PanDeviceLabelDefault' -Value $Label -Scope 'Global'
+   if($PSCmdlet.ShouldProcess('PanDeviceDb','Change Get-PanDevice default label(s) to ' + $($PSBoundParameters.Label -join ','))) {
+      Set-Variable -Name 'PanDeviceLabelDefault' -Value $PSBoundParameters.Label -Scope 'Global'
+   }
 } # Function

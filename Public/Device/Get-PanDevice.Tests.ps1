@@ -16,13 +16,13 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
       # Mock Import-PanDeviceDb and Export-PanDeviceDb to neuter them. We are not testing import and export functionality
       Mock Import-PanDeviceDb {}
       Mock Export-PanDeviceDb {}
-   
+
       $Global:PanDeviceDb = [System.Collections.Generic.List[PanDevice]]@()
       New-PanDevice -Name 'MyFirewall01' -Username 'xmlapiadmin' -Password 'asdf1234' -Label 'AngryBeaver' -ImportMode
       New-PanDevice -Name 'MyFirewall02' -Username 'xmlapiadmin' -Password 'jkl;5678' -Label 'DesignedByApprentices','BuiltWithPride' -ImportMode
       New-PanDevice -Name 'YourFirewall' -Username 'xmlapiadmin' -Password 'zxcv9012' -Label 'AngryBeaver',"session-$(Get-PanSessionGuid)" -ImportMode
       New-PanDevice -Name 'TheirFirewall' -Username 'xmlapiadmin' -Password 'tyui4783' -Label 'AngryBeaver','BuiltWithPride',"session-$(Get-PanSessionGuid)" -ImportMode
-   
+
       Context "Parameter Set: Empty" {
          It "$FunctionName with no LabelDefault" {
             Mock Get-PanDeviceLabelDefault { return @("session-$(Get-PanSessionGuid)") }
