@@ -99,6 +99,7 @@ function New-MultipartFormData {
          # File Content
          # Read file as byte array
          $FileCurBin = [System.IO.File]::ReadAllBytes($FileCur.FullName)
+
          # Convert to string without changing and add to body
          $MPFData.Body += $([System.Text.Encoding]::GetEncoding('iso-8859-1')).GetString($FileCurBin) + "$LF"
       } # end if(Test-Path)
