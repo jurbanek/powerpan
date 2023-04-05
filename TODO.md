@@ -1,5 +1,9 @@
 # PowerPAN Todo
 
+## Let's Encrypt Certificates for GlobalProtect Portal(s) and Gateway(s)
+
+- Requires certificate upload support in `Invoke-PanXApi` (Completed)
+
 ## Address Objects
 
 - `Set-PanAddress` and `Get-PanAddress` completed
