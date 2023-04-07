@@ -18,11 +18,10 @@ function Get-PanDeviceLabelDefault {
    [OutputType([String])]
    param()
 
-   # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters.Debug) {
-      $DebugPreference = 'Continue'
-   }
-   # If -Debug parameter, announce
+   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
+   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
+   # Announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    if( [String]::IsNullOrEmpty($Global:PanDeviceLabelDefault) ) {

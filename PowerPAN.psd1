@@ -8,7 +8,7 @@
 RootModule = 'PowerPAN.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1'
+ModuleVersion = '0.2.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -96,10 +96,10 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @("PaloAltoNetworks","Windows")
 
         # A URL to the license for this module.
-        # LicenseUri = 'https://github.com/jurbanek/powerpan/blob/master/LICENSE'
+        LicenseUri = 'https://github.com/jurbanek/powerpan/blob/master/LICENSE'
 
         # A URL to the main website for this project.
         ProjectUri = 'https://github.com/jurbanek/powerpan'
@@ -108,7 +108,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        # ReleaseNotes = 'https://github.com/jurbanek/powerpan/blob/master/CHANGELOG.md'
+        ReleaseNotes = 'https://github.com/jurbanek/powerpan/blob/master/CHANGELOG.md'
 
     } # End of PSData hashtable
 

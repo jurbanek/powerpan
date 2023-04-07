@@ -21,6 +21,12 @@ function ConvertFrom-Xml {
    )
 
    Begin {
+      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
+      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
+      # Announce
+      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      
       $CustomObject = New-Object -TypeName 'PSCustomObject'
    }
 
