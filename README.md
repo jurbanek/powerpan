@@ -28,4 +28,38 @@ PowerPAN is broadly considered experimental and incomplete, but certain parts of
 
 ## Install
 
+`Install-Module PowerPAN`
+
 ## Examples
+
+### Device Management
+
+#### 1
+
+#### 2
+
+#### 3
+
+### Device Management Tags
+
+#### 1
+
+#### 2
+
+#### 3
+
+### Invoke-PanXApi
+
+#### 1
+
+#### 2
+
+#### 3
+
+### Registered-IP Tagging
+
+#### 1
+
+#### 2
+
+#### 3
