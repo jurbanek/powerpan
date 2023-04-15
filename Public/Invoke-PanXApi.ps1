@@ -3,7 +3,8 @@ function Invoke-PanXApi {
    .SYNOPSIS
    Abstracts PAN-OS XML API core modes (actions)
    .DESCRIPTION
-   -Keygen is for generating API key
+   -Keygen is for generating API key (don't use for normal operations, use New-PanDevice)
+   
    -Version is an easy way to verify API access is functioning
 
    -Config -Show retrieves ACTIVE configuration.
@@ -146,24 +147,15 @@ function Invoke-PanXApi {
    )
 
    Begin {
-      # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters.Debug) {
-         $DebugPreference = 'Continue'
-      }
-      # If -Debug parameter, announce
+      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
+      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
+      # Announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
    } # Begin block
 
    Process {
       foreach($DeviceCur in $PSBoundParameters.Device) {
-         # Set environment's x.509 Certificate Validation Policy
-         if ($DeviceCur.ValidateCertificate) {
-            Set-X509CertificateValidation -Validate
-         }
-         else {
-            Set-X509CertificateValidation -NoValidate
-         }
-
          # API type=keygen
          if ($PSCmdlet.ParameterSetName -eq 'Keygen') {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=keygen')
@@ -391,10 +383,28 @@ function Invoke-PanXApi {
          } # End API type=import
 
          if($PSCmdlet.ShouldProcess($DeviceCur.Name,'PAN-OS XML-API call')) {
-            # Call PAN-OS XML-API with PowerShell built-in Invoke-WebRequest, include some debug
             # Invoke-WebRequest is preferred over Invoke-RestMethod. In PowerShell 5.1, Invoke-RestMethod does not make HTTP response
             # *headers* available. Remedied in PowerShell 6+ with -ResponseHeadersVariable, but PowerShell 5.1 compatibility is needed for now
-            $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+            # PowerShell 7+ x.509 Validation Policy can be set directly on Invoke-WebRequest
+            if($PSVersionTable.PSVersion.Major -ge 7) {
+               if ($DeviceCur.ValidateCertificate) {
+                  $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+               }
+               else {
+                  # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
+                  $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck) -Device $DeviceCur
+               }
+            }
+            # PowerShell 5 x.509 Validation Policy set using specific helper cmdlet
+            else {
+               if ($DeviceCur.ValidateCertificate) {
+                  Set-X509CertificateValidation -Validate
+               }
+               else {
+                  Set-X509CertificateValidation -NoValidate
+               }
+               $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+            }
             Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponse Status ' + $PanResponse.Status + ', Code ' + $PanResponse.Code)
             return $PanResponse
          }

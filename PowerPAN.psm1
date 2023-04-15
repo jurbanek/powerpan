@@ -45,4 +45,4 @@ foreach($f in @($Class + $Public + $Private) ) {
 Export-ModuleMember -Function $Public.BaseName
 
 # Export the private functions/module members only. For testing only.
-Export-ModuleMember -Function $Private.BaseName
+# Export-ModuleMember -Function $Private.BaseName

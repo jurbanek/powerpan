@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 2023-04-05
+
+### Added
+
+- `README.md` with basic description (more to come)
+
+### Changed
+
+- `Invoke-PanXApi` change to enable broad support for PowerShell 6+
+  - Officially supporting *Windows PowerShell 5.1* and *PowerShell 7.2 LTS*
+- Module version change from `0.1` to `0.2.0` in advance of publishing to PowerShell Gallery
+
 ## [Alpha] 2023-04-05
 
 ### Changed

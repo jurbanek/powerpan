@@ -35,11 +35,10 @@ function New-MultipartFormData {
       [Switch] $UnquotedBoundary
    )
 
-   # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-   if($PSBoundParameters.Debug) {
-      $DebugPreference = 'Continue'
-   }
-   # If -Debug parameter, announce
+   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
+   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
+   # Announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    # Structure of the returned object
@@ -82,6 +81,7 @@ function New-MultipartFormData {
          $MPFData.Body += "Content-Disposition: form-data; name=`"file`"; filename=`"$($FileCur.Name)`"$LF"
          # Determine MIME type for INNER Content-Type
          $MimeMap = @{
+            'cer' = 'application/pkix-cert';
             'pem' = 'application/x-pem-file';
             'p12' = 'application/x-pkcs12';
             'pfx' = 'application/x-pkcs12'

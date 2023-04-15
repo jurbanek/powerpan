@@ -103,12 +103,11 @@ function Set-PanAddress {
    )
 
    Begin {
-      # If -Debug parameter, change to 'Continue' instead of 'Inquire'
-      if($PSBoundParameters.Debug) {
-         $DebugPreference = 'Continue'
-      }
-      # If -Debug parameter, announce
-      Write-Debug $($MyInvocation.MyCommand.Name + ': ')
+      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
+      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
+      # Announce
+      Write-Debug ($MyInvocation.MyCommand.Name + ':')
    }
 
    # Two rather different ParameterSets require different iteration logic
