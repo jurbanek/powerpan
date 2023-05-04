@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.1 2023-05-04
+
+### Changed
+
+- In-line help fixes
+- `README.md` updates and examples
+
+## 0.3.0 2023-05-04
+
+### Added
+
+- PowerShell module auto-load / auto-import support. No longer need to explicitly `Import-Module` before use (must still be installed `Install-Module`).
+- Examples to `README.md`
+
 ## 0.2.0 2023-04-05
 
 ### Added
