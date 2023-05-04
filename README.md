@@ -83,8 +83,6 @@ Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Tag 'ThisTag'
 Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Ip '1.1.1.1' -Tag 'ThisTag'
 ```
 
-### Device Management Tags
-
 ### Invoke-PanXApi
 
 `Invoke-PanXApi` abstracts the PAN-OS XML-API and can be used to accomplish everything PowerPAN does not have more specific cmdlets to already achieve
@@ -127,4 +125,6 @@ Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/devices/entry[@name=
 | Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'`   | Operational (exec CLI commands). Not all are valid |
 | User-ID       | `Invoke-PanXApi <...> -Uid -Cmd '<uid-message>...</uid-message>'`   | User-ID operations. Registered-IP operations also use this type |
 | Keypair       | `Invoke-PanXApi <...> -Category keypair -File 'C:/path/to/cert.p12' -CertName 'gp-acme-com' -CertFormat 'pkcs12' -CertPassphrase 'asdf1234'`| Certificate with private key |
-| Keypair       | `Invoke-PanXApi <...> -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key |
+| Certificate   | `Invoke-PanXApi <...> -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key |
+
+### Device Management Tags
