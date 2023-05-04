@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.1 2023-05-04
+
+### Changed
+
+- In-line help fixes
+- `README.md` updates and examples
+
 ## 0.3.0 2023-05-04
 
 ### Added

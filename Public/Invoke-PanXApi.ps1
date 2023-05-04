@@ -47,10 +47,10 @@ function Invoke-PanXApi {
    PS> Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
    .EXAMPLE
    Import and process the certificate and private key within, note the -Category keypair
-   PS> Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertificateName "gp-portal-acme-com" -CertPassphrase "acme1234"
+   PS> Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
 
    Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
-   PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertificateName "gp-portal-acme-com" -CertPassphrase "acme1234"
+   PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
    #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='None')]
    param(
