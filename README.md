@@ -32,34 +32,54 @@ PowerPAN is broadly considered experimental and incomplete, but certain parts of
 
 ## Examples
 
-### Device Management
+### Create new PanDevice (add NGFW)
 
-#### 1
+*PanDevice(s) created through New-PanDevice **persist** (stored) across subsequent PowerShell sessions. No need to `New-PanDevice` every time.*
 
-#### 2
+```powershell
+# Name can be FQDN or IP address. Prompt for PAN-OS username and password using PSCredential (secure input)
+New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen
 
-#### 3
+# Supply username and password on the command-line (INSECURE input, but supported). IPv4 address is supported as well.
+New-PanDevice -Name "10.0.0.250" -Username "admin" -Password "admin123" -Keygen
+
+# Validate NGFW x.509 SSL/TLS certificate is trusted by local PowerShell session. Validation is disabled by default. Per device setting is persists.
+New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen -ValidateCertificate
+
+# Retrieve PanDevice, test the API (technically, New-PanDevice already tests, but can be used on subsequent PS sessions to verify)
+Get-PanDevice fw.lab.local | Test-PanDevice
+```
+
+### Retrieve address objects
+
+```powershell
+Get-PanDevice fw.lab.local | Get-PanAddress
+
+# For every PanDevice (stored), retrieve their address objects
+Get-PanDevice -All | Get-PanAddress
+```
+
+### Registered-IP Tagging (to populate Dynamic Address Groups)
+
+*registered-ip's are **not** address objects. They do **not** modify the candidate-config or running-config; they are commitless. The registered-ip tags are frequently used in dyanmic address group (DAG) match criteria.*
+
+```powershell
+# Add the tag to the registered-ip. Creates a new registered-ip if doesn't already exist.
+Get-PanDevice fw.lab.local | Add-PanRegisteredIp -Ip '1.1.1.1' -Tag 'MyTag'
+
+# Add both tags to both registered-ip's. Creates new registered-ip's if doesn't already exist.
+Get-PanDevice -All | Add-PanRegisteredIp -Ip '1.1.1.1','2.2.2.2' -Tag 'ThisTag','ThatTag'
+
+# Remove the registered-ip (which essentially removes all tags from the registered-ip). Can specify more than one registered-ip.
+Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Ip '1.1.1.1'
+
+# Remove the tag from any and all registered-ip where it might be present. Can specify more than one tag.
+Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Tag 'ThisTag'
+
+# Remove the tag from the registered-ip, if present. Other tags on the registered-ip are unaffected.
+Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Ip '1.1.1.1' -Tag 'ThisTag'
+```
 
 ### Device Management Tags
 
-#### 1
-
-#### 2
-
-#### 3
-
 ### Invoke-PanXApi
-
-#### 1
-
-#### 2
-
-#### 3
-
-### Registered-IP Tagging
-
-#### 1
-
-#### 2
-
-#### 3

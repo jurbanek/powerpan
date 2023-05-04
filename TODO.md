@@ -1,14 +1,5 @@
 # PowerPAN Todo
 
-## Auto-Load PowerShell Module
-
-- Enable auto-loading of module to avoid having to `Import-Module`, even after install.
-- Look at `.psd1` `FunctionsToExport = @()`, likely have to generate/replace as part of `Publish.ps1`
-
-## Let's Encrypt Certificates for GlobalProtect Portal(s) and Gateway(s)
-
-- Requires certificate upload support in `Invoke-PanXApi` (Completed)
-
 ## Address Objects
 
 - `Set-PanAddress` and `Get-PanAddress` completed
