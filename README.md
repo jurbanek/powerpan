@@ -115,15 +115,16 @@ Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/devices/entry[@name=
 
 #### Type
 
-Type          | PowerPAN | Note
-Config Show   | `Invoke-PanXApi <...> -Config -Show -XPath '/config/xpath...'` | Retrieves ACTIVE configuration
-Config Get    | `Invoke-PanXApi <...> -Config -Get -XPath '/config/xpath...'`  | Retrieves CANDIDATE configuration
-Config Set    | `Invoke-PanXApi <...> -Config -Set -XPath '/config/xpath...' -Element '<example>value</example>'`   | Add, update, merge. Non-destructive, only additive
-Config Edit   | `Invoke-PanXApi <...> -Config -Edit -XPath '/config/xpath...' -Element '<example>value</example>'`   | Replace configuration node. Can be destructive
-Config Delete | `Invoke-PanXApi <...> -Config -Delete -XPath '/config/xpath...'`   | Delete configuration. Destructive
-Version       | `Invoke-PanXApi <...> -Version`   | Easy way to test API
-Commit       |  `Invoke-PanXApi <...> -Commit`   | Commit
-Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'`   | Operational (exec CLI commands). Not all are valid.
-User-ID       | `Invoke-PanXApi <...> -Uid -Cmd '<uid-message>...</uid-message>'`   | User-ID operations. Registered-IP operations also use this type
-Keypair       | `Invoke-PanXApi <...> -Category keypair -File 'C:/path/to/cert.p12' -CertName 'gp-acme-com' -CertFormat 'pkcs12' -CertPassphrase 'asdf1234'`| Certificate with private key
-Keypair       | `Invoke-PanXApi <...> -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key
+| Type          | PowerPAN | Note |
+| ------------- | -------- | ---- |
+| Config Show   | `Invoke-PanXApi <...> -Config -Show -XPath '/config/xpath...'` | Retrieves ACTIVE configuration |
+| Config Get    | `Invoke-PanXApi <...> -Config -Get -XPath '/config/xpath...'`  | Retrieves CANDIDATE configuration |
+| Config Set    | `Invoke-PanXApi <...> -Config -Set -XPath '/config/xpath...' -Element '<example>value</example>'`   | Add, update, merge. Non-destructive, only additive |
+| Config Edit   | `Invoke-PanXApi <...> -Config -Edit -XPath '/config/xpath...' -Element '<example>value</example>'`   | Replace configuration node. Can be destructive |
+| Config Delete | `Invoke-PanXApi <...> -Config -Delete -XPath '/config/xpath...'`   | Delete configuration. Destructive |
+| Version       | `Invoke-PanXApi <...> -Version`   | Easy way to test API |
+| Commit       |  `Invoke-PanXApi <...> -Commit`   | Commit |
+| Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'`   | Operational (exec CLI commands). Not all are valid |
+| User-ID       | `Invoke-PanXApi <...> -Uid -Cmd '<uid-message>...</uid-message>'`   | User-ID operations. Registered-IP operations also use this type |
+| Keypair       | `Invoke-PanXApi <...> -Category keypair -File 'C:/path/to/cert.p12' -CertName 'gp-acme-com' -CertFormat 'pkcs12' -CertPassphrase 'asdf1234'`| Certificate with private key |
+| Keypair       | `Invoke-PanXApi <...> -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key |
