@@ -28,14 +28,16 @@ PowerPAN is broadly considered experimental and incomplete, but certain parts of
 
 ## Install
 
+<sub>`PowerPAN' is available from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerPAN)</sub>
+
 `Install-Module PowerPAN`
 
 ## Examples
 
 ### Create new PanDevice (add NGFW)
 
-- PanDevice(s) created through New-PanDevice **persist** (stored) across subsequent PowerShell sessions
-- No need to `New-PanDevice` every time
+- PanDevice(s) created through `New-PanDevice` **persist** (stored) across subsequent PowerShell sessions
+- No need to `New-PanDevice` every time, saves time
 
 ```powershell
 # Name can be FQDN or IP address. Prompt for PAN-OS username and password using PSCredential (secure input)
