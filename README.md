@@ -28,7 +28,7 @@ PowerPAN is broadly considered experimental and incomplete, but certain parts of
 
 ## Install
 
-<sub>`PowerPAN' is available from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerPAN)</sub>
+Available from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerPAN)
 
 `Install-Module PowerPAN`
 
