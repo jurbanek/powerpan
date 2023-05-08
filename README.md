@@ -19,8 +19,8 @@ PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
   - Other cmdlets do not yet have native Panorama support
 - PowerShell Support
   - Windows PowerShell 5.1
-  - PowerShell 7.2 LTS (as of 2023-04-05 have not tested Linux/Mac yet)
-  - Other versions will likely work, but these will be tested
+  - PowerShell 7.2 LTS (works on Windows, as of 2023-04-05 have not tested Linux/Mac yet)
+  - Other versions will likely work, but will not be tested explicitly
 
 ## Status
 
@@ -28,14 +28,16 @@ PowerPAN is broadly considered experimental and incomplete, but certain parts of
 
 ## Install
 
+Available from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerPAN)
+
 `Install-Module PowerPAN`
 
 ## Examples
 
 ### Create new PanDevice (add NGFW)
 
-- PanDevice(s) created through New-PanDevice **persist** (stored) across subsequent PowerShell sessions
-- No need to `New-PanDevice` every time
+- PanDevice(s) created through `New-PanDevice` **persist** (stored) across subsequent PowerShell sessions
+- No need to `New-PanDevice` every time, saves time
 
 ```powershell
 # Name can be FQDN or IP address. Prompt for PAN-OS username and password using PSCredential (secure input)
