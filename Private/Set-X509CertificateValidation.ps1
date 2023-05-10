@@ -1,29 +1,28 @@
 function Set-X509CertificateValidation {
    <#
    .SYNOPSIS
-      Control x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+   Require or disable x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls.
    .DESCRIPTION
-      Control x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+   Change/setting persists for the remainder of the PowerShell session or until changed within the PowerShell session.
+   
+   New PowerShell sessions are started with the .NET default (requires validation).
    .NOTES
-      A lot of headaches have been caused by PowerShell and x.509 certificate validation.
-
-      Uses two mutually exclusive switch parameters to require or disable x.509 switch validation.
    .INPUTS
-      None
+   None
    .OUTPUTS
-      None
+   None
    .PARAMETER Validate
-      Require x.509 certificate validation validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+   Require x.509 certificate validation validation (trust) for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls
    .PARAMETER NoValidate
-      Disable x.509 certificate validation validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed calls.
+   Disable x.509 certificate validation validation (trust) for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls
    .EXAMPLE
-      PS> Set-X509CertificateValidation -NoValidate
+   PS> Set-X509CertificateValidation -NoValidate
 
-      Disable x.509 certificate validation for subsequent .NET backed calls.
+   Disable x.509 certificate validation for subsequent .NET backed HTTPS calls
    .EXAMPLE
-      PS> Set-X509CertificateValidation -Validate
+   PS> Set-X509CertificateValidation -Validate
 
-      Require x.509 certificate validation for subsequent .NET backed calls.
+   Require x.509 certificate validation for subsequent .NET backed HTTPS calls
    #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(

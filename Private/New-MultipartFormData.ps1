@@ -1,16 +1,21 @@
 <#
    .SYNOPSIS
-   Creates multipart/form-data Content-Type Header and Body
+   Creates multipart/form-data Content-Type Header and Body with unquoted boundary value in Content-Type header.
    .DESCRIPTION
-   Built primarily to workaround limitations in PAN-OS XML-API with quoted boundary in OUTER Content-Type header.
-
-   Returns a PSCustomObject with Header and Body properties which can be used as input to Invoke-WebRequest and
+   Built to workaround limitations in PAN-OS XML-API with quoted boundary in OUTER Content-Type header.
+   Returns a PSCustomObject with Header and Body properties which can be used as input to Invoke-WebRequest/Invoke-RestMethod
    .NOTES
-   In PowerShell 7+, Invoke-WebRequest -Form, Invoke-RestMethod -Form DO quote the boundary. Not an option.
-   .NET System.Net.Http.MultipartFormDataContent also DOES quote the boundary. Not an option.
-   Needed something else
+   PAN-OS XML-API fails when with multipart/form-data POSTs when the boundary value is quoted in the Content-Type header.
+
    Issue below captures the challenge nicely
    https://github.com/PowerShell/PowerShell/issues/9241
+
+   .NET System.Net.Http.MultipartFormDataContent also DOES quote the boundary. Not an option.
+   In PowerShell 7+, Invoke-WebRequest -Form, Invoke-RestMethod -Form DO quote the boundary. Not an option.
+   Needed to build something to keep the Content-Type boundary value unquoted.
+
+   MIME mapping is limited to a few defined file extensions. Can be extended.
+
    Some additional content
    https://www.reddit.com/r/paloaltonetworks/comments/l47a4h/upload_certificate_via_api/
    https://stackoverflow.com/questions/25075010/upload-multiple-files-from-powershell-script
@@ -19,10 +24,13 @@
    None
    .OUTPUTS
    PSCustomObject
+   .PARAMETER Boundary
+   Specify a boundary value. If not provided, a GUID will be generated and used.
+   .PARAMETER UnquotedBoundary
+   Switch parameter that when specified, boundary value in the Content-Type header will be unquoted (not quoted).
    .EXAMPLE
    PS> $Data = New-MultipartFormData -File "C:\path\to\file.p12" -UnquotedBoundary
    PS> Invoke-WebRequest -Method Post -Uri 'https://...' -ContentType $Data.Header.ContentType -Body $Data.Body ...
-
 #>
 function New-MultipartFormData {
    [CmdletBinding()]
