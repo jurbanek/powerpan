@@ -1,5 +1,10 @@
 # PowerPAN Todo
 
+## Commit / Job
+
+- Friendlier cmdlet wrapper for existing -Commit capability in `Invoke-PanXApi`
+- Cmdlets for interacting with jobs (at least viewing) to get Commit status
+
 ## Address Objects
 
 - `Set-PanAddress` and `Get-PanAddress` completed
