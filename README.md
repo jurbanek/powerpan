@@ -19,8 +19,8 @@ PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
   - Other cmdlets do not yet have native Panorama support
 - PowerShell Support
   - Windows PowerShell 5.1
-  - PowerShell 7.2 LTS (works on Windows, as of 2023-04-05 have not tested Linux/Mac yet)
-  - Other versions will likely work, but will not be tested explicitly
+  - PowerShell 7.2 LTS (works on Windows and MacOS, as of 2024-09-18 have not tested Linux yet)
+  - Other PowerShell versions will likely work, but will not be tested explicitly
 
 ## Status
 
