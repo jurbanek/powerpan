@@ -12,7 +12,7 @@
 RootModule = 'PowerPAN.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.1'
+ModuleVersion = '0.3.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'John Urbanek'
 CompanyName = 'URBANEK.IO'
 
 # Copyright statement for this module
-Copyright = '(c) 2018-2023 John Urbanek. All rights reserved.'
+Copyright = '(c) 2018-2024 John Urbanek. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'PowerShell module for Palo Alto Networks'
