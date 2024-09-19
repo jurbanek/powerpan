@@ -19,7 +19,14 @@ function Import-PanDeviceDb {
    # Announce
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
-   $StoredJsonPath = $env:USERPROFILE + '\.powerpan\device.json'
+   # Detect PowerShell Core automatic variables for MacOS and Linux
+   if($IsMacOS -or $IsLinux) {
+      $StoredJsonPath = $Env:HOME + '/.powerpan/device.json'
+   }
+   # Otherwise Windows PowerShell and PowerShell Core on Windows will both have same environment variable name
+   else {
+      $StoredJsonPath = $Env:USERPROFILE + '/.powerpan/device.json'
+   }
 
    if(-not (Test-Path -Path $StoredJsonPath -PathType Leaf)) {
       Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "$StoredJsonPath file does not exist. Nothing to get")

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.3 2024-09-19
+
+### Changed
+
+ - Problematic PowerShell Gallery push (development moved to MacOS, teething problems). Removed many unnecessary files inadvertently included in 0.3.2.
+
+## 0.3.2 2024-09-19
+
+### Changed
+
+ - Export-PanDeviceDb and Import-PanDeviceDb changed to enable MacOS (tested) and Linux (not tested) support for saving `devices.json` using `HOME` environment variable. Persistent devices across PowerShell sessions now supported on MacOS (and likely Linux).
+
 ## 0.3.1 2023-05-04
 
 ### Changed

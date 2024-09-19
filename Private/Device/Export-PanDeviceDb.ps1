@@ -19,10 +19,18 @@ function Export-PanDeviceDb {
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
-
-      $StoredDirectoryPath = $Env:USERPROFILE + '\.powerpan'
-      $StoredJsonPath = $Env:USERPROFILE + '\.powerpan\device.json'
-
+      
+      # Detect PowerShell Core automatic variables for MacOS and Linux
+      if($IsMacOS -or $IsLinux) {
+         $StoredDirectoryPath = $Env:HOME + '/.powerpan'
+         $StoredJsonPath = $Env:HOME + '/.powerpan/device.json'
+      }
+      # Otherwise Windows PowerShell and PowerShell Core on Windows will both have same environment variable name
+      else {
+         $StoredDirectoryPath = $Env:USERPROFILE + '/.powerpan'
+         $StoredJsonPath = $Env:USERPROFILE + '/.powerpan/device.json'
+      }
+      
       if(-not (Test-Path -Path $StoredDirectoryPath -PathType Container)) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "$StoredDirectoryPath directory does not exist. Creating.")
          New-Item -Path $StoredDirectoryPath -ItemType Directory -Force | Out-Null
