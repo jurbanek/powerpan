@@ -19,7 +19,8 @@ PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
   - Other cmdlets do not yet have native Panorama support
 - PowerShell Support
   - Windows PowerShell 5.1
-  - PowerShell 7.2 LTS (works on Windows and MacOS, as of 2024-09-18 have not tested Linux yet)
+  - PowerShell 7.2 LTS (works on Windows and MacOS, as of 2024-09-18 have not tested Linux yet). PowerShell 7.2 LTS is end of support.
+  - PowerShell 7.4 LTS (works on Windows and MacOS, as of 2025-02-21 have not tested Linux yet).
   - Other PowerShell versions will likely work, but will not be tested explicitly
 
 ## Status
@@ -123,10 +124,95 @@ Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/devices/entry[@name=
 | Config Edit   | `Invoke-PanXApi <...> -Config -Edit -XPath '/config/xpath...' -Element '<example>value</example>'`   | Replace configuration node. Can be destructive |
 | Config Delete | `Invoke-PanXApi <...> -Config -Delete -XPath '/config/xpath...'`   | Delete configuration. Destructive |
 | Version       | `Invoke-PanXApi <...> -Version`   | Easy way to test API |
-| Commit       |  `Invoke-PanXApi <...> -Commit`   | Commit |
+| Commit        |  `Invoke-PanXApi <...> -Commit`   | Commit |
 | Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'`   | Operational (exec CLI commands). Not all are valid |
 | User-ID       | `Invoke-PanXApi <...> -Uid -Cmd '<uid-message>...</uid-message>'`   | User-ID operations. Registered-IP operations also use this type |
-| Keypair       | `Invoke-PanXApi <...> -Category keypair -File 'C:/path/to/cert.p12' -CertName 'gp-acme-com' -CertFormat 'pkcs12' -CertPassphrase 'asdf1234'`| Certificate with private key |
-| Certificate   | `Invoke-PanXApi <...> -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key |
+| Keypair       | `Invoke-PanXApi <...> -Import -Category keypair -File 'C:/path/to/cert.p12' -CertName 'gp-acme-com' -CertFormat 'pkcs12' -CertPassphrase 'asdf1234'`| Certificate with private key |
+| Certificate   | `Invoke-PanXApi <...> -Import -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key |
 
-### Device Management Tags
+### PanDeviceDb / Device Management Labels
+
+One of the key features of PowerPAN is to enable rapid "open a terminal/console session and query my firewall quickly" without having to deal with generating API keys. To that end, device profiles are stored on disk in the user's home/profile directory. The device profile contains an encrypted version of the API key that is only decryptable when executing within the user's profile (using serialized `SecureString`).
+
+**Example:**
+Day 1 you create a new PanDevice and then run a few cmdlets against it
+
+```powershell
+New-PanDevice -Name '10.0.0.1' -Credential $(Get-Credential) -Keygen
+
+Get-PanDevice '10.0.0.1' | Get-PanRegisteredIp
+```
+
+Day 5 you come back, open up your terminal and can reuse the PanDevice from earlier. No need to generate new API keys.
+
+```powershell
+Get-PanDevice '10.0.0.1' | Get-PanRegisteredIp
+```
+
+Let's say you want to keep the connection string as the IP address, but add a friendly name (a label).
+
+```powershell
+Get-PanDevice '10.0.0.1' | Add-PanDeviceLabel 'ACME-3420A'
+```
+
+Now you can reference the label when fetching it
+
+```powershell
+# Note the -Label argument is required
+Get-PanDevice -Label 'ACME-3420A'
+```
+
+To see (and fetch) all devices (and their lablels)
+
+```powershell
+Get-PanDevice -All
+```
+
+More than one label can be added to devices
+
+```powershell
+# During creation
+New-PanDevice -Name '10.0.0.1' -Credential $(Get-Credential) -Keygen -Label 'ACME-3420A','Site23'
+# Or after the fact
+Get-PanDevice '10.0.0.1' | Add-PanDeviceLabel 'ACME-3420A','Site23'
+```
+
+If multiple devices have the same label, they will be returned together when that label is requested.
+
+- Make some labels unique, use others for grouping. 
+- Most PowerPAN cmdlets accept multiple PanDevices as input. Of course, you can always take more control of multi-firewall processing with your own `foreach` loops.
+
+### File Uploads (Useful for uploading Certificates)
+
+Consider using [Posh-ACME](https://poshac.me/docs/v4/) to generate Let's Encrypt (or other ACME compatible CA) certificates and PowerPAN to perform the certificate upload to the firewall and subsequent processing.
+
+Full Posh-ACME workflow is **not** included below. After you generate with Posh-ACME:
+
+```powershell
+# Snippet below conveys usage/idea. Production use would include more Posh-ACME, logic, and use of variables instead of string literals.
+$D = Get-PanDevice '10.0.0.1'
+# Don't be confused by the "PA" prefix of Posh-ACME cmdlets. It does not stand for Palo Alto :)
+# Assumes you've already generated with New-PACertificate or Submit-Renewal
+$LECert = Get-PACertificate
+
+# Add -Debug and -Verbose if you want to see more detail
+# -Category 'keypair' is for certificate including private key. -Category 'certificate' is for certificate only
+# Consider appending an ISO8601 date suffix representing issue date on the end, especially when renewing every 30/60 days
+$Response = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
+if($Response.Status -eq 'success') {
+  Write-Host ('Upload successful')
+}
+else {
+  Write-Error ('Upload not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message) -ErrorAction Stop
+}
+
+# Optionally, update a SSL/TLS Service Profile to use the certificate
+$XPath = "/config/shared/ssl-tls-service-profile/entry[@name='{0}']" -f 'GP-Portal-Gateway-Profile'
+$Element = "<certificate>{0}</certificate>" -f 'gp.acme.io-20250221'
+$Response = Invoke-PanXApi -Device $D -Config -Set -XPath $XPath -Element $Element
+if($Response.Status -eq 'success') {
+  Write-Host ('Update successful')
+}
+else {
+  Write-Error ('Update not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message) -ErrorAction Stop
+}

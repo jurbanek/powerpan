@@ -2,7 +2,7 @@
    .SYNOPSIS
    Creates multipart/form-data Content-Type Header and Body with unquoted boundary value in Content-Type header.
    .DESCRIPTION
-   Built to workaround limitations in PAN-OS XML-API with quoted boundary in OUTER Content-Type header.
+   Built to workaround limitations in PAN-OS XML-API with quoted boundary value in OUTER Content-Type header.
    Returns a PSCustomObject with Header and Body properties which can be used as input to Invoke-WebRequest/Invoke-RestMethod
    .NOTES
    PAN-OS XML-API fails when with multipart/form-data POSTs when the boundary value is quoted in the Content-Type header.
@@ -10,11 +10,12 @@
    Issue below captures the challenge nicely
    https://github.com/PowerShell/PowerShell/issues/9241
 
-   .NET System.Net.Http.MultipartFormDataContent also DOES quote the boundary. Not an option.
-   In PowerShell 7+, Invoke-WebRequest -Form, Invoke-RestMethod -Form DO quote the boundary. Not an option.
-   Needed to build something to keep the Content-Type boundary value unquoted.
+   .NET System.Net.Http.MultipartFormDataContent DOES quote the boundary value. Cannot be used for PAN-OS XML-API.
+   In PowerShell 7+, Invoke-WebRequest -Form, Invoke-RestMethod -Form DO quote the boundary value. Cannot be used for PAN-OS XML-API.
+   Needed to build something to keep the Content-Type boundary value UNquoted.
 
-   MIME mapping is limited to a few defined file extensions. Can be extended.
+   MIME mapping is limited to a few defined file extensions. Can be extended as needed.
+   Do not use this cmdlet for general MIME/HTTP file uploads. This cmdlet is specifically for PAN-OS XML-API.
 
    Some additional content
    https://www.reddit.com/r/paloaltonetworks/comments/l47a4h/upload_certificate_via_api/
@@ -68,12 +69,18 @@ function New-MultipartFormData {
    # Newline to be used
    $LF = "`r`n"
 
-   # OUTER HTTP Content-Type header (Invoke-WebRequest ContentType parameter, no hyphen)
-   # Implementation Note: PAN-OS XML-API does NOT support a quoted boundary on the OUTER Content-Type where the boundary is first defined
-   # Works: Content-Type: multipart/form-data; boundary=asdf1234
-   # Fails: Content-Type: multipart/form-data; boundary="asdf1234"
+   # OUTER HTTP Content-Type header (Invoke-WebRequest ContentType parameter name representing HTTP Content-Type header does not have a hyphen)
+   # Implementation Note: PAN-OS XML-API does NOT support a quoted boundary value on the OUTER Content-Type where the boundary is defined in HTTP header.
+   # Works in PAN-OS XML API (value unquoted): Content-Type: multipart/form-data; charset=iso-8859-1; boundary=asdf1234
+   # Fails in PAN-OS XML API (value quoted): Content-Type: multipart/form-data; charset=iso-8859-1; boundary="asdf1234"
+   # When used in the HTTP body, the boundary value is prefixed with two hyphens "--" and final boundary value prefixed and suffixed as the specification requires.
    if($PSBoundParameters.UnquotedBoundary.IsPresent) {
-      $MPFData.Header.ContentType = "multipart/form-data; boundary=$Boundary"
+      # PowerShell 7.4 changed the web cmdlets default Content-Type to utf-8. We explicitly choose iso-8859-1 for encoding using [System.Text.Encoding] below.
+      # Need to specify in ContentType parameter for use in HTTP Content-Type header.
+      # This ultimately returned ContentType parameter must be used during Invoke-WebRequest or Invoke-RestMethod.
+      # https://learn.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-74
+      # https://github.com/PowerShell/PowerShell/pull/18219
+      $MPFData.Header.ContentType = "multipart/form-data; charset=iso-8859-1; boundary=$Boundary"
       Write-Debug ($MyInvocation.MyCommand.Name + ": Unquoted boundary: $($MPFData.Header.ContentType)")
    }
    else {

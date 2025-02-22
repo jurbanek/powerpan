@@ -366,7 +366,7 @@ function Invoke-PanXApi {
 
                # Submit file to New-MultipartFormData for generating Content-Type header and multipart/form-data encoded body
                # Make sure to use -UnquotedBoundary for PAN-OS XML API limitation/workaround. See New-MultipartFormData
-               $MPFData = New-MultipartFormData -File $File -UnquotedBoundary
+               $MPFData = New-MultipartFormData -File $PSBoundParameters.File -UnquotedBoundary
                # Add ContentType header to InvokeParams
                $InvokeParams.Add('ContentType', $MPFData.Header.ContentType)
                $InvokeParams.Add('Body', $MPFData.Body)

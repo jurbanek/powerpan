@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.4 2025-02-21
+
+### Added
+
+- README updates and examples including File/Certificate uploads and `PanDeviceDb` metadata labels.
+
+### Changed
+
+- Updated `New-MultipartFormData` to address an issue when using PowerShell 7.4.
+  - In PowerShell 7.4 the web cmdlets default charset was changed to utf-8.
+  - `New-MultipartFormData` is a custom MIME encoder for PAN-OS XML-API (see the cmdlet code itself for details).
+  - Required including the non- "utf-8" charset in the `ContentType` parameter which makes its way to the HTTP `Content-Type:` header to resolve XML-API upload failures.
+  - <https://github.com/PowerShell/PowerShell/pull/18219>
+
 ## 0.3.3 2024-09-19
 
 ### Changed
