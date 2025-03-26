@@ -12,8 +12,8 @@
                <TableColumnHeader><Label>Type</Label></TableColumnHeader>
                <TableColumnHeader><Label>Status</Label></TableColumnHeader>
                <TableColumnHeader><Label>Result</Label></TableColumnHeader>
-               <TableColumnHeader><Label>DtEnqueued</Label></TableColumnHeader>
-               <TableColumnHeader><Label>DtFinished</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Enqueued</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Finished</Label></TableColumnHeader>
                <TableColumnHeader><Label>Device</Label></TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
@@ -23,8 +23,8 @@
                         <TableColumnItem><PropertyName>Type</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Status</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Result</PropertyName></TableColumnItem>
-                        <TableColumnItem><PropertyName>DtEnqueued</PropertyName></TableColumnItem>
-                        <TableColumnItem><PropertyName>DtFinished</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Enqueued</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Finished</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>
                   </TableColumnItems>
                </TableRowEntry>
@@ -44,8 +44,8 @@
                      <ListItem><PropertyName>Type</PropertyName></ListItem>
                      <ListItem><PropertyName>Status</PropertyName></ListItem>
                      <ListItem><PropertyName>Result</PropertyName></ListItem>
-                     <ListItem><PropertyName>DtEnqueued</PropertyName></ListItem>
-                     <ListItem><PropertyName>DtFinished</PropertyName></ListItem>
+                     <ListItem><PropertyName>Enqueued</PropertyName></ListItem>
+                     <ListItem><PropertyName>Finished</PropertyName></ListItem>
                      <ListItem><PropertyName>Device</PropertyName></ListItem>
                   </ListItems>
                </ListEntry>

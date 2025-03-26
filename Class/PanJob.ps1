@@ -18,14 +18,18 @@ class PanJob {
     # Is job stoppable
     [String] $Stoppable
 
+    # DateTimeOffset is used for these values. Standard DateTime does not offer an offset.
     # Time Enqueued (submitted/entered the job queue)
-    [DateTime] $DtEnqueued
+    [DateTimeOffset] $Enqueued
 
     # Time Dequeued (started processing)
-    [DateTime] $DtDequeued
+    [DateTimeOffset] $Dequeued
 
     # Time Finished (job completed/finished)
-    [DateTime] $DtFinished
+    [DateTimeOffset] $Finished
+
+    # Time Zone, stored as TimeZoneInfo, useful should friendly time zone names be needed
+    [TimeZoneInfo] $TimeZoneInfo
 
     # Multi-line details
     [String] $Details

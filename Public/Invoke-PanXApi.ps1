@@ -388,11 +388,11 @@ function Invoke-PanXApi {
             # PowerShell 7+ x.509 Validation Policy can be set directly on Invoke-WebRequest
             if($PSVersionTable.PSVersion.Major -ge 7) {
                if ($DeviceCur.ValidateCertificate) {
-                  $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+                  $Response = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
                }
                else {
                   # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
-                  $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck) -Device $DeviceCur
+                  $Response = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck) -Device $DeviceCur
                }
             }
             # PowerShell 5 x.509 Validation Policy set using specific helper cmdlet
@@ -403,10 +403,10 @@ function Invoke-PanXApi {
                else {
                   Set-X509CertificateValidation -NoValidate
                }
-               $PanResponse = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+               $Response = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
             }
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponse Status ' + $PanResponse.Status + ', Code ' + $PanResponse.Code)
-            return $PanResponse
+            Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1}' -f $Response.Status, $Response.Code))
+            return $Response
          }
       } # Process block outermost foreach
    } # Process block
