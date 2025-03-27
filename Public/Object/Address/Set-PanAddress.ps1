@@ -142,7 +142,7 @@ function Set-PanAddress {
                   continue
                }
                # Create a minimum viable object. Then update only the properties specified by caller
-               $PanObject = New-PanAddress -Name $PSBoundParameters.Name -Value $PSBoundParameters.Value -Device $DeviceCur
+               $PanObject = NewPanAddress -Name $PSBoundParameters.Name -Value $PSBoundParameters.Value -Device $DeviceCur
                if($PSBoundParameters.Type) { $PanObject.Type = $PSBoundParameters.Type }
                if($PSBoundParameters.Description.Count) { $PanObject.Description = $PSBoundParameters.Description }
                if($PSBoundParameters.Tag.Capacity) { $PanObject.Tag = $PSBoundParameters.Tag }
@@ -156,7 +156,7 @@ function Set-PanAddress {
 
             if($PSCmdlet.ShouldProcess($PanObject.Device.Name,'Create/Update ' + $PanObject.Name)) {
                # Call to helper which returns a PanResponse
-               $PanResponse = Set-PanAddressHelper -Address $PanObject
+               $PanResponse = SetPanAddressHelper -Address $PanObject
                # When successful send object to pipeline as confirmation. Failures will have errors written
                if($PanResponse.Status -eq 'success') { $PanObject }
                else {
@@ -184,7 +184,7 @@ function Set-PanAddress {
 
             if($PSCmdlet.ShouldProcess($AddressCurClone.Device.Name,'Create/Update ' + $AddressCurClone.Name)) {
                # Call to helper which returns a PanResponse
-               $PanResponse = Set-PanAddressHelper -Address $AddressCurClone
+               $PanResponse = SetPanAddressHelper -Address $AddressCurClone
                # When successful send object to pipeline as confirmation. Failures will have errors written
                if($PanResponse.Status -eq 'success') { $AddressCurClone }
                else {

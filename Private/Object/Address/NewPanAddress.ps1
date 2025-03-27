@@ -1,16 +1,16 @@
-function New-PanAddress {
-   <#
-   .SYNOPSIS
-   Returns a PanAddress object.
-   .DESCRIPTION
-   Returns a PanAddress object. To apply PanAddress to NGFW, use Set-, Remove-, Clear- cmdlets.
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   PanAddress
-   .EXAMPLE
-   #>
+function NewPanAddress {
+<#
+.SYNOPSIS
+Returns a PanAddress object.
+.DESCRIPTION
+Returns a PanAddress object. To apply PanAddress to NGFW, use Set-, Remove-, Clear- cmdlets.
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+PanAddress
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
       [parameter(

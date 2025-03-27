@@ -1,4 +1,4 @@
-function ConvertFrom-Xml {
+function ConvertFromXml {
    <#
    .SYNOPSIS
    Converts the 'Property' type properties of a System.Xml.* object to a PSCustomObject
@@ -33,7 +33,7 @@ function ConvertFrom-Xml {
    Process {
       foreach($MemberDefCur in ($XmlObject | Get-Member -MemberType 'Property')) {
          if($XmlObject.($MemberDefCur.Name).GetType().Name -like '*Xml*') {
-            Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $(ConvertFrom-Xml -XmlObject $XmlObject.($MemberDefCur.Name) )
+            Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $(ConvertFromXml -XmlObject $XmlObject.($MemberDefCur.Name) )
          }
          else {
             Add-Member -InputObject $CustomObject -MemberType 'NoteProperty' -Name $MemberDefCur.Name -Value $XmlObject.($MemberDefCur.Name)

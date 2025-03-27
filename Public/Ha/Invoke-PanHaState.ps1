@@ -52,7 +52,7 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
                 Write-Debug ($MyInvocation.MyCommand.Name + (': -Info Cmd: {0}' -f $Cmd))
                 $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
                 if($Response.Status -eq 'success') {
-                    New-PanHaState -Device $DeviceCur -Response $Response
+                    NewPanHaState -Device $DeviceCur -Response $Response
                 }
                 else {
                     Write-Error ('Error retrieving PAN HA state. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)

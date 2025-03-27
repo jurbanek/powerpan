@@ -1,16 +1,16 @@
-function New-PanHaState {
-    <#
-    .SYNOPSIS
-    Returns a PanHaState object.
-    .DESCRIPTION
-    Returns a PanHaState object.
-    .NOTES
-    .INPUTS
-    None
-    .OUTPUTS
-    PanHaState
-    .EXAMPLE
-    #>
+function NewPanHaState {
+<#
+.SYNOPSIS
+Returns a PanHaState object.
+.DESCRIPTION
+Returns a PanHaState object.
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+PanHaState
+.EXAMPLE
+#>
     [CmdletBinding()]
     param(
        [parameter(

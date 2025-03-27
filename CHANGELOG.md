@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.0 ???
+
+- Changed module's private cmdlets to use non-hyphenated names based on PowerShell best practice to distinguish public from private.
+  - Private cmdlet/function `New-PanResponse` became `NewPanResponse`. And many more.
+
 ## 0.3.4 2025-02-21
 
 ### Added
@@ -10,9 +15,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Updated `New-MultipartFormData` to address an issue when using PowerShell 7.4.
+- Updated `NewMultipartFormData` to address an issue when using PowerShell 7.4.
   - In PowerShell 7.4 the web cmdlets default charset was changed to utf-8.
-  - `New-MultipartFormData` is a custom MIME encoder for PAN-OS XML-API (see the cmdlet code itself for details).
+  - `NewMultipartFormData` is a custom MIME encoder for PAN-OS XML-API (see the cmdlet code itself for details).
   - Required including the non- "utf-8" charset in the `ContentType` parameter which makes its way to the HTTP `Content-Type:` header to resolve XML-API upload failures.
   - <https://github.com/PowerShell/PowerShell/pull/18219>
 
@@ -26,7 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - Export-PanDeviceDb and Import-PanDeviceDb changed to enable MacOS (tested) and Linux (not tested) support for saving `devices.json` using `HOME` environment variable. Persistent devices across PowerShell sessions now supported on MacOS (and likely Linux).
+ - ExportPanDeviceDb and ImportPanDeviceDb changed to enable MacOS (tested) and Linux (not tested) support for saving `devices.json` using `HOME` environment variable. Persistent devices across PowerShell sessions now supported on MacOS (and likely Linux).
 
 ## 0.3.1 2023-05-04
 
@@ -67,7 +72,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- New `New-MultipartFormData ` private helpers for building `multipart/form-data` POSTs.
+- New `NewMultipartFormData ` private helpers for building `multipart/form-data` POSTs.
 
   - PAN-OS XML-API has trouble with quoted `boundary` declaration on the OUTER `Content-Type` header
   - Issue captures the challenge nicely <https://github.com/PowerShell/PowerShell/issues/9241>
@@ -127,7 +132,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- New `[PanResponse]` class and `New-PanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
+- New `[PanResponse]` class and `NewPanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
   - `Invoke-PanXApi` now returns `[PanResponse]`, which now includes HTTP response details, along with the results
   - Refactored all relevant cmdlets in light of `[PanResponse]` object property name and structure changes
 - New `PanResponse.Format.ps1xml` and `PanDevice.Format.ps1xml` format files to simplify `[PanResponse]` and `[PanDevice]` default object property display
@@ -223,4 +228,4 @@ All notable changes to this project will be documented in this file.
 - Add `-Credential` parameter to `New-PanDevice`
   - Need a secure option for adding credentials using New-PanDevice
   - Example with New-PanDevice -Name "MyDevice" -Credential $(New-Credential) -Keygen
-  - `[PanDevice]` class constructor has already been built to deal with this case on import via Import-PanDeviceDb
+  - `[PanDevice]` class constructor has already been built to deal with this case on import via ImportPanDeviceDb

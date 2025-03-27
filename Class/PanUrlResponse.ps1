@@ -1,5 +1,4 @@
 class PanUrlResponse {
-
    # URL being resolved
    [String] $Url
    # NGFW management plane [multi]category verdict

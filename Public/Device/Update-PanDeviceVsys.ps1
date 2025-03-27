@@ -1,17 +1,17 @@
 function Update-PanDeviceVsys {
-   <#
-   .SYNOPSIS
-   Updates the PanDevice vsys layout within PanDeviceDb.
-   .DESCRIPTION
-   Updates to the vsys layout do not persist across PowerShell sessions. The setting/layout is not saved to disk and is updated (refreshed) at runtime.
-   .NOTES
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   None
-   .EXAMPLE
-   #>
+<#
+.SYNOPSIS
+Updates the PanDevice vsys layout within PanDeviceDb.
+.DESCRIPTION
+Updates to the vsys layout do not persist across PowerShell sessions. The setting/layout is not saved to disk and is updated (refreshed) at runtime.
+.NOTES
+.INPUTS
+PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+None
+.EXAMPLE
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
@@ -29,7 +29,7 @@ function Update-PanDeviceVsys {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
    } # Begin block
 

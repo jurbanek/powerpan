@@ -92,7 +92,7 @@ function New-PanDevice {
    }
    else {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Adding session-based Label')
-      $Label.Add("session-$(Get-PanSessionGuid)")
+      $Label.Add("session-$(GetPanSessionGuid)")
    }
 
    # Key parameter set :: -Key parameter present. API key previously generated, does not need to be created.

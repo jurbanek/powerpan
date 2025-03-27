@@ -11,21 +11,21 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
       # Outer $FunctionName not available within Pester InModuleScope block. Manually define for ease.
       $FunctionName = 'Get-PanDevice'
       $SessionGuid = 'baab9aad-b846-4662-a6ab-c88e7347b84c'
-      # Mock Get-PanSessionGuid to always return our forged session guid
-      Mock Get-PanSessionGuid { return $SessionGuid }
-      # Mock Import-PanDeviceDb and Export-PanDeviceDb to neuter them. We are not testing import and export functionality
-      Mock Import-PanDeviceDb {}
-      Mock Export-PanDeviceDb {}
+      # Mock GetPanSessionGuid to always return our forged session guid
+      Mock GetPanSessionGuid { return $SessionGuid }
+      # Mock ImportPanDeviceDb and ExportPanDeviceDb to neuter them. We are not testing import and export functionality
+      Mock ImportPanDeviceDb {}
+      Mock ExportPanDeviceDb {}
 
       $Global:PanDeviceDb = [System.Collections.Generic.List[PanDevice]]@()
       New-PanDevice -Name 'MyFirewall01' -Username 'xmlapiadmin' -Password 'asdf1234' -Label 'AngryBeaver' -ImportMode
       New-PanDevice -Name 'MyFirewall02' -Username 'xmlapiadmin' -Password 'jkl;5678' -Label 'DesignedByApprentices','BuiltWithPride' -ImportMode
-      New-PanDevice -Name 'YourFirewall' -Username 'xmlapiadmin' -Password 'zxcv9012' -Label 'AngryBeaver',"session-$(Get-PanSessionGuid)" -ImportMode
-      New-PanDevice -Name 'TheirFirewall' -Username 'xmlapiadmin' -Password 'tyui4783' -Label 'AngryBeaver','BuiltWithPride',"session-$(Get-PanSessionGuid)" -ImportMode
+      New-PanDevice -Name 'YourFirewall' -Username 'xmlapiadmin' -Password 'zxcv9012' -Label 'AngryBeaver',"session-$(GetPanSessionGuid)" -ImportMode
+      New-PanDevice -Name 'TheirFirewall' -Username 'xmlapiadmin' -Password 'tyui4783' -Label 'AngryBeaver','BuiltWithPride',"session-$(GetPanSessionGuid)" -ImportMode
 
       Context "Parameter Set: Empty" {
          It "$FunctionName with no LabelDefault" {
-            Mock Get-PanDeviceLabelDefault { return @("session-$(Get-PanSessionGuid)") }
+            Mock Get-PanDeviceLabelDefault { return @("session-$(GetPanSessionGuid)") }
             $(Get-PanDevice).Name | Compare-Object -ReferenceObject @('YourFirewall','TheirFirewall') | Should -Be $null
          }
          It "$FunctionName with single valid LabelDefault" {

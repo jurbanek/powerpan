@@ -1,4 +1,4 @@
-function New-PanJob {
+function NewPanJob {
 <#
 .SYNOPSIS
 Returns a PanJob object.
@@ -38,10 +38,10 @@ Optionally, store the TimeZoneInfo object as well should ever want to display fr
 #>
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true,HelpMessage='PanDevice')]
-        [PanDevice] $Device,
         [parameter(Mandatory=$true,HelpMessage='PanResponse')]
         [PanResponse] $Response,
+        [parameter(Mandatory=$true,HelpMessage='PanDevice')]
+        [PanDevice] $Device,
         [parameter(Mandatory=$true,HelpMessage='Time zone name (tz database / tzdata format) of PanDevice. Ex. America/Chicago')]
         [String] $TimeZoneName
     )
@@ -60,19 +60,15 @@ Optionally, store the TimeZoneInfo object as well should ever want to display fr
         $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById('UTC')
     }
 
+    # Container for processed job items
     $JobAgg = [System.Collections.Generic.List[PanJob]]@()
-    #$JobAgg = @()
 
     foreach($ResponseJobCur in $PSBoundParameters.Response.Result.job) {
         $JobNew = [PanJob]::new()
-        
         $JobNew.Id = $ResponseJobCur.id
-
         $JobNew.Type = $ResponseJobCur.type
         $JobNew.User = $ResponseJobCur.user
-
         $JobNew.Status = $ResponseJobCur.status
-
         $JobNew.Progress = $ResponseJobCur.progress
         $JobNew.Result = $ResponseJobCur.result
         $JobNew.Queued = $ResponseJobCur.queued

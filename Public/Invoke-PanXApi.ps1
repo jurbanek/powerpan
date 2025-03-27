@@ -1,57 +1,57 @@
 function Invoke-PanXApi {
-   <#
-   .SYNOPSIS
-   Abstracts PAN-OS XML API core modes (actions)
-   .DESCRIPTION
-   -Keygen is for generating API key (don't use for normal operations, use New-PanDevice)
-   
-   -Version is an easy way to verify API access is functioning
+<#
+.SYNOPSIS
+Abstracts PAN-OS XML API core modes (actions)
+.DESCRIPTION
+-Keygen is for generating API key (don't use for normal operations, use New-PanDevice)
 
-   -Config -Show retrieves ACTIVE configuration.
-   -Config -Show only works when provided XPath specifies single node.
-   -Config -Show can use relative XPath.
+-Version is an easy way to verify API access is functioning
 
-   -Config -Get retrieves CANDIDATE, uncommitted configuration.
-   -Config -Get works with single and multiple nodes.
-   -Config -Get requires absolute XPath.
+-Config -Show retrieves ACTIVE configuration.
+-Config -Show only works when provided XPath specifies single node.
+-Config -Show can use relative XPath.
 
-   -Config -Set adds, updates, or merges configuration nodes. -Config -Set actions are non-destructive and are only additive.
-   -Config -Edit replaces configuration nodes. -Config -Edit actions can be destructive.
+-Config -Get retrieves CANDIDATE, uncommitted configuration.
+-Config -Get works with single and multiple nodes.
+-Config -Get requires absolute XPath.
 
-   -Import -Category "certificate" is for uploading certificates WITHOUT private key (processes just the certificate)
-   -Import -Category "keypair" is for uploading certificates WITH private key (processes both certificate and private key)
-      -File is the path or FileInfo object to the supported (PKCS12, Base64 encoded PEM) certificate on local disk
-      -CertName parameter is what is used for PAN-OS certificate name, the certificate filename on local disk is ignored
-         -Periods (.) are ignored/removed by PAN-OS. Avoid them in CertName
-      -CertPassphrase is used when importing the private key
-      -CertVsys is optional. If omitted, the API places the certificate in shared
-   .NOTES
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   PanResponse
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Keygen
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Version
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Commit
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
-   .EXAMPLE
-   PS> Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
-   .EXAMPLE
-   Import and process the certificate and private key within, note the -Category keypair
-   PS> Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+-Config -Set adds, updates, or merges configuration nodes. -Config -Set actions are non-destructive and are only additive.
+-Config -Edit replaces configuration nodes. -Config -Edit actions can be destructive.
 
-   Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
-   PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
-   #>
+-Import -Category "certificate" is for uploading certificates WITHOUT private key (processes just the certificate)
+-Import -Category "keypair" is for uploading certificates WITH private key (processes both certificate and private key)
+   -File is the path or FileInfo object to the supported (PKCS12, Base64 encoded PEM) certificate on local disk
+   -CertName parameter is what is used for PAN-OS certificate name, the certificate filename on local disk is ignored
+      -Periods (.) are ignored/removed by PAN-OS. Avoid them in CertName
+   -CertPassphrase is used when importing the private key
+   -CertVsys is optional. If omitted, the API places the certificate in shared
+.NOTES
+.INPUTS
+PanDevice[]
+You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+PanResponse
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Keygen
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Version
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Commit
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
+.EXAMPLE
+PS> Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
+.EXAMPLE
+Import and process the certificate and private key within, note the -Category keypair
+PS> Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+
+Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
+PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='None')]
    param(
       # $Device required in all parameter sets.
@@ -339,9 +339,9 @@ function Invoke-PanXApi {
                   ); # Uri sub-expression
                } # InvokeParams hash table
 
-               # Submit file to New-MultipartFormData for generating Content-Type header and multipart/form-data encoded body
-               # Make sure to use -UnquotedBoundary for PAN-OS XML API limitation/workaround. See New-MultipartFormData
-               $MPFData = New-MultipartFormData -File $PSBoundParameters.File -UnquotedBoundary
+               # Submit file to NewMultipartFormData for generating Content-Type header and multipart/form-data encoded body
+               # Make sure to use -UnquotedBoundary for PAN-OS XML API limitation/workaround. See NewMultipartFormData
+               $MPFData = NewMultipartFormData -File $PSBoundParameters.File -UnquotedBoundary
                # Add ContentType header to InvokeParams
                $InvokeParams.Add('ContentType', $MPFData.Header.ContentType)
                $InvokeParams.Add('Body', $MPFData.Body)
@@ -364,9 +364,9 @@ function Invoke-PanXApi {
                   ); # Uri sub-expression
                } # InvokeParams hash table
 
-               # Submit file to New-MultipartFormData for generating Content-Type header and multipart/form-data encoded body
-               # Make sure to use -UnquotedBoundary for PAN-OS XML API limitation/workaround. See New-MultipartFormData
-               $MPFData = New-MultipartFormData -File $PSBoundParameters.File -UnquotedBoundary
+               # Submit file to NewMultipartFormData for generating Content-Type header and multipart/form-data encoded body
+               # Make sure to use -UnquotedBoundary for PAN-OS XML API limitation/workaround. See NewMultipartFormData
+               $MPFData = NewMultipartFormData -File $PSBoundParameters.File -UnquotedBoundary
                # Add ContentType header to InvokeParams
                $InvokeParams.Add('ContentType', $MPFData.Header.ContentType)
                $InvokeParams.Add('Body', $MPFData.Body)
@@ -388,22 +388,22 @@ function Invoke-PanXApi {
             # PowerShell 7+ x.509 Validation Policy can be set directly on Invoke-WebRequest
             if($PSVersionTable.PSVersion.Major -ge 7) {
                if ($DeviceCur.ValidateCertificate) {
-                  $Response = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+                  $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
                }
                else {
                   # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
-                  $Response = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck) -Device $DeviceCur
+                  $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck) -Device $DeviceCur
                }
             }
             # PowerShell 5 x.509 Validation Policy set using specific helper cmdlet
             else {
                if ($DeviceCur.ValidateCertificate) {
-                  Set-X509CertificateValidation -Validate
+                  SetX509CertificateValidation -Validate
                }
                else {
-                  Set-X509CertificateValidation -NoValidate
+                  SetX509CertificateValidation -NoValidate
                }
-               $Response = New-PanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+               $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
             }
             Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1}' -f $Response.Status, $Response.Code))
             return $Response

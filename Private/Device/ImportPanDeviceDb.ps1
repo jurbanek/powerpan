@@ -1,14 +1,14 @@
-function Import-PanDeviceDb {
-   <#
-   .SYNOPSIS
-   PowerPAN private helper function to get JSON contents and unserialize into PanDevice objects.
-   .DESCRIPTION
-   PowerPAN private helper function to get JSON contents and unserialize into PanDevice objects.
-   .NOTES
-   .INPUTS
-   .OUTPUTS
-   .EXAMPLE
-   #>
+function ImportPanDeviceDb {
+<#
+.SYNOPSIS
+PowerPAN private helper function to get JSON contents and unserialize into PanDevice objects.
+.DESCRIPTION
+PowerPAN private helper function to get JSON contents and unserialize into PanDevice objects.
+.NOTES
+.INPUTS
+.OUTPUTS
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
    )

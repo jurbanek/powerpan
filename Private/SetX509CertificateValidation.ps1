@@ -1,29 +1,29 @@
-function Set-X509CertificateValidation {
-   <#
-   .SYNOPSIS
-   Require or disable x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls.
-   .DESCRIPTION
-   Change/setting persists for the remainder of the PowerShell session or until changed within the PowerShell session.
-   
-   New PowerShell sessions are started with the .NET default (requires validation).
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   None
-   .PARAMETER Validate
-   Require x.509 certificate validation validation (trust) for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls
-   .PARAMETER NoValidate
-   Disable x.509 certificate validation validation (trust) for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls
-   .EXAMPLE
-   PS> Set-X509CertificateValidation -NoValidate
+function SetX509CertificateValidation {
+<#
+.SYNOPSIS
+Require or disable x.509 certificate validation for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls.
+.DESCRIPTION
+Change/setting persists for the remainder of the PowerShell session or until changed within the PowerShell session.
 
-   Disable x.509 certificate validation for subsequent .NET backed HTTPS calls
-   .EXAMPLE
-   PS> Set-X509CertificateValidation -Validate
+New PowerShell sessions are started with the .NET default (requires validation).
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+None
+.PARAMETER Validate
+Require x.509 certificate validation validation (trust) for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls
+.PARAMETER NoValidate
+Disable x.509 certificate validation validation (trust) for Invoke-WebRequest, Invoke-RestMethod, and other .NET backed HTTPS calls
+.EXAMPLE
+PS> SetX509CertificateValidation -NoValidate
 
-   Require x.509 certificate validation for subsequent .NET backed HTTPS calls
-   #>
+Disable x.509 certificate validation for subsequent .NET backed HTTPS calls
+.EXAMPLE
+PS> SetX509CertificateValidation -Validate
+
+Require x.509 certificate validation for subsequent .NET backed HTTPS calls
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
@@ -81,4 +81,4 @@ function Set-X509CertificateValidation {
       [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $null
       [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
    }
-} # End Set-X509CertificateValidation
+} # End Function

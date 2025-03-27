@@ -10,7 +10,7 @@
             <TableHeaders>
                <TableColumnHeader><Label>Version</Label></TableColumnHeader>
                <TableColumnHeader><Label>Size</Label></TableColumnHeader>
-               <TableColumnHeader><Label>ReleasedDt</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Released</Label></TableColumnHeader>
                <TableColumnHeader><Label>Downloaded</Label></TableColumnHeader>
                <TableColumnHeader><Label>Current</Label></TableColumnHeader>
                <TableColumnHeader><Label>ReleaseType</Label></TableColumnHeader>
@@ -21,7 +21,7 @@
                   <TableColumnItems>
                         <TableColumnItem><PropertyName>Version</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Size</PropertyName></TableColumnItem>
-                        <TableColumnItem><PropertyName>ReleasedDt</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Released</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Downloaded</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Current</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>ReleaseType</PropertyName></TableColumnItem>

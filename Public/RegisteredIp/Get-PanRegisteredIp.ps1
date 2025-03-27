@@ -86,7 +86,7 @@ function Get-PanRegisteredIp {
                   $TagMemberAgg += $TagMemberCur
                }
                # Create new PanRegisteredIp object, output to pipeline (fast update for users), save to variable
-               New-PanRegisteredIp -Ip $EntryCur.ip -Tag $TagMemberAgg -Device $DeviceCur | Tee-Object -Variable 'RegIpFoo'
+               NewPanRegisteredIp -Ip $EntryCur.ip -Tag $TagMemberAgg -Device $DeviceCur | Tee-Object -Variable 'RegIpFoo'
                # Add the new PanRegisteredIp to aggregate. Will be counted in End block. Available for future feature as well
                $PanRegIpAgg.Add($RegIpFoo)
             }

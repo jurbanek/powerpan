@@ -84,7 +84,7 @@ Returns the details for job ID 837.
             # Get the jobs
             $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
             if($Response.Status -eq 'success') {
-                New-PanJob -Device $DeviceCur -Response $Response -TimeZoneName $TimeZoneName
+                NewPanJob -Device $DeviceCur -Response $Response -TimeZoneName $TimeZoneName
             }
             else {
                 Write-Error ('Retrieving PAN Jobs not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)

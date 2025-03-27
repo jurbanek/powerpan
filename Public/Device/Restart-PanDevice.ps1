@@ -1,22 +1,22 @@
 function Restart-PanDevice {
-   <#
-   .SYNOPSIS
-   Restart (reboot) a PanDevice.
-   .DESCRIPTION
-   Restart (reboot) a PanDevice.
-   .NOTES
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   PanResponse
-   .EXAMPLE
-   PS> Get-PanDevice '10.0.0.1' | Restart-PanDevice
-   Prompts for confirmation
-   .EXAMPLE
-   PS> Get-PanDevice '10.0.0.1' | Restart-PanDevice -Force
-   No prompt for confirmation
-   #>
+<#
+.SYNOPSIS
+Restart (reboot) a PanDevice.
+.DESCRIPTION
+Restart (reboot) a PanDevice.
+.NOTES
+.INPUTS
+PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+PanResponse
+.EXAMPLE
+PS> Get-PanDevice '10.0.0.1' | Restart-PanDevice
+Prompts for confirmation
+.EXAMPLE
+PS> Get-PanDevice '10.0.0.1' | Restart-PanDevice -Force
+No prompt for confirmation
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
       [parameter(

@@ -1,14 +1,14 @@
-function Export-PanDeviceDb {
-   <#
-   .SYNOPSIS
-   PowerPAN private helper function to serialize and store PanDevice objects from PanDeviceDb to JSON.
-   .DESCRIPTION
-   PowerPAN private helper function to serialize and store PanDevice objects from PanDeviceDb to JSON.
-   .NOTES
-   .INPUTS
-   .OUTPUTS
-   .EXAMPLE
-   #>
+function ExportPanDeviceDb {
+<#
+.SYNOPSIS
+PowerPAN private helper function to serialize and store PanDevice objects from PanDeviceDb to JSON.
+.DESCRIPTION
+PowerPAN private helper function to serialize and store PanDevice objects from PanDeviceDb to JSON.
+.NOTES
+.INPUTS
+.OUTPUTS
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
    )

@@ -74,10 +74,10 @@ function Get-PanDevice {
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    # Initialize PanDeviceDb
-   Initialize-PanDeviceDb
+   InitializePanDeviceDb
 
-   # Fetch PanSessionGuid to be used throughout function. Avoids littering Debug logs with excessive calls to Get-PanSessionGuid
-   $SessionGuid = Get-PanSessionGuid
+   # Fetch PanSessionGuid to be used throughout function. Avoids littering Debug logs with excessive calls to GetPanSessionGuid
+   $SessionGuid = GetPanSessionGuid
    # Fetch PanDeviceLabelDefault to be used throughout function. Avoids littering Debug logs with excessive calls to Get-PanDeviceLabelDefaul
    $LabelDefault = Get-PanDeviceLabelDefault
 

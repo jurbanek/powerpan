@@ -6,7 +6,9 @@ class PanSoftware {
     # Size (MiB)
     [Int] $Size
     # Release Date
-    [DateTime] $ReleasedDt
+    [DateTimeOffset] $Released
+    # TimeZoneInfo to further qualify the DateTimeOffset if needed
+    [TimeZoneInfo] $TimeZoneInfo
     # Released Notes
     [String] $ReleaseNotes
     # Downloaded and able to be installed

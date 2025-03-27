@@ -4,7 +4,7 @@ function Remove-PanRegisteredIp {
    Unregister PAN-OS registered-ip(s) and tag(s).
    .DESCRIPTION
    Unregister PAN-OS registered-ip(s) and tag(s).
-   Unregister with -Ip and -Tag Strings (simultaneously or exclusively) or using a -PanRegisteredIp object (from New-PanRegisteredIp).
+   Unregister with -Ip and -Tag Strings (simultaneously or exclusively) or using a -PanRegisteredIp object (from NewPanRegisteredIp).
 
    If a single -Ip is passed exclusively, all tags for the IP are unregistered, forcing complete unregistration of the IP.
    If a single -Tag is passed exclusively, the tag is unregistered from all tagged IP's. If an active registered-ip has multiple tags, the other tags will remain registered.
@@ -33,10 +33,10 @@ function Remove-PanRegisteredIp {
    Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2" -Tag "HerTag","HisTag"
    "HerTag" and "HisTag" are both unregistered from both 1.1.1.1 and 2.2.2.2 registered-ip's.
    .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -RegisteredIp $(New-PanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
+   Remove-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
    "HerTag" and "HisTag" are both removed from 1.1.1.1 registered-ip.
    .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -RegisteredIp $(New-PanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag"),$(New-PanRegisteredIp -Ip "2.2.2.2" -Tag "HerTag")
+   Remove-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag"),$(NewPanRegisteredIp -Ip "2.2.2.2" -Tag "HerTag")
    "HerTag" and "HisTag" are both unregistered from 1.1.1.1 registered-ip. "HerTag" is unregistered from 2.2.2.2 registered-ip.
    .EXAMPLE
    Remove-PanRegisteredIp -Device $Device -All
@@ -124,7 +124,7 @@ function Remove-PanRegisteredIp {
                      # If tags need to be unregistered, build new [PanRegisteredIp] with ONLY necessary tags to unregister.
                      # Add new [PanRegisteredIp] to the blueprint to be unregistered later.
                      if(-not [String]::IsNullOrEmpty($TagAgg) ) {
-                        $RegisteredIpAgg.Add( (New-PanRegisteredIp -Ip $IpCur -Tag $TagAgg) )
+                        $RegisteredIpAgg.Add( (NewPanRegisteredIp -Ip $IpCur -Tag $TagAgg) )
                      }
                   } # if $RegisteredIpResult
                } # foreach $IpCur in $Ip
@@ -180,7 +180,7 @@ function Remove-PanRegisteredIp {
                # Hashtable keys are IP addresses, values are an array of tags.
                if(-not [String]::IsNullOrEmpty($HashTableAgg)) {
                   foreach($Entry in $HashTableAgg.GetEnumerator()) {
-                     $RegisteredIpAgg.Add( (New-PanRegisteredIp -Ip $Entry.Name -Tag $Entry.Value) )
+                     $RegisteredIpAgg.Add( (NewPanRegisteredIp -Ip $Entry.Name -Tag $Entry.Value) )
                   }
                }
             } # -Tag parameter simultaneously

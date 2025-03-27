@@ -4,7 +4,7 @@ function Add-PanRegisteredIp {
    Register PAN-OS registered-ip(s) with tag(s).
    .DESCRIPTION
    Register PAN-OS registered-ip(s) with tag(s).
-   Register with -Ip and -Tag Strings or using a -PanRegisteredIp object (from New-PanRegisteredIp).
+   Register with -Ip and -Tag Strings or using a -PanRegisteredIp object (from NewPanRegisteredIp).
    If multiple -Device are passed (via array), the registered-ip and tagging is applied to every device.
    If multiple -Ip and -Tag are passed (via arrays), every -Ip is tagged with every -Tag.
    If multiple -RegisteredIp are passed (via array), each -RegisteredIp represents a complete registration action.
@@ -23,7 +23,7 @@ function Add-PanRegisteredIp {
    PS> Add-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2" -Tag "HerTag","HisTag"
    "HerTag" and "HisTag" are both applied to both 1.1.1.1 and 2.2.2.2 registered-ip's.
    .EXAMPLE
-   PS> Add-PanRegisteredIp -Device $Device -RegisteredIp $(New-PanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
+   PS> Add-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
    "HerTag" and "HisTag" are both applied to 1.1.1.1 registered-ip.
    #>
    [CmdletBinding()]

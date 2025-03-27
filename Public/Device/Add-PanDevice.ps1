@@ -33,7 +33,7 @@ function Add-PanDevice {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
    } # Begin block
 
@@ -69,7 +69,7 @@ function Add-PanDevice {
       # Default behavior is to serialize after updates to PanDeviceDb
       else {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Serializing')
-         Export-PanDeviceDb
+         ExportPanDeviceDb
       }
    } # End block
 } # Function

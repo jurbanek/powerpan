@@ -1,4 +1,4 @@
-function New-PanResponse{
+function NewPanResponse{
    <#
    .SYNOPSIS
    Returns a PanResponse object. Internal helper cmdlet.

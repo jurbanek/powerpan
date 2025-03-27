@@ -11,11 +11,11 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
       # Outer $FunctionName not available within Pester InModuleScope block. Manually define for ease.
       $FunctionName = 'Remove-PanDevice'
       $SessionGuid = 'baab9aad-b846-4662-a6ab-c88e7347b84c'
-      # Mock Get-PanSessionGuid to always return our forged session guid
-      Mock Get-PanSessionGuid { return $SessionGuid }
-      # Mock Import-PanDeviceDb and Export-PanDeviceDb to neuter them. We are not testing import and export functionality
-      Mock Import-PanDeviceDb {}
-      Mock Export-PanDeviceDb {}
+      # Mock GetPanSessionGuid to always return our forged session guid
+      Mock GetPanSessionGuid { return $SessionGuid }
+      # Mock ImportPanDeviceDb and ExportPanDeviceDb to neuter them. We are not testing import and export functionality
+      Mock ImportPanDeviceDb {}
+      Mock ExportPanDeviceDb {}
 
       $Global:PanDeviceDb = [System.Collections.Generic.List[PanDevice]]@()
 
@@ -23,16 +23,16 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
       function InitializePanDeviceTest {
          New-PanDevice -Name 'MyFirewall01' -Username 'xmlapiadmin' -Password 'asdf1234' -Label 'AngryBeaver' -ImportMode
          New-PanDevice -Name 'MyFirewall02' -Username 'xmlapiadmin' -Password 'jkl;5678' -Label 'DesignedByApprentices','BuiltWithPride' -ImportMode
-         New-PanDevice -Name 'YourFirewall' -Username 'xmlapiadmin' -Password 'zxcv9012' -Label 'AngryBeaver',"session-$(Get-PanSessionGuid)" -ImportMode
-         New-PanDevice -Name 'TheirFirewall' -Username 'xmlapiadmin' -Password 'tyui4783' -Label 'AngryBeaver','BuiltWithPride',"session-$(Get-PanSessionGuid)" -ImportMode
+         New-PanDevice -Name 'YourFirewall' -Username 'xmlapiadmin' -Password 'zxcv9012' -Label 'AngryBeaver',"session-$(GetPanSessionGuid)" -ImportMode
+         New-PanDevice -Name 'TheirFirewall' -Username 'xmlapiadmin' -Password 'tyui4783' -Label 'AngryBeaver','BuiltWithPride',"session-$(GetPanSessionGuid)" -ImportMode
       }
 
       Context "Parameter Set: Device" {
          InitializePanDeviceTest
          # Additional PanDevice to be removed via -Device Parameter
-         $RemoveMePresent = New-PanDevice -Name 'RemoveByDevice' -Username 'xmlapiadmin' -Password 'tyui4783' -Label "session-$(Get-PanSessionGuid)" -ImportMode
+         $RemoveMePresent = New-PanDevice -Name 'RemoveByDevice' -Username 'xmlapiadmin' -Password 'tyui4783' -Label "session-$(GetPanSessionGuid)" -ImportMode
          # Additional PanDevice to be removed via -Device Parameter, but Device is not added to PanDeviceDb (-NoPersist)
-         $RemoveMeNotPresent = New-PanDevice -Name 'RemoveByDevice' -Username 'xmlapiadmin' -Password 'tyui4783' -Label "session-$(Get-PanSessionGuid)" -ImportMode -NoPersist
+         $RemoveMeNotPresent = New-PanDevice -Name 'RemoveByDevice' -Username 'xmlapiadmin' -Password 'tyui4783' -Label "session-$(GetPanSessionGuid)" -ImportMode -NoPersist
 
          It "$FunctionName -Device (Assert PanDeviceDb Initialized)" {
             # Using Compare-Object instead of a direct comparison. Encountered situations where the Generic.List was being reordered in later test cases

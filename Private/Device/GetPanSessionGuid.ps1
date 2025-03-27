@@ -1,14 +1,14 @@
-function Get-PanSessionGuid {
-   <#
-   .SYNOPSIS
-   PowerPAN private helper function to obtain the PanSessionGuid.
-   .DESCRIPTION
-   PowerPAN private helper function to obtain the PanSessionGuid.
-   .NOTES
-   .INPUTS
-   .OUTPUTS
-   .EXAMPLE
-   #>
+function GetPanSessionGuid {
+<#
+.SYNOPSIS
+PowerPAN private helper function to obtain the PanSessionGuid.
+.DESCRIPTION
+PowerPAN private helper function to obtain the PanSessionGuid.
+.NOTES
+.INPUTS
+.OUTPUTS
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
    )

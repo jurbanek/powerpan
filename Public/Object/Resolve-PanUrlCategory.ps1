@@ -41,7 +41,7 @@ function Resolve-PanUrlCategory {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
    } # Begin Block
 
    Process {

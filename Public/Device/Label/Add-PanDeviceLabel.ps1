@@ -1,17 +1,17 @@
 function Add-PanDeviceLabel {
-   <#
-   .SYNOPSIS
-   Add label(s) to a PanDevice in PanDeviceDb.
-   .DESCRIPTION
-   Add label(s) to a PanDevice in PanDeviceDb.
-   .NOTES
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   None
-   .EXAMPLE
-   #>
+<#
+.SYNOPSIS
+Add label(s) to a PanDevice in PanDeviceDb.
+.DESCRIPTION
+Add label(s) to a PanDevice in PanDeviceDb.
+.NOTES
+.INPUTS
+PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+None
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
       [parameter(
@@ -35,7 +35,7 @@ function Add-PanDeviceLabel {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')# If -Debug parameter, change to 'Continue' instead of 'Inquire'
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
       # If dirty after process block, serialize necessary
       $Dirty = $false
@@ -72,7 +72,7 @@ function Add-PanDeviceLabel {
 
    End {
       if($Dirty) {
-         Export-PanDeviceDb
+         ExportPanDeviceDb
       }
    } # End block
 } # Function
