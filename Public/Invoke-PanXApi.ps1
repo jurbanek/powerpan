@@ -387,13 +387,8 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             # *headers* available. Remedied in PowerShell 6+ with -ResponseHeadersVariable, but PowerShell 5.1 compatibility is needed for now
             # PowerShell 7+ x.509 Validation Policy can be set directly on Invoke-WebRequest
             if($PSVersionTable.PSVersion.Major -ge 7) {
-               if ($DeviceCur.ValidateCertificate) {
-                  $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
-               }
-               else {
-                  # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
-                  $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck) -Device $DeviceCur
-               }
+               # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
+               $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck:(-not $DeviceCur.ValidateCertificate)) -Device $DeviceCur
             }
             # PowerShell 5 x.509 Validation Policy set using specific helper cmdlet
             else {
