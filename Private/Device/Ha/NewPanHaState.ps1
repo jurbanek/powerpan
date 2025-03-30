@@ -64,22 +64,32 @@ PanHaState
         $State.Local.Preemptive = if($Response.result.group.'local-info'.preemptive -eq 'yes') {$True} else {$False}
 
         if($Response.result.group.'local-info'.'promotion-hold' -ge 0) {
-            $State.Local.PromotionHold = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'promotion-hold'
+            # promotion-hold in milliseconds. New-TimeSpan -Milliseconds parameter added in PS 7.3, use type Constructor instead
+            # $State.Local.PromotionHold = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'promotion-hold'
+            $State.Local.PromotionHold = [TimeSpan]::new(0,0,0,0,$Response.result.group.'local-info'.'promotion-hold')
         }
         if($Response.result.group.'local-info'.'hello-interval' -ge 0) {
-            $State.Local.HelloInterval = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'hello-interval'
+            # hello-interval in milliseconds. New-TimeSpan -Milliseconds parameter added in PS 7.3, use type Constructor instead
+            # $State.Local.HelloInterval = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'hello-interval'
+            $State.Local.HelloInterval = [TimeSpan]::new(0,0,0,0,$Response.result.group.'local-info'.'hello-interval')
         }
         if($Response.result.group.'local-info'.'heartbeat-interval' -ge 0) {
-            $State.Local.HeartbeatInterval = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'heartbeat-interval'
+            # heartbeat-interval in milliseconds. New-TimeSpan -Milliseconds parameter added in PS 7.3, use type Constructor instead
+            # $State.Local.HeartbeatInterval = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'heartbeat-interval'
+            $State.Local.HeartbeatInterval = [TimeSpan]::new(0,0,0,0,$Response.result.group.'local-info'.'heartbeat-interval')
         }
         if($Response.result.group.'local-info'.'preempt-hold' -ge 0) {
             $State.Local.PreemptHold = New-TimeSpan -Seconds $Response.result.group.'local-info'.'preempt-hold'
         }
         if($Response.result.group.'local-info'.'monitor-fail-holdup' -ge 0) {
-            $State.Local.MonitorFailHoldup = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'monitor-fail-holdup'
+            # monitor-fail-holdup in milliseconds. New-TimeSpan -Milliseconds parameter added in PS 7.3, use type Constructor instead
+            # $State.Local.MonitorFailHoldup = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'monitor-fail-holdup'
+            $State.Local.MonitorFailHoldup = [TimeSpan]::new(0,0,0,0,$Response.result.group.'local-info'.'monitor-fail-holdup')
         }
         if($Response.result.group.'local-info'.'addon-master-holdup' -ge 0) {
-            $State.Local.AddonMasterHoldup = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'addon-master-holdup'
+            # addon-master-holdup in milliseconds. New-TimeSpan -Milliseconds parameter added in PS 7.3, use type Constructor instead
+            # $State.Local.AddonMasterHoldup = New-TimeSpan -Milliseconds $Response.result.group.'local-info'.'addon-master-holdup'
+            $State.Local.AddonMasterHoldup = [TimeSpan]::new(0,0,0,0,$Response.result.group.'local-info'.'addon-master-holdup')
         }
 
         $State.Local.MaxFlaps = $Response.result.group.'local-info'.'max-flaps'
