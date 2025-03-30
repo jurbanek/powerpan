@@ -18,7 +18,6 @@ Returns a list of all jobs present on the firewall
 PS> Get-PanDevice "192.168.250.250" | Get-PanJob -Id 837
 
 Returns the details for job ID 837.
-
 #>
     [CmdletBinding(DefaultParameterSetName='Empty')]
     param(

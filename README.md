@@ -6,17 +6,22 @@ PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
 
 - Object model of PAN-OS XML-API and XML configuration as PowerShell cmdlets and objects
   - The objects modeled are few, but those modeled function well
-- Persistent secure storage of NGFW (called `PanDevice`) device credentials for use across PowerShell sessions (called `PanDeviceDb` internally)
+- Persistent secure key/password storage of NGFW (called `PanDevice`) device credentials for use across PowerShell sessions (called `PanDeviceDb` internally, think of it as a simple device inventory).
   - Enables launching PowerShell and immediately "getting to work" *in the shell* without having to write scripts or deal with authentication
+- "Anything imaginable" is doable with `Invoke-PanXApi`. The *more specific* cmdlets are mostly targeted at runtime operations and non-policy administrative use case cases.
 - Mature models
-  - `Invoke-PanXApi` to abstract the PAN-OS XML-API. Nearly all other cmdlets call `Invoke-PanXApi` to interact with the XML-API
+  - `Invoke-PanXApi` provide low-level abstraction the PAN-OS XML-API. Nearly all other cmdlets call `Invoke-PanXApi` to interact with the XML-API
     - The capabilities of all future planned cmdlets can already be done with `Invoke-PanXApi` and logic, the future cmdlets will just make it easier.
+  - `Invoke-PanCommit` to commit, validation, and seeing if pending changes exist.
+  - `Invoke-PanSoftware` for PAN-OS operating system information, check, download, delete, and install.
+  - `Invoke-PanHaState` to view and change high-availability *operational/runtime* state.
+  - `Job` cmdlet to retrieve and view jobs (tasks)
   - `RegisteredIp` cmdlets to add registered-ip's and tag those IP's for use with Dynamic Address Groups (DAG)
   - `AddressObject` cmdlets to interact with PAN-OS address objects
   - `PanDeviceDb` and `PanDevice` cmdlets for managing the persistent secure storage of device credentials between PowerShell sessions
 - Panorama Support
   - `Invoke-PanXApi` supports Panorama just fine. Mind Panorama's unique `XPath`'s when using it.
-  - Other cmdlets do not yet have native Panorama support
+  - Many other cmdlets do not have or have limited Panorama support.
 - PowerShell Support
   - Windows PowerShell 5.1
   - PowerShell 7.2 LTS (works on Windows and MacOS, as of 2024-09-18 have not tested Linux yet). PowerShell 7.2 LTS is end of support.
@@ -86,14 +91,96 @@ Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Tag 'ThisTag'
 Get-PanDevice fw.lab.local | Remove-PanRegisteredIp -Ip '1.1.1.1' -Tag 'ThisTag'
 ```
 
+### Jobs / Tasks
+
+```powershell
+# Get all jobs
+Get-Device '10.0.0.1' | Get-PanJob
+# or
+Get-Device '10.0.0.1' | Get-PanJob -All
+
+# Get specific job
+Get-Device '10.0.0.1' | Get-PanJob -Id 2655
+
+# Get pending jobs (not finished), using -Device and not pipe
+$D = Get-Device '10.0.0.1'
+Get-PanJob -Device $D -Pending
+```
+
+### PAN-OS Software Updates
+
+```powershell
+# Software manifest including known and installed versions of PAN-OS
+Get-PanDevice fw.lab.local | Invoke-PanSofware -Info
+
+# Check for software updates
+Get-PanDevice fw.lab.local | Invoke-PanSofware -Check
+
+# Download, using -Device, not piping
+$D = Get-PanDevice fw.lab.local
+$Job = Invoke-PanSoftware -Device $D -Download -Version '11.2.5'
+Get-PanJob -Id $Job.Id
+
+# Install
+$D = Get-PanDevice fw.lab.local
+$Job = Invoke-PanSoftware -Device $D -Install -Version '11.2.5'
+Get-PanJob -Id $Job.Id
+```
+
+### Commit
+
+```powershell
+# Standard commit
+$D = Get-PanDevice fw.lab.local
+$Job = Invoke-PanCommit -Device $D -Commit -Full
+# Monitor the job
+Get-PanJob -Id $Job.Id
+
+# Partial commit changes from 'admin1'
+# See help Invoke-PanCommit for full list of partial scopes supported
+$Job = Invoke-PanCommit -Device $D -Commit -Partial -Admin 'admin1'
+# Monitor the job
+Get-PanJob -Id $Job.Id
+
+# Validate the candidate configuration
+$Job = Invoke-PanCommit -Device $D -Validate -Full
+# Monitor the job
+Get-PanJob -Id $Job.Id
+
+Get-PanDevice fw.lab.local | Invoke-PanCommit -PendingChanges
+# returns $True or $Flase depending on whether changes are present in candidate config
+```
+
+### High-Availability State
+
+```powershell
+# High-Availability info/state
+$D = Get-PanDevice fw.lab.local
+$State = Invoke-PanHaState -Info
+# HA administratively enabled ($True or $False)
+$State.Enabled
+# Local state 'active' or 'passive'
+$State.LocalState
+# Peer state 'active' or 'passive'
+$State.PeerState
+# Full details for local and peer
+$State.Local
+$State.Peer
+
+# Change device HA operational mode to 'suspended'
+Get-PanDevice fw.lab.local | Invoke-PanHaState -Suspend
+# And back to functional
+Get-PanDevice fw.lab.local | Invoke-PanHaState -Functional
+```
+
 ### Invoke-PanXApi
 
 `Invoke-PanXApi` abstracts the PAN-OS XML-API and can be used to accomplish everything PowerPAN does not have more specific cmdlets to already achieve
 
 - Returns a `PanResponse` object which includes the raw API responses
-- Supports nearly all XML-API operations supported by PAN-OS, including all Config *(Get, Show, Set, Edit, Delete)* and Operational. Read the source or in-line help for details.
+- Supports nearly all XML-API operations supported by PAN-OS, including all Config *(Get, Show, Set, Edit, Delete)* and Operational. Read the source or `help Invoke-PanXApi` in-line help for details.
 - All `PowerPAN` cmdlets use `Invoke-PanXApi` under the hood to interact with the PAN-OS XML-API
-- While Panorama is not supported by the *more-specific* abstracted cmdlets, Panorama is well-supported by `Invoke-PanXApi`
+- While Panorama is not supported or limited support by the *more-specific* abstracted cmdlets, Panorama is well-supported by `Invoke-PanXApi`
 - To find `XPath`'s
   - Authenticate to standard GUI `https://<fwip>` (or Panorama)
   - New tab to `https://<fwip>/api` (or Panorama) and browse away
@@ -123,9 +210,9 @@ Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/devices/entry[@name=
 | Config Set    | `Invoke-PanXApi <...> -Config -Set -XPath '/config/xpath...' -Element '<example>value</example>'`   | Add, update, merge. Non-destructive, only additive |
 | Config Edit   | `Invoke-PanXApi <...> -Config -Edit -XPath '/config/xpath...' -Element '<example>value</example>'`   | Replace configuration node. Can be destructive |
 | Config Delete | `Invoke-PanXApi <...> -Config -Delete -XPath '/config/xpath...'`   | Delete configuration. Destructive |
-| Version       | `Invoke-PanXApi <...> -Version`   | Easy way to test API |
-| Commit        |  `Invoke-PanXApi <...> -Commit`   | Commit |
-| Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'`   | Operational (exec CLI commands). Not all are valid |
+| Version       | `Invoke-PanXApi <...> -Version`   | Easy way to test API,, but consider `Test-PanDevice` |
+| Commit        | `Invoke-PanXApi <...> -Commit`   | Commit, but consider `Invoke-PanCommit` |
+| Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'` | Operational (exec CLI commands). Not all are valid |
 | User-ID       | `Invoke-PanXApi <...> -Uid -Cmd '<uid-message>...</uid-message>'`   | User-ID operations. Registered-IP operations also use this type |
 | Keypair       | `Invoke-PanXApi <...> -Import -Category keypair -File 'C:/path/to/cert.p12' -CertName 'gp-acme-com' -CertFormat 'pkcs12' -CertPassphrase 'asdf1234'`| Certificate with private key |
 | Certificate   | `Invoke-PanXApi <...> -Import -Category certificate -File 'C:/path/to/cert.cer' -CertName 'ACME-Intermediate' -CertFormat 'pem' -CertPassphrase 'asdf1234'`| Certificate without private key |

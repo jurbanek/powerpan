@@ -26,11 +26,11 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
     param(
         [parameter(Mandatory=$true, ValueFromPipeline=$true, HelpMessage='PanDevice against which high-availability operation will be performed.')]
         [PanDevice[]] $Device,
-        [parameter(Mandatory=$true,ParameterSetName='Info',HelpMessage='Output current high-availability state information.')]
+        [parameter(Mandatory=$true,ParameterSetName='Info',HelpMessage='Current high-availability state information.')]
         [Switch] $Info,
         [parameter(Mandatory=$true,ParameterSetName='Suspend',HelpMessage='Change PanDevice high-availability state to suspend[ed].')]
         [Switch] $Suspend,
-        [parameter(Mandatory=$true,ParameterSetName='Functional',HelpMessage='Change PanDevice high-availability state to functiona.')]
+        [parameter(Mandatory=$true,ParameterSetName='Functional',HelpMessage='Change PanDevice high-availability state to functional.')]
         [Switch] $Functional
     )
     
@@ -52,6 +52,7 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
                 Write-Debug ($MyInvocation.MyCommand.Name + (': -Info Cmd: {0}' -f $Cmd))
                 $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
                 if($Response.Status -eq 'success') {
+                    # Send PanHaState object down pipeline
                     NewPanHaState -Device $DeviceCur -Response $Response
                 }
                 else {
@@ -84,7 +85,6 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
                     Write-Error ('Error applying PAN HA functional operation. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
                 }
             } # End ParameterSetname
-
         } # foreach Device
     } # Process block
     

@@ -4,8 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## 0.4.0 ???
 
-- Changed module's private cmdlets to use non-hyphenated names based on PowerShell best practice to distinguish public from private.
-  - Private cmdlet/function `New-PanResponse` became `NewPanResponse`. And many more.
+### Added
+
+- `Invoke-PanCommit` public cmdlet for committing, validating, and determining if pending changes exist.
+- `Invoke-PanHaState` public cmdlet for displaying and changing high-availability *runtime* state and status. A new `[PanHaState]` type also exists.
+- `Invoke-PanSoftware` public cmdlet for displaying, checking, downloading, installing, and deleting PAN-OS operating system software updates. A new `[PanSoftware]` type also exists.
+- `Get-PanJob` public cmdlet for monitoring the status of jobs (called "tasks" in the GUI). A new `[PanJob]` type also exists.
+- `[PanSoftware]` type and `[PanJob]` type both make use of `[DateTimeOffset]` typed property (instead of `[DateTime]`) and `[TimeZoneInfo]` typed property, internally. *Needed to effectively compare dates and times when the computer running the `PowerPAN` module/script is in a different time zone than the devices, or when comparing dates and times across devices in different time zones.
+  - PAN-OS XML-API returns job and software related data in the device's local time *without* any time zone or offset qualifiers. Frustrating indeed.
+  - The device's time zone can be learned from the configuration (and is as part of `Get-PanJob` and `Get-PanSoftware`).
+  - This module determines the device time zone, calculates the correct offset based on Daylight Savings Time and exposes for use as `[DateTimeOffset]` and `[TimeZoneInfo]` typed properties.
+  - For more detail, read `help Get-PanJob` or for technical implementation detail, read the comments within `Get-PanJob.ps1`
+- Added features in this release were built to make "large scale HA upgrades" feasible -- upgrading hundreds (or more) HA pairs at a time. Previously, needed to make heavy use of `Invoke-PanXApi`. Now the friendlier abstraction cmdlets do (most) of the work.
+
+### Changed
+
+- (BREAKING CHANGE) Within `Invoke-PanXApi -Commit`, the `-Force` parameter was removed. If desiring a "force commit", add `<commit><force></force></commit>` as the commit `$Cmd` or better yet, use the `Invoke-PanCommit` cmdlet instead.
+  - The `Invoke-PanXApi -Commit` mode now represents a cleaner mapping to the native PAN-OS XML-API. "Force commit" capabilities are part of the XML-API `cmd` and better represented as a `$Cmd`.
+  - `Invoke-PanCommit` provides a friendlier abstraction of "force commit" while keeping the lower-level `Invoke-PanXApi` better aligned to the raw XML-API.
+- Re-arranged module's directory and file layout of `.ps1` files. Intent is to align functions with "Policy-Object-Network-Device" GUI tabs. Not perfect, but provides structure. No external effect.
+- Changed module's private cmdlets to use *non*-hyphenated names based on PowerShell best practice to distinguish public from private. Since these were private/internal use cmdlets to begin with, there is no external effect.
+  - Example: Private cmdlet/function `New-PanResponse` became `NewPanResponse`. And many more.
+- Cmdlet commenting and documentation updates.
 
 ## 0.3.4 2025-02-21
 

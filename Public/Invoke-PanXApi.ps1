@@ -68,14 +68,16 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [Switch] $Op,
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Uid',HelpMessage='Type: user-id commands')]
       [Switch] $Uid,
-      [parameter(Mandatory=$true,Position=2,ParameterSetName='Op',HelpMessage='XML formatted operational command')]
-      [parameter(Mandatory=$true,Position=2,ParameterSetName='Uid',HelpMessage='XML formatted user-id payload')]
-      [String] $Cmd,
       # Begin Commit parameter set
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Commit',HelpMessage='Type: commit commands')]
       [Switch] $Commit,
-      [parameter(Mandatory=$true,Position=2,ParameterSetName='Commit',HelpMessage='Force commit switch parameter')]
-      [Switch] $Force,
+      [parameter(ParameterSetName='Commit',HelpMessage='Only used on partial commits, set to "partial".')]
+      [String] $Action,
+      # Cmd used by numerous parameter sets
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Op',HelpMessage='XML formatted operational command')]
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Uid',HelpMessage='XML formatted user-id payload')]
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Commit',HelpMessage='XML formatted commit command')]
+      [String] $Cmd,
       # Begin Config-Set and Config-Get parameter sets
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Get',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Show',HelpMessage='Type: config ')]
@@ -237,12 +239,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
          elseif ($PSCmdlet.ParameterSetName -eq 'Commit') {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=commit')
             $PanApiType = 'commit'
-            if ($Force.IsPresent) {
-               $PanApiCmd = '<commit><force></force></commit'
-            }
-            else {
-               $PanApiCmd = '<commit></commit>'
-            }
+            $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = @{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
@@ -256,6 +253,10 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
             } # InvokeParams hash table
+            # Add optional "action", if present.
+            if($PSBoundParameters.Action) {
+               $InvokeParams.Body.Add('action', $PSBoundParameters.Action)
+            }
          } # End API type=commit
 
          # API type=config
