@@ -12,24 +12,31 @@ PanJob
 .EXAMPLE
 .NOTES
 Note on PanJob use of DateTimeOffset (instead of DateTime) and TimeZoneInfo
+
 PAN-OS XML-API returns job enqueue/dequeue/finish times in the firewall's local time without a time zone or offset in the string. "2025/03/24 18:00:13"
-PAN-OS 'show clock' via API or CLI includes the time zone short string like "CST" or "CDT", the latter if DST is in effect.
-PAN-OS "tz database" format name (like "America/Chicago" suitable for lookup in standard "tz database") kept in deviceconfig/system/timezone
+PAN-OS "show clock" via API or CLI includes the time zone short string like "CST" or "CDT", the latter if DST is in effect. Not good enough.
+PAN-OS "tz database" format name, kept in deviceconfig/system/timezone uses IANA style (like "America/Chicago" suitable for lookup in standard "tz database")
 PAN-OS does not return an offset from UTC (like -06:00:00) anywhere I can find, via API or CLI, across jobs or any other constructs.
 
 Per world standards, when DST in effect for a time zone an hour is added to the offset.
 America/Chicago without DST is -06:00:00. America/Chicago during DST is -05:00:00 (a "plus one" hour, minus six plus one is minus five)
 
 PowerShell side
-No .NET native "DateTime with Time Zone" object exist. Common .NET approach is to use DateTimeOffset with TimeZoneInfo, as needed.
+No .NET native "DateTime with Time Zone" type exists. Common .NET approach is to use DateTimeOffset with TimeZoneInfo, as needed.
 DateTime objects do NOT have an internal time zone or offset defined, but do have a "Kind" property to indicate whether Local or UTC. Not good enough.
 DateTimeOffset objects also do NOT have an internal time zone, but DO have a TimeSpan property to capture an offset (from UTC).
 Construct a DateTimeOffset object with a DateTime and an offset (type TimeSpan) achieves the desired result. Optionally, store the TimeZoneInfo object.
+Furthermore, there is a cross-platform challenge where PowerShell 5.1 only supports "Windows style" time zone names like "Central Standard Time".
+PowerShell 6+ supports "Windows style" and IANA style like 'America/Chicago".
 
 Putting it together
-Via XML-API job related time properties, parse and build a DateTime object (e.g. $JobDateTime) (which does not have Time Zone or offset)
-Via XML-API, GET the firewall's "tz database" format time zone name from deviceconfig/system/timezone
-Map the "tz database" name to a TimeZoneInfo object using $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById('America/Chicago')
+From XML-API job related time properties, parse and build a DateTime object (e.g. $JobDateTime) (which does not have Time Zone or offset)
+From XML-API, GET the firewall's "tz database" format time zone name from deviceconfig/system/timezone
+Map the "tz database" name to a TimeZoneInfo object
+    For PowerShell 6+, using $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById('America/Chicago')
+    For Powershell 5.1, using an external assembly TimeZoneConverter (via helper cmdlet) to map PAN-OS IANA style to closest Windows approximation.
+        https://www.nuget.org/packages/TimeZoneConverter/
+        https://github.com/mattjohnsonpint/TimeZoneConverter
 The $TimeZoneInfo.BaseUtcOffset is a TimeSpan representing the offset from UTC
 Call $TimeZoneInfo.IsDaylightSavingTime($JobDateTime) and determine if DST is/was in effect during that exact DateTime
     If DST, add one hour to the offset when constructing the DateTimeOffset object
@@ -53,8 +60,9 @@ Optionally, store the TimeZoneInfo object as well should ever want to display fr
     Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
     # Determine TimeZoneInfo from the passed TimeZoneName before main processing loop
-    # Offset will be determined for each job given daylight savings impact and long job history
-    $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById($PSBoundParameters.TimeZoneName)
+    # Offset will be determined for each software given daylight savings impact
+    # Use the internal ConvertFromPanTimeZone helper to accommodate cross-platform nuances
+    $TimeZoneInfo = ConvertFromPanTimeZone -Name $PSBoundParameters.TimeZoneName
     # If it cannot be found, assume (likely incorrectly) UTC (it's a standard)
     if(-not $TimeZoneInfo) {
         $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById('UTC')

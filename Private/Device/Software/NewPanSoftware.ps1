@@ -31,7 +31,8 @@ See help for NewPanJob for time zone related context.
 
     # Determine TimeZoneInfo from the passed TimeZoneName before main processing loop
     # Offset will be determined for each software given daylight savings impact
-    $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById($PSBoundParameters.TimeZoneName)
+    # Use the internal ConvertFromPanTimeZone helper to accommodate cross-platform nuances
+    $TimeZoneInfo = ConvertFromPanTimeZone -Name $PSBoundParameters.TimeZoneName
     # If it cannot be found, assume (likely incorrectly) UTC (it's a standard)
     if(-not $TimeZoneInfo) {
         $TimeZoneInfo = [TimeZoneInfo]::FindSystemTimeZoneById('UTC')

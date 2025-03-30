@@ -1,15 +1,15 @@
 function ConvertFromXml {
-   <#
-   .SYNOPSIS
-   Converts the 'Property' type properties of a System.Xml.* object to a PSCustomObject
-   .DESCRIPTION
-   Converts the 'Property' type properties of a System.Xml.* object to a PSCustomObject
-   .NOTES
-   Recursive function. Watch out.
-   .INPUTS
-   .OUTPUTS
-   .EXAMPLE
-   #>
+<#
+.SYNOPSIS
+Converts the 'Property' type properties of a System.Xml.* object to a PSCustomObject
+.DESCRIPTION
+Converts the 'Property' type properties of a System.Xml.* object to a PSCustomObject
+.NOTES
+Recursive function. Watch out.
+.INPUTS
+.OUTPUTS
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
       [parameter(
