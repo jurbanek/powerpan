@@ -1,15 +1,5 @@
 # PowerPAN Todo
 
-## Rename private cmdlets/functions without semicolons
-
-- `New-PanJob` to become `NewPanJob`, etc.
-- Aligns with PowerShell best practices and provides a larger namespace.
-
-## Commit / Job
-
-- Friendlier cmdlet wrapper for existing -Commit capability in `Invoke-PanXApi`
-- Cmdlets for interacting with jobs (at least viewing) to get Commit status
-
 ## Address Objects
 
 - `Set-PanAddress` and `Get-PanAddress` completed
