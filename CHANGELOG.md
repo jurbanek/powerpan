@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.4.0 ???
+## 0.4.0 2025-03-30
 
 ### Added
 
@@ -10,12 +10,14 @@ All notable changes to this project will be documented in this file.
 - `Invoke-PanHaState` public cmdlet for displaying and changing high-availability *runtime* state and status. A new `[PanHaState]` type also exists.
 - `Invoke-PanSoftware` public cmdlet for displaying, checking, downloading, installing, and deleting PAN-OS operating system software updates. A new `[PanSoftware]` type also exists.
 - `Get-PanJob` public cmdlet for monitoring the status of jobs (called "tasks" in the GUI). A new `[PanJob]` type also exists.
-- `[PanSoftware]` type and `[PanJob]` type both make use of `[DateTimeOffset]` typed property (instead of `[DateTime]`) and `[TimeZoneInfo]` typed property, internally. *Needed to effectively compare dates and times when the computer running the `PowerPAN` module/script is in a different time zone than the devices, or when comparing dates and times across devices in different time zones.
+- Note: `[PanSoftware]` type and `[PanJob]` type both make use of `[DateTimeOffset]` typed property (instead of `[DateTime]`) and `[TimeZoneInfo]` typed property, internally. *Needed to effectively compare dates and times when the computer running the `PowerPAN` module/script is in a different time zone than the devices, or when comparing dates and times across devices in different time zones.
   - PAN-OS XML-API returns job and software related data in the device's local time *without* any time zone or offset qualifiers. Frustrating indeed.
   - The device's time zone can be learned from the configuration (and is as part of `Get-PanJob` and `Get-PanSoftware`).
   - This module determines the device time zone, calculates the correct offset based on Daylight Savings Time and exposes for use as `[DateTimeOffset]` and `[TimeZoneInfo]` typed properties.
   - For more detail, read `help Get-PanJob` or for technical implementation detail, read the comments within `Get-PanJob.ps1`
-- Added features in this release were built to make "large scale HA upgrades" feasible -- upgrading hundreds (or more) HA pairs at a time. Previously, needed to make heavy use of `Invoke-PanXApi`. Now the friendlier abstraction cmdlets do (most) of the work.
+- Inclusion of [`TimeZoneConverter`](https://www.nuget.org/packages/TimeZoneConverter/) .NET assembly for Windows PowerShell 5.1 time zone mapping of IANA formatted time zone names. See sources for `NewPanJob.ps1` (note no hyphen) and `ConvertFromPanTimeZone.ps1` for nerdy bits.
+- Added features in this release were built to make "large scale HA upgrades" feasible -- upgrading hundreds (or more) HA pairs at a time. Previously, needed to make heavy use of `Invoke-PanXApi`. Now the friendlier abstraction cmdlets do a lot more work.
+- Additional `-KeyCredential` parameter support in `New-PanDevice` for providing the API key in a more secure way as the password portion of a `[PSCredential]`. Back-end storage in-memory and on-disk remains `[SecureString]`, no changes there.
 
 ### Changed
 

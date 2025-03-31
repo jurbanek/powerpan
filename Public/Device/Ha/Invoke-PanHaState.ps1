@@ -26,7 +26,7 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
     param(
         [parameter(Mandatory=$true, ValueFromPipeline=$true, HelpMessage='PanDevice against which high-availability operation will be performed.')]
         [PanDevice[]] $Device,
-        [parameter(Mandatory=$true,ParameterSetName='Info',HelpMessage='Current high-availability state information.')]
+        [parameter(Mandatory=$true,ParameterSetName='Info',HelpMessage='Current PanDevice high-availability state information.')]
         [Switch] $Info,
         [parameter(Mandatory=$true,ParameterSetName='Suspend',HelpMessage='Change PanDevice high-availability state to suspend[ed].')]
         [Switch] $Suspend,
@@ -46,8 +46,8 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
         foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0}' -f $DeviceCur.Name))
 
-            # ParameterSetName Info
-            if($PSCmdlet.ParameterSetName -eq 'Info') {
+            # ParameterSetName Info or Empty
+            if($PSCmdlet.ParameterSetName -eq 'Info' -or $PSCmdlet.ParameterSetName -eq 'Empty') {
                 $Cmd = '<show><high-availability><all></all></high-availability></show>'
                 Write-Debug ($MyInvocation.MyCommand.Name + (': -Info Cmd: {0}' -f $Cmd))
                 $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd

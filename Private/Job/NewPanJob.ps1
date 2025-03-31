@@ -1,9 +1,9 @@
 function NewPanJob {
 <#
 .SYNOPSIS
-Returns a PanJob object.
+Creates and returns PanJob object(s) from a PanResponse.
 .DESCRIPTION
-Returns a PanJob object.
+Creates and returns PanJob object(s) from a PanResponse.
 .NOTES
 .INPUTS
 None

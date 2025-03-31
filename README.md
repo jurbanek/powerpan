@@ -49,14 +49,18 @@ Available from [PowerShell Gallery](https://www.powershellgallery.com/packages/P
 # Name can be FQDN or IP address. Prompt for PAN-OS username and password using PSCredential (secure input)
 New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen
 
-# Supply username and password on the command-line (INSECURE input, but supported). IPv4 address is supported as well.
+# Retrieve PanDevice, test the API. Test-PanDevice returns a raw PanResponse, by design.
+Get-PanDevice fw.lab.local | Test-PanDevice
+```
+
+Other examples for creating a new `PanDevice`. See `help New-PanDevice -Full` for full list of examples.
+
+```powershell
+# Supply username and password on the command-line (INSECURE input, but supported for non-interactive use cases). IPv4 address is supported as well.
 New-PanDevice -Name "10.0.0.250" -Username "admin" -Password "admin123" -Keygen
 
 # Validate NGFW x.509 SSL/TLS certificate is trusted by local PowerShell session. Validation is disabled by default. Per device setting is persists.
 New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen -ValidateCertificate
-
-# Retrieve PanDevice, test the API (technically, New-PanDevice already tests, but can be used on subsequent PS sessions to verify)
-Get-PanDevice fw.lab.local | Test-PanDevice
 ```
 
 ### Retrieve address objects
