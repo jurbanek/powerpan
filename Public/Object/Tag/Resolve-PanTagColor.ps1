@@ -38,7 +38,7 @@ function Resolve-PanTagColor {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
       # Using basic array index would be nice, but since the final intent is to convert back and forth for use with PAN-OS API,
       # being able to resolve string literals back and forth is required

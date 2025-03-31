@@ -30,10 +30,10 @@
    .PARAMETER UnquotedBoundary
    Switch parameter that when specified, boundary value in the Content-Type header will be unquoted (not quoted).
    .EXAMPLE
-   PS> $Data = New-MultipartFormData -File "C:\path\to\file.p12" -UnquotedBoundary
+   PS> $Data = NewMultipartFormData -File "C:\path\to\file.p12" -UnquotedBoundary
    PS> Invoke-WebRequest -Method Post -Uri 'https://...' -ContentType $Data.Header.ContentType -Body $Data.Body ...
 #>
-function New-MultipartFormData {
+function NewMultipartFormData {
    [CmdletBinding()]
    param(
       [parameter(Mandatory=$true,Position=0,HelpMessage='File(s) to be rendered')]

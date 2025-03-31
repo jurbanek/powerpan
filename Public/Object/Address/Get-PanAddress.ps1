@@ -166,7 +166,7 @@ function Get-PanAddress {
                   }
 
                   # Create new PanAddress object, output to pipeline (fast update for users), save to variable
-                  New-PanAddress -Name $EntryCur.name -Value $Value -Type $Type -Description $Description -Tag $Member -Device $DeviceCur -Location $XPathCur.Name | Tee-Object -Variable 'AddressFoo'
+                  NewPanAddress -Name $EntryCur.name -Value $Value -Type $Type -Description $Description -Tag $Member -Device $DeviceCur -Location $XPathCur.Name | Tee-Object -Variable 'AddressFoo'
 
                   # Add the new PanAddress object to aggregate. Will be counted in End block. Available for future feature as well
                   $PanAddressAgg.Add($AddressFoo)

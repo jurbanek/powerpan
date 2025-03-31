@@ -30,7 +30,7 @@ function Test-PanDevice {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
    } # Begin block
 

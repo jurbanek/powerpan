@@ -16,7 +16,7 @@ $Cfg.Add('Root',$PSScriptRoot)
 # Temporary "Publish-NNNN" directory for storing files to be published
 $Cfg.Add('TmpDirName',$('Publish-' + $(Get-Date -Format yyyyMMdd-HHmmss).ToString()))
 $Cfg.Add('TmpDirPath', (Join-Path $Cfg.Root $Cfg.TmpDirName))
-$Cfg.Add('ExcludeRegEx',"$($Cfg.TmpDirName)|\.vscode|\.git")
+$Cfg.Add('ExcludeRegEx',"$($Cfg.TmpDirName)|\.vscode|\.git|\.DS_Store")
 # Initialize, to be populated
 $Cfg.Add('FunctionsToExport',@())
 

@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.0 2025-03-30
+
+### Added
+
+- `Invoke-PanCommit` public cmdlet for committing, validating, and determining if pending changes exist.
+- `Invoke-PanHaState` public cmdlet for displaying and changing high-availability *runtime* state and status. A new `[PanHaState]` type also exists.
+- `Invoke-PanSoftware` public cmdlet for displaying, checking, downloading, installing, and deleting PAN-OS operating system software updates. A new `[PanSoftware]` type also exists.
+- `Get-PanJob` public cmdlet for monitoring the status of jobs (called "tasks" in the GUI). A new `[PanJob]` type also exists.
+- Note: `[PanSoftware]` type and `[PanJob]` type both make use of `[DateTimeOffset]` typed property (instead of `[DateTime]`) and `[TimeZoneInfo]` typed property, internally. *Needed to effectively compare dates and times when the computer running the `PowerPAN` module/script is in a different time zone than the devices, or when comparing dates and times across devices in different time zones.
+  - PAN-OS XML-API returns job and software related data in the device's local time *without* any time zone or offset qualifiers. Frustrating indeed.
+  - The device's time zone can be learned from the configuration (and is as part of `Get-PanJob` and `Get-PanSoftware`).
+  - This module determines the device time zone, calculates the correct offset based on Daylight Savings Time and exposes for use as `[DateTimeOffset]` and `[TimeZoneInfo]` typed properties.
+  - For more detail, read `help Get-PanJob` or for technical implementation detail, read the comments within `Get-PanJob.ps1`
+- Inclusion of [`TimeZoneConverter`](https://www.nuget.org/packages/TimeZoneConverter/) .NET assembly for Windows PowerShell 5.1 time zone mapping of IANA formatted time zone names. See sources for `NewPanJob.ps1` (note no hyphen) and `ConvertFromPanTimeZone.ps1` for nerdy bits.
+- Added features in this release were built to make "large scale HA upgrades" feasible -- upgrading hundreds (or more) HA pairs at a time. Previously, needed to make heavy use of `Invoke-PanXApi`. Now the friendlier abstraction cmdlets do a lot more work.
+- Additional `-KeyCredential` parameter support in `New-PanDevice` for providing the API key in a more secure way as the password portion of a `[PSCredential]`. Back-end storage in-memory and on-disk remains `[SecureString]`, no changes there.
+
+### Changed
+
+- (BREAKING CHANGE) Within `Invoke-PanXApi -Commit`, the `-Force` parameter was removed. If desiring a "force commit", add `<commit><force></force></commit>` as the commit `$Cmd` or better yet, use the `Invoke-PanCommit` cmdlet instead.
+  - The `Invoke-PanXApi -Commit` mode now represents a cleaner mapping to the native PAN-OS XML-API. "Force commit" capabilities are part of the XML-API `cmd` and better represented as a `$Cmd`.
+  - `Invoke-PanCommit` provides a friendlier abstraction of "force commit" while keeping the lower-level `Invoke-PanXApi` better aligned to the raw XML-API.
+- Re-arranged module's directory and file layout of `.ps1` files. Intent is to align functions with "Policy-Object-Network-Device" GUI tabs. Not perfect, but provides structure. No external effect.
+- Changed module's private cmdlets to use *non*-hyphenated names based on PowerShell best practice to distinguish public from private. Since these were private/internal use cmdlets to begin with, there is no external effect.
+  - Example: Private cmdlet/function `New-PanResponse` became `NewPanResponse`. And many more.
+- Cmdlet commenting and documentation updates.
+
 ## 0.3.4 2025-02-21
 
 ### Added
@@ -10,9 +37,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Updated `New-MultipartFormData` to address an issue when using PowerShell 7.4.
+- Updated `NewMultipartFormData` to address an issue when using PowerShell 7.4.
   - In PowerShell 7.4 the web cmdlets default charset was changed to utf-8.
-  - `New-MultipartFormData` is a custom MIME encoder for PAN-OS XML-API (see the cmdlet code itself for details).
+  - `NewMultipartFormData` is a custom MIME encoder for PAN-OS XML-API (see the cmdlet code itself for details).
   - Required including the non- "utf-8" charset in the `ContentType` parameter which makes its way to the HTTP `Content-Type:` header to resolve XML-API upload failures.
   - <https://github.com/PowerShell/PowerShell/pull/18219>
 
@@ -26,7 +53,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
- - Export-PanDeviceDb and Import-PanDeviceDb changed to enable MacOS (tested) and Linux (not tested) support for saving `devices.json` using `HOME` environment variable. Persistent devices across PowerShell sessions now supported on MacOS (and likely Linux).
+ - ExportPanDeviceDb and ImportPanDeviceDb changed to enable MacOS (tested) and Linux (not tested) support for saving `devices.json` using `HOME` environment variable. Persistent devices across PowerShell sessions now supported on MacOS (and likely Linux).
 
 ## 0.3.1 2023-05-04
 
@@ -67,7 +94,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- New `New-MultipartFormData ` private helpers for building `multipart/form-data` POSTs.
+- New `NewMultipartFormData ` private helpers for building `multipart/form-data` POSTs.
 
   - PAN-OS XML-API has trouble with quoted `boundary` declaration on the OUTER `Content-Type` header
   - Issue captures the challenge nicely <https://github.com/PowerShell/PowerShell/issues/9241>
@@ -127,7 +154,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- New `[PanResponse]` class and `New-PanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
+- New `[PanResponse]` class and `NewPanResponse` private cmdlet to standardize on *internal* PAN XML-API response handling
   - `Invoke-PanXApi` now returns `[PanResponse]`, which now includes HTTP response details, along with the results
   - Refactored all relevant cmdlets in light of `[PanResponse]` object property name and structure changes
 - New `PanResponse.Format.ps1xml` and `PanDevice.Format.ps1xml` format files to simplify `[PanResponse]` and `[PanDevice]` default object property display
@@ -223,4 +250,4 @@ All notable changes to this project will be documented in this file.
 - Add `-Credential` parameter to `New-PanDevice`
   - Need a secure option for adding credentials using New-PanDevice
   - Example with New-PanDevice -Name "MyDevice" -Credential $(New-Credential) -Keygen
-  - `[PanDevice]` class constructor has already been built to deal with this case on import via Import-PanDeviceDb
+  - `[PanDevice]` class constructor has already been built to deal with this case on import via ImportPanDeviceDb

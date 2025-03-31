@@ -45,10 +45,10 @@ function Remove-PanDevice {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
-      # Fetch PanSessionGuid to be used throughout function. Avoids littering Debug logs with excessive calls to Get-PanSessionGuid
-      $SessionGuid = Get-PanSessionGuid
+      # Fetch PanSessionGuid to be used throughout function. Avoids littering Debug logs with excessive calls to GetPanSessionGuid
+      $SessionGuid = GetPanSessionGuid
 
       # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
       $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
@@ -141,7 +141,7 @@ function Remove-PanDevice {
             }
          }
          Write-Debug ($MyInvocation.MyCommand.Name + ': Serializing')
-         Export-PanDeviceDb
+         ExportPanDeviceDb
       }
    } # End block
 } # Function

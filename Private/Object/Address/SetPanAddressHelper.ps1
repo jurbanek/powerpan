@@ -1,14 +1,14 @@
-function Set-PanAddressHelper {
-   <#
-   .SYNOPSIS
-   .DESCRIPTION
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   PanResponse
-   .EXAMPLE
-   #>
+function SetPanAddressHelper {
+<#
+.SYNOPSIS
+.DESCRIPTION
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+PanResponse
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
       [parameter( Mandatory=$true, HelpMessage='PanAddress object to be applied to candidate configuration')]

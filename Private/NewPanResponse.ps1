@@ -1,25 +1,21 @@
-function New-PanResponse{
-   <#
-   .SYNOPSIS
-   Returns a PanResponse object. Internal helper cmdlet.
-   .DESCRIPTION
-   Returns a PanResponse object. Internal helper cmdlet.
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   PanResponse
-   .EXAMPLE
-   #>
+function NewPanResponse{
+<#
+.SYNOPSIS
+Returns a PanResponse object. Internal helper cmdlet.
+.DESCRIPTION
+Returns a PanResponse object. Internal helper cmdlet.
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+PanResponse
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
-      [parameter(
-         Mandatory=$true,
-         Position=0,
-         HelpMessage='Invoke-WebRequest WebResponseObject')]
+      [parameter(Mandatory=$true,Position=0,HelpMessage='Invoke-WebRequest WebResponseObject')]
       [Microsoft.PowerShell.Commands.WebResponseObject] $WebResponse,
-      [parameter(
-         HelpMessage='Optional ParentDevice. Internal use only')]
+      [parameter(HelpMessage='Optional ParentDevice. Internal use only')]
       [PanDevice] $Device
    )
 
@@ -43,13 +39,27 @@ function New-PanResponse{
    if($WebResponse.Headers.'Content-Type' -Match 'application\/xml') {
       Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/xml')
 
-      # Turn the XML body into an XML object
-      $XmlContentObj = [xml]$WebResponse.Content
-      # Populate with XML body details
-      $PanResponse.Status = $XmlContentObj.response.status
-      $PanResponse.Code = $XmlContentObj.response.code
-      $PanResponse.Message = $XmlContentObj.response.msg.InnerText
-      $PanResponse.Result = $XmlContentObj.response.result
+      # Turn the XML body into an XmlDocument object with XmlDocument doing the parse heavy lifting
+      # Interesting note, [xml] is the PowerShell type accelerator (alias) for [System.Xml.XmlDocument]. Let's be verbose.
+      $XmlDoc = [System.Xml.XmlDocument]$WebResponse.Content
+      # Populate PanResponse with XML body details
+      # Status
+      $PanResponse.Status = $XmlDoc.response.status
+      # Code
+      $PanResponse.Code = $XmlDoc.response.code
+      # Message
+      # Variety A: msg contains no other elements
+      # Example: Commits with no pending changes return <msg>There are no changes to commit.</msg> which is mapped to a string.
+      if($XmlDoc.response.msg -is [String]) {
+         $PanResponse.Message = $XmlDoc.response.msg
+      }
+      # Variety B: msg contains other nested elements
+      # Example: ??? <msg><line>Some Message</line></msg>
+      elseif($XmlDoc.response.msg -is [System.Xml.XmlElement]) {
+         $PanResponse.Message = $XmlDoc.response.msg.InnerText
+      }
+      # Result
+      $PanResponse.Result = $XmlDoc.response.result
    }
    elseif ($WebResponse.Headers.'Content-Type' -Match 'application\/json') {
       Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/json')

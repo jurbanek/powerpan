@@ -34,7 +34,7 @@ function Select-PanDeviceVsysDefault {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
    } # Begin block
 

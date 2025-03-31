@@ -26,7 +26,7 @@ function Get-PanDeviceLabelDefault {
 
    if( [String]::IsNullOrEmpty($Global:PanDeviceLabelDefault) ) {
       Write-Debug ($MyInvocation.MyCommand.Name + ': $Global:PanDeviceLabelDefault null or empty. Session is default')
-      return "session-$(Get-PanSessionGuid)"
+      return "session-$(GetPanSessionGuid)"
    }
    else {
       return $Global:PanDeviceLabelDefault

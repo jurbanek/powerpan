@@ -1,19 +1,19 @@
-function New-PanRegisteredIp {
-   <#
-   .SYNOPSIS
-   Returns a PanRegisteredIp object.
-   .DESCRIPTION
-   Returns a PanRegisteredIp object. To apply PanRegisteredIp to NGFW, use Add-, Remove-, Clear- cmdlets.
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   PanRegisteredIp
-   .EXAMPLE
-   New-PanRegisteredIp -Ip "1.1.1.1" -Tag "MyTag"
-   .EXAMPLE
-   New-PanRegisteredIp -Ip "2.2.2.2" -Tag @("HerTag","HisTag") -Vsys "vsys1"
-   #>
+function NewPanRegisteredIp {
+<#
+.SYNOPSIS
+Returns a PanRegisteredIp object.
+.DESCRIPTION
+Returns a PanRegisteredIp object. To apply PanRegisteredIp to NGFW, use Add-, Remove-, Clear- cmdlets.
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+PanRegisteredIp
+.EXAMPLE
+NewPanRegisteredIp -Ip "1.1.1.1" -Tag "MyTag"
+.EXAMPLE
+NewPanRegisteredIp -Ip "2.2.2.2" -Tag @("HerTag","HisTag") -Vsys "vsys1"
+#>
    [CmdletBinding()]
    param(
       [parameter(

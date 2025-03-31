@@ -1,14 +1,14 @@
-function Initialize-PanDeviceDb {
-   <#
-   .SYNOPSIS
-   PowerPAN private helper function to initialize the PanDeviceDb.
-   .DESCRIPTION
-   PowerPAN private helper function to initialize the PanDeviceDb.
-   .NOTES
-   .INPUTS
-   .OUTPUTS
-   .EXAMPLE
-   #>
+function InitializePanDeviceDb {
+<#
+.SYNOPSIS
+PowerPAN private helper function to initialize the PanDeviceDb.
+.DESCRIPTION
+PowerPAN private helper function to initialize the PanDeviceDb.
+.NOTES
+.INPUTS
+.OUTPUTS
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
    )
@@ -23,7 +23,7 @@ function Initialize-PanDeviceDb {
    if(-not $Global:PanInitImportComplete) {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Performing initial import')
       $Global:PanInitImportComplete = $true
-      Import-PanDeviceDb
+      ImportPanDeviceDb
 
    }
    if( [String]::IsNullOrEmpty($Global:PanDeviceDb) ) {

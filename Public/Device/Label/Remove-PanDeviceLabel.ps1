@@ -1,17 +1,17 @@
 function Remove-PanDeviceLabel {
-   <#
-   .SYNOPSIS
-   Remove label(s) from a PanDevice in PanDeviceDb.
-   .DESCRIPTION
-   Remove label(s) from a PanDevice in PanDeviceDb.
-   .NOTES
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   None
-   .EXAMPLE
-   #>
+<#
+.SYNOPSIS
+Remove label(s) from a PanDevice in PanDeviceDb.
+.DESCRIPTION
+Remove label(s) from a PanDevice in PanDeviceDb.
+.NOTES
+.INPUTS
+PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+None
+.EXAMPLE
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
       [parameter(
@@ -35,7 +35,7 @@ function Remove-PanDeviceLabel {
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
       # Initialize PanDeviceDb
-      Initialize-PanDeviceDb
+      InitializePanDeviceDb
 
       # If dirty after process block, serialize necessary
       $Dirty = $false
@@ -70,7 +70,7 @@ function Remove-PanDeviceLabel {
 
    End {
       if($Dirty) {
-         Export-PanDeviceDb
+         ExportPanDeviceDb
       }
    } # End block
 } # Function
