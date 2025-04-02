@@ -1,5 +1,21 @@
 # PowerPAN Todo
 
+## Add `-Follow` parameter to `Invoke-PanCommit`, `Invoke-PanSoftware`
+
+- The operations are asynchronous and return Jobs. With `-Follow` would monitor the job status through completion.
+- `-FollowInterval` with default value of 30 seconds to speed up or slow down update interval.
+
+## Add `Invoke-PanXApi -Config` action support for `rename`, `clone`, `move`, and `override`
+
+- Less frequently used actions.
+- http://api-lab.paloaltonetworks.com/configuration.html
+- Kevin Steves implemented in [`panxapi.py`](https://github.com/kevinsteves/pan-python/blob/master/bin/panxapi.py)
+
+## Add Panorama `commit-all` support to `Invoke-PanXApi`
+
+- Decipher Panorama-only `commit-all`
+- Implement in `Invoke-PanXApi`
+
 ## Address Objects
 
 - `Set-PanAddress` and `Get-PanAddress` completed
@@ -53,10 +69,10 @@
 
 - Application discovery for Foot Locker. Get-PanLog and specify DateTime or range, specify source/destination (check API limits), then perform additional filtering in PowerShell `| Sort-Object - Property appid -Unique`
 
-### `Invoke-PanEdlRefresh`
+### EDL's `Get-PanEdl`, `Invoke-PanEdlRefresh`
 
 - Refresh is not an approved verb
-- Command to force an EDL refresh, useful when making changes to MineMeld and not waiting for built-in refresh
+- Command to force an EDL refresh, useful when making changes to the edl target/list and not waiting for built-in refresh
 
 ### Expedition Panorama Post-Import Object Revert and Move
 
