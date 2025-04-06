@@ -33,9 +33,8 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
    }
    else {
       Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "$StoredJsonPath file found. Getting contents")
-
+      
       $StoredDevicesCustomObjs = Get-Content -Path $StoredJsonPath | ConvertFrom-Json
-
       if($StoredDevicesCustomObjs.Count -eq 0) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "No valid contents found")
       }
@@ -50,9 +49,9 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
             Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($Cur.Name)")
 
             # If no stored label, avoid sending $null to the constructor. Causes trouble down the road when calling Label.Add(), Label.Contains() and other methods.
-            if([String]::IsNullOrEmpty($Cur.Label)) {
-               $Cur.Label = [System.Collections.Generic.List[String]]@()
-            }
+            $Cur.Label = if([String]::IsNullOrEmpty($Cur.Label)) { $Cur.Label = [System.Collections.Generic.List[String]]@() }
+            # Set the PanDeviceType, if not stored (older versions), default to Ngfw
+            $Type = if($Cur.Type) { $Cur.Type } else { [PanDeviceType]::Ngfw }
 
             # Username, Password, and Key are defined, build a new [PanDevice] with all three
             if( -not [String]::IsNullOrEmpty($Cur.Username) -and -not [String]::IsNullOrEmpty($Cur.Password) -and -not [String]::IsNullOrEmpty($Cur.Key) ) {
@@ -62,7 +61,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $Cur.Key
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential] and [SecureString]
-               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
+               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port, $Type) )
             }
 
             # Only Username and Password defined, build new [PanDevice] with just Username and Password
@@ -71,7 +70,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
                # Create [PSCredential] from Username and encrypted string Password
                $Credential = New-Object -TypeName PSCredential -ArgumentList $Cur.Username,$(ConvertTo-SecureString -String $Cur.Password)
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential]
-               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
+               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Credential, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port, $Type) )
             }
 
             # Only Key defined, build new [PanDevice] with just Key
@@ -80,7 +79,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $Cur.Key
                # Create new [PanDevice] using some original retrieved values and just created [SecureString]
-               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port) )
+               $NewDevices.Add( [PanDevice]::New($Cur.Name, $Key, $Cur.Label, $Cur.ValidateCertificate, $Cur.Protocol, $Cur.Port, $Type) )
             }
 
          } # foreach

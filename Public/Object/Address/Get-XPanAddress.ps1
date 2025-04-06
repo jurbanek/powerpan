@@ -50,107 +50,107 @@ PS> Get-PanDevice -All | Get-XPanAddress -Filter "192.168"
          Write-Debug ($MyInvocation.MyCommand.Name + (': Filter Applied "{0}"' -f $PSBoundParameters.Filter))
       }
 
-      # TODO: Panorama xpaths not correct? Need fix when rebuilding cmdlet for Panorama/DG support. Placeholder for now.
-      $XPathPanorama = [ordered]@{
-         NoFilter = "/config/panorama/vsys/entry[@name='{0}']/address/entry";
-         Filter = "/config/panorama/vsys/entry[@name='{0}']/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' ))]";
-      }
       $XPathShared = [ordered]@{
          NoFilter = "/config/shared/address/entry";
          Filter = "/config/shared/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]";
       }
-      $XPathLocal = [ordered]@{
+      $XPathPanorama = [ordered]@{
+         NoFilter = "/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='{0}']/address/entry";
+         Filter =   "/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='{0}']/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' ))]";
+      }
+      $XPathNgfw = [ordered]@{
          NoFilter = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry";
          Filter = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' ))]";
       }
 
       # Define here, track aggregate device aggregate results in Process block.
-      $PanAddressAgg = [System.Collections.Generic.List[XPanAddress]]@()
+      $AddressAgg = [System.Collections.Generic.List[XPanAddress]]@()
    } # Begin Block
 
    Process {
-      foreach($DeviceCur in $PSBoundParameters['Device']) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+      foreach($DeviceCur in $PSBoundParameters.Device) {
+         Write-Debug ('{0}: Device: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
 
-         # Ensure Vsys map is up to date for current device
-         Update-PanDeviceVsys -Device $DeviceCur
+         # Ensure Location map is up to date for current device
+         Update-PanDeviceLocation -Device $DeviceCur
 
          # Determine necessary location xpath(s). Includes objects from Panorama (per vsys), shared, and local (per vsys)
          # Stored as key-value where key is the location and value is the xpath. Using [ordered] to preserve enumeration order later
          # Note to achieve case-insensitivity on the -Filter parameter (given PAN-OS case-sensitive)
          #  1) The xpaths are heavily modified (see above) with some wild contains() and translate()
          #  2) The -Filter contents is submitted via API as lower-case using ToLower()
-         $XPathsToRun = [ordered]@{}
-         # Add Panorama-sourced object xpath(s) per vsys. Panorama can push objects to each vsys.
-         foreach($VsysCur in $DeviceCur.Vsys) {
-            $Paths = [ordered]@{}
-            $Paths.Add('NoFilter', ($XPathPanorama.NoFilter -f $VsysCur))
-            if($PSCmdlet.ParameterSetName -eq 'Filter') {
-               $Paths.Add('Filter', ($XPathPanorama.Filter -f $VsysCur,$PSBoundParameters.Filter.ToLower()))
-            }
-            $XPathsToRun.Add("panorama/$VsysCur", $Paths)
-         }
-
-         # Add local Shared xpath
+         
+         # A @{} syntactic sugar hashtable in PowerShell is case INsensitive
+         # Using a called out [System.Collections.Specialized.OrderedDictionary] here for case sensitivity
+         # Panorama device-groups are case sensitive, so 'grandparent' and 'Grandparent' are two separate DG's, need to support it
+         # $XPathsToRun will become a hashtable of hashtables
+         $XPathsToRun = [System.Collections.Specialized.OrderedDictionary]::new()
+         
+         # Add Shared
          $Paths = [ordered]@{}
          $Paths.Add('NoFilter', $XPathShared.NoFilter)
          if($PSCmdlet.ParameterSetName -eq 'Filter') {
             $Paths.Add('Filter', ($XPathShared.Filter -f $PSBoundParameters.Filter.ToLower()))
          }
-         $XPathsToRun.Add("local/shared", $Paths)
-
-         # Add local xpath(s) per vsys.
-         foreach($VsysCur in $DeviceCur.Vsys) {
-            $Paths = [ordered]@{}
-            $Paths.Add('NoFilter', ($XPathLocal.NoFilter -f $VsysCur))
-            if($PSCmdlet.ParameterSetName -eq 'Filter') {
-               $Paths.Add('Filter', ($XPathLocal.Filter -f $VsysCur,$PSBoundParameters.Filter.ToLower()))
+         $XPathsToRun.Add('shared', $Paths)
+         
+         # Panorama paths, per Location (device-group)
+         if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
+            foreach($LocationCur in $DeviceCur.Location) {
+               $Paths = [ordered]@{}
+               $Paths.Add('NoFilter', ($XPathPanorama.NoFilter -f $LocationCur))
+               if($PSCmdlet.ParameterSetName -eq 'Filter') {
+                  $Paths.Add('Filter', ($XPathPanorama.Filter -f $LocationCur,$PSBoundParameters.Filter.ToLower()))
+               }
+               $XPathsToRun.Add($LocationCur, $Paths)
             }
-            $XPathsToRun.Add("local/$VsysCur", $Paths)
+         }
+         
+         # Ngfw paths, per Location (vsys)
+         if($DeviceCur.Type -eq [PanDeviceType]::Ngfw) {
+            foreach($LocationCur in $DeviceCur.Location) {
+               $Paths = [ordered]@{}
+               $Paths.Add('NoFilter', ($XPathNgfw.NoFilter -f $LocationCur))
+               if($PSCmdlet.ParameterSetName -eq 'Filter') {
+                  $Paths.Add('Filter', ($XPathNgfw.Filter -f $LocationCur,$PSBoundParameters.Filter.ToLower()))
+               }
+               $XPathsToRun.Add($LocationCur, $Paths)
+            }
          }
 
-         # Call API for determined xpath(s)
+         # Call the API for the XPathsToRun monster
          foreach($XPathCur in $XPathsToRun.GetEnumerator()) {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Device: {0} SearchType: {1}' -f $DeviceCur.Name,$XPathCur.Name)
+            # $XPathCur is a hashtable, not a string
+            Write-Debug ('{0}: Device: {1} Type: {2} Location: {3}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$DeviceCur.Type,$XPathCur.Name)
             
-            if($PSCmdlet.ParameterSetName -eq 'NoFilter') {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': XPath: {0}' -f $XPathCur.Value.NoFilter)
-               $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPathCur.Value.NoFilter
-               if($PanResponse.Status -eq 'success') {
-                  foreach($EntryCur in $PanResponse.Result.entry) {
-                     # Build a new XPanAddress
-                     [System.Xml.XmlDocument]$XDocNew = $EntryCur.OuterXml
-                     $XPathNew = "{0}[@name='{1}']" -f $XPathCur.Value.NoFilter,$EntryCur.name
-                     $AddressNew = [XPanAddress]::new($XDocNew, $XPathNew, $DeviceCur)
-                     # Send to pipeline
-                     $AddressNew
-                     # Add the new PanAddress object to aggregate for purposes of being counted in Debug (and future feature)
-                     $PanAddressAgg.Add($AddressNew)
-                  } # foreach entry
-               }
+            if($PSCmdlet.ParameterSetName -eq 'Filter') {
+               Write-Debug ('{0}: XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPathCur.Value.Filter)
+               $InvokeXPath = $XPathCur.Value.Filter
             }
-            elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': XPath: {0}' -f $XPathCur.Value.Filter)
-               $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPathCur.Value.Filter
-               if($PanResponse.Status -eq 'success') {
-                  foreach($EntryCur in $PanResponse.Result.entry) {
-                     # Build a new XPanAddress
-                     [System.Xml.XmlDocument]$XDocNew = $EntryCur.OuterXml
-                     # Search used $XPathCur.Value.Filter XPath, BUT the address object XPath property to use the NoFilter version
-                     # to represent the object's XPath directly without the additional filter nonsense
-                     $XPathNew = "{0}[@name='{1}']" -f $XPathCur.Value.NoFilter,$EntryCur.name
-                     $AddressNew = [XPanAddress]::new($XDocNew, $XPathNew, $DeviceCur)
-                     # Send to pipeline
-                     $AddressNew
-                     # Add the new PanAddress object to aggregate for purposes of being counted in Debug (and future feature)
-                     $PanAddressAgg.Add($AddressNew)
-                  } # foreach entry
-               }
+            else {
+               Write-Debug ('{0}: XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPathCur.Value.NoFilter)
+               $InvokeXPath = $XPathCur.Value.NoFilter
             }
+            $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $InvokeXPath
+            if($Response.Status -eq 'success') {
+               foreach($EntryCur in $Response.Result.entry) {
+                  # Build a new XPanAddress
+                  [System.Xml.XmlDocument]$XDoc = $EntryCur.OuterXml
+                  # Regardless of Filter or NoFilter version used in $InvokeXPath, will use NoFilter for the XPath
+                  # used in the PanAddress object to avoid the Filter contains() and translate() nonsense
+                  $AddressXPath = "{0}[@name='{1}']" -f $XPathCur.Value.NoFilter,$EntryCur.name
+                  $Address = [XPanAddress]::new($XDoc, $AddressXPath, $DeviceCur)
+                  # Send to pipeline
+                  $Address
+                  # Add the new PanAddress object to aggregate for purposes of being counted in Debug (and future feature)
+                  $AddressAgg.Add($AddressNew)
+               } # foreach entry
+            }
+            
          } # foreach xpath
       } # foreach Device
    } # Process block
    End {
-      Write-Debug ($MyInvocation.MyCommand.Name + (': Final address count: {0}' -f $PanAddressAgg.Count))
+      Write-Debug ('{0}: Final address count: {1}' -f $MyInvocation.MyCommand.Name,$AddressAgg.Count)
    } # End block
 } # Function

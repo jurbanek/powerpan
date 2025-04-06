@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.0 ???
+
+### Added
+- `Invoke-PanXApi` support for `-Config -Complete` action.
+
+
 ## 0.4.0 2025-03-30
 
 ### Added

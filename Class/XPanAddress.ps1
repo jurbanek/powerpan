@@ -25,28 +25,28 @@ class XPanAddress {
             param($Set)
             $this.XDoc.Item('entry').SetAttribute('name',$Set)
          } -Force
-      
+
       # Value ScriptProperty linked to $XDoc.entry.Item(*type*).InnerText
       'XPanAddress' | Update-TypeData -MemberName Value -MemberType ScriptProperty -Value {
-            # Getter
-            return $this.XDoc.Item('entry').Item($this.Type).InnerText
-         } -SecondValue {
-            # Setter
-            param($Set)
-            $this.XDoc.Item('entry').Item($this.Type).InnerText = $Set
-         } -Force
+         # Getter
+         return $this.XDoc.Item('entry').Item($this.Type).InnerText
+      } -SecondValue {
+         # Setter
+         param($Set)
+         $this.XDoc.Item('entry').Item($this.Type).InnerText = $Set
+      } -Force
       
       # Type ScriptProperty linked to $XDoc.entry.ip-netmask or $XDoc.entry.fqdn, etc.
       'XPanAddress' | Update-TypeData -MemberName Type -MemberType ScriptProperty -Value {
          # Getter
-         if($this.XDoc.Item('entry').Item('ip-netmask').Count) { return 'ip-netmask' }
-         elseif($this.XDoc.Item('entry').Item('fqdn').Count) { return 'fqdn' }
-         elseif($this.XDoc.Item('entry').Item('ip-range').Count) { return 'ip-range' }
-         elseif($this.XDoc.Item('entry').Item('ip-wildcard').Count) { return 'ip-wildcard' }
+         if($this.XDoc.Item('entry').GetElementsByTagName('ip-netmask').Count) { return 'ip-netmask' }
+         elseif($this.XDoc.Item('entry').GetElementsByTagName('fqdn').Count) { return 'fqdn' }
+         elseif($this.XDoc.Item('entry').GetElementsByTagName('ip-range').Count) { return 'ip-range' }
+         elseif($this.XDoc.Item('entry').GetElementsByTagName('ip-wildcard').Count) { return 'ip-wildcard' }
       } -Force
       # No Setter for Type. Changing type can be done by creating a new object.
 
-      # Tag ScriptProperty linked to $XDoc.entry.Item('tag'). It's also an array, watch out.
+      # Tag ScriptProperty linked to $XDoc.entry.tag It's also an array, watch out.
       # <tag><member>tag1</member><member>tag2</member><tag>
       'XPanAddress' | Update-TypeData -MemberName Tag -MemberType ScriptProperty -Value {
          # Getter
@@ -56,7 +56,7 @@ class XPanAddress {
          param($Set)
          # If <tag> is already present
          if($this.XDoc.Item('entry').Item('tag').Count) {
-            # Clear all <member> and rebuild
+            # Clear all <member> (and rebuild later)
             $this.XDoc.Item('entry').Item('tag').RemoveAll()
          }
          # Else <tag> is not present
@@ -73,7 +73,7 @@ class XPanAddress {
          }
       } -Force
 
-      # Description ScriptProperty linked to $XDoc.entry.Item('description').InnerText
+      # Description ScriptProperty linked to $XDoc.Item('entry').Item('description').InnerText
       'XPanAddress' | Update-TypeData -MemberName Description -MemberType ScriptProperty -Value {
          # Getter
          return $this.XDoc.Item('entry').Item('description').InnerText
@@ -91,12 +91,19 @@ class XPanAddress {
          }
       } -Force
       
-      # Location ScriptProperty linked to $XPath matching 'vsys1' part of vsys/entry[@name='vsys1']
+      # Location ScriptProperty linked to $XPath matching 
+      #  Panorama 'MyDeviceGroup' part of device-group/entry[@name='MyDeviceGroup']
+      #  Ngfw 'vsys1' part of vsys/entry[@name='vsys1']
       # PowerShell regex characters that need escaping [().\^$|?*+{
       'XPanAddress' | Update-TypeData -MemberName Location -MemberType ScriptProperty -Value {
             # Getter
-            # Match includes a capture group to isolate the string literal vsys1, vsys2, etc. for actual Location
-            $RegexMatch = "vsys/entry\[@name='(\w+)'\]"
+            # Match includes a capture group to isolate the string literal device-group names or vsys1, vsys2, etc. for actual Location
+            # shared
+            if($this.XPath -match '/config/shared') { $RegexMatch = "/config/(shared)" }
+            # Panorama device-group
+            elseif($this.Device.Type -eq [PanDeviceType]::Panorama) { $RegexMatch = "device-group/entry\[@name='(\w+)'\]" }
+            # Ngfw vsys
+            else { $RegexMatch = "vsys/entry\[@name='(\w+)'\]"}
             # Using PowerShell native -match operator
             if($this.XPath -match $RegexMatch) { return $Matches[1] }
             # Using .NET [Regex]::Match() static method
@@ -105,12 +112,25 @@ class XPanAddress {
             # Setter
             param($Set)
             # Replace is the same as Match, but excludes the capture group (parantheses) due to issues encountered
-            $RegexReplace = "vsys/entry\[@name='\w+'\]"
-            # Using PowerShell native -replace operator
-            $this.XPath = $this.XPath -replace $RegexReplace,("vsys/entry[@name='{0}']" -f $Set)
-            # Using .NET [Regex]::Replace() static method
-            # $this.XPath = [Regex]::Replace($this.XPath,$RegexReplace,"vsys/entry[@name='{0}']" -f $Set)
+            if($this.XPath -match '/config/shared') {
+               # Do nothing
+            }
+            # Panorama device-group
+            if($this.Device.Type -eq [PanDeviceType]::Panorama) {
+               $RegexReplace = "device-group/entry\[@name='\w+'\]"
+               # Using PowerShell native -replace operator
+               $this.XPath = $this.XPath -replace $RegexReplace,("device-group/entry[@name='{0}']" -f $Set)
+               # Using .NET [Regex]::Replace() static method
+               # $this.XPath = [Regex]::Replace($this.XPath,$RegexReplace,"device-group/entry[@name='{0}']" -f $Set)
+            }
+            # Ngfw vsys
+            else {
+               $RegexReplace = "vsys/entry\[@name='\w+'\]"
+               # Using PowerShell native -replace operator
+               $this.XPath = $this.XPath -replace $RegexReplace,("vsys/entry[@name='{0}']" -f $Set)
+               # Using .NET [Regex]::Replace() static method
+               # $this.XPath = [Regex]::Replace($this.XPath,$RegexReplace,"vsys/entry[@name='{0}']" -f $Set)
+            }
          } -Force
    }
-
 } # End class

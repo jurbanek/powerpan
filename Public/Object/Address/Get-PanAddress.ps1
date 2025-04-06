@@ -63,8 +63,8 @@ function Get-PanAddress {
       foreach($DeviceCur in $PSBoundParameters['Device']) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
 
-         # Ensure Vsys map is up to date for current device
-         Update-PanDeviceVsys -Device $DeviceCur
+         # Ensure Location map is up to date for current device
+         Update-PanDeviceLocation -Device $DeviceCur
 
          # Determine necessary location xpath(s). Includes objects from Panorama (per vsys), shared, and local (per vsys)
          # Stored as key-value where key is the location and value is the xpath. Using [ordered] to preserve enumeration order later

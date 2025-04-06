@@ -78,12 +78,13 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Uid',HelpMessage='XML formatted user-id payload')]
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Commit',HelpMessage='XML formatted commit command')]
       [String] $Cmd,
-      # Begin Config-Set and Config-Get parameter sets
+      # Begin Config-* parameter sets
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Get',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Show',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Set',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Edit',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Delete',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Complete',HelpMessage='Type: config ')]
       [Switch] $Config,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Get',HelpMessage='Retrieve candidate configuration')]
       [Switch] $Get,
@@ -95,11 +96,14 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [Switch] $Edit,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Delete',HelpMessage='Delete an object')]
       [Switch] $Delete,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Complete',HelpMessage='Retrieve auto-complete options')]
+      [Switch] $Complete,
       [parameter(Mandatory=$true,ParameterSetName='Config-Get',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Show',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Set',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Edit',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Delete',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Complete',HelpMessage='Config XPath')]
       [String] $XPath,
       [parameter(ParameterSetName='Config-Get',HelpMessage='Config Element')]
       [parameter(ParameterSetName='Config-Show',HelpMessage='Config Element')]
@@ -277,6 +281,9 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             }
             elseif ($PSBoundParameters.Delete.IsPresent) {
                $PanApiAction = 'delete'
+            }
+            elseif ($PSBoundParameters.Complete.IsPresent) {
+               $PanApiAction = 'complete'
             }
             Write-Debug ($MyInvocation.MyCommand.Name + ": action=$PanApiAction")
 

@@ -9,12 +9,14 @@
          <TableControl>
             <TableHeaders>
                <TableColumnHeader><Label>Name</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Type</Label></TableColumnHeader>
                <TableColumnHeader><Label>Label</Label></TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
                <TableRowEntry>
                   <TableColumnItems>
                         <TableColumnItem><PropertyName>Name</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Type</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Label</PropertyName></TableColumnItem>                            
                   </TableColumnItems>
                </TableRowEntry>
@@ -31,6 +33,7 @@
                <ListEntry>
                   <ListItems>
                      <ListItem><PropertyName>Name</PropertyName></ListItem>
+                     <ListItem><PropertyName>Type</PropertyName></ListItem>
                      <ListItem><PropertyName>Label</PropertyName></ListItem>
                   </ListItems>
                </ListEntry>

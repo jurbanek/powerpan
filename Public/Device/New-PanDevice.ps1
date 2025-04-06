@@ -1,28 +1,49 @@
 function New-PanDevice {
 <#
 .SYNOPSIS
-   Creates a new PanDevice object and adds/persists to the PanDeviceDb.
+Creates a new PanDevice object and adds/persists to the PanDeviceDb.
 .DESCRIPTION
-   Creates a new PanDevice object and adds/persists to the PanDeviceDb.
+Creates a new PanDevice object and adds/persists to the PanDeviceDb.
 .NOTES
+1) Specify a -Name and optional -Label. Labels are useful for providing more memorable names or groupings for devices.
+2) Choose an authentication input type (recommend -Credential or -KeyCredential)
+3) Specify -Keygen to generate an API key WHEN USING -Credential or -User/-Password
+4) Optionally, specify -NoPersist to prevent saving the PanDevice to PanDeviceDb (inventory file)
+
+AUTHENTICATION
 Regardless of how the PanDevice is created, the in-memory and on-disk secrets (password and API key) are stored encrypted.
-In-memory as a SecureString.
-On-disk as a serialized SecureString that is only decryptable by the user account with which it was created.
+In-memory as a SecureString. On-disk as a serialized SecureString that is only decryptable by the user account with which it was created.
+
+Authentication metadata can be provided in several ways
+
+Recommended for interactive:
+-Credential
+-KeyCredential
+
+Recommended for automation/non-interactive
+-Key, fed from environment variables (not hardcoded)
+-User/-Password, fed from environment variables (not hardcoded)
+
+The -Key, -User/-Password authentication input parameters are supported for insecure convenience. Generally not recommended except for
+non-interactive use cases.
+
+TYPE
+-Type parameter is generally not required. Type is dynamically determined if -Keygen is specified
 .INPUTS
 None
 .OUTPUTS
 PanDevice or $false
 .EXAMPLE
-# Using Username and Password PSCredential, most secure with no username or password visible on command-line, prompted for both.
+# Using PSCredential for username and password, most secure with no username or password visible on command-line, prompted for both.
 New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen
 
-# Using Username and Password PSCredential, including username "admin" on the command-line, prompted for password
+# Using PSCredntial for username and password, pre-specify username "admin" on the command-line, prompted for password.
 New-PanDevice -Name "fw.lab.local" -Credential "admin" -Keygen
 
 # Specifying both username and password in plaintext. Not prompted for anything. Included for non-interactive support. Avoid where possible.
 New-PanDevice -Name "fw.lab.local" -Username "admin" -Password "admin123" -Keygen
 .EXAMPLE
-# Using API key with PSCredential, most secure with no key visible on command-line, prompted instead. Username is ignored.
+# Using PSCredential for API key, most secure with no key visible on command-line, prompted instead. Username is ignored.
 New-PanDevice -Name "acme-edge-fw1.acme.net" -KeyCredential $(Get-Credential) -Label "acme-edge-fw1","Azure"
 
 # Or pre-populate the ignored username
@@ -71,6 +92,8 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
       [parameter(HelpMessage='Default is 443. Choose 1 - 65535')]
       [ValidateRange(1,65535)]
       [Int] $Port = 443,
+      [parameter(HelpMessage='Ngfw (default) or Panorama')]
+      [PanDeviceType] $Type = [PanDeviceType]::Ngfw,
       [parameter(HelpMessage='Default is to persist created [PanDevice] to PanDeviceDb. Use this switch parameter to not add PanDevice to PanDeviceDb. Commonly enabled with scripts.')]
       [Switch] $NoPersist = $false,
       [parameter(HelpMessage='Internal module use only. Use this switch parameter during unserializing to prevent adding session-specific Label.')]
@@ -107,7 +130,7 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
          $SecureKey = $KeyCredential.Password
       }
       # Create PanDevice
-      $Device = [PanDevice]::New($Name, $SecureKey, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port)
+      $Device = [PanDevice]::New($Name, $SecureKey, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
    }
 
    # UserPass or Credential parameter set, optional -Keygen parameter valid for both parameter sets
@@ -122,13 +145,13 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
          # Build PSCredential from $UserName and $SecurePassword
          $Credential = New-Object -TypeName PSCredential -ArgumentList $Username, $SecurePassword
          # Create base PanDevice object
-         $Device = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port)
+         $Device = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
       }
       # Credential parameter set :: -Credential
       elseif($PSCmdlet.ParameterSetName -eq 'Credential') {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Credential parameter set')
          # Create base PanDevice object
-         $Device = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port)
+         $Device = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
       }
 
       # Optionally generate API key
@@ -150,6 +173,14 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
                   Write-Debug ("`t VM-License: {0} VM-Mode: {1}" -f $PanResponse.Result.system.'vm-license',$PanResponse.Result.system.'vm-mode')
                }
                Write-Debug ("`t Serial: {0} Software Version: {1}" -f $PanResponse.Result.system.serial,$PanResponse.Result.system.'sw-version')
+               if($PanResponse.Result.system.model -eq 'Panorama') {
+                  Write-Debug ("`t PanDeviceType: {0} (Panorama)" -f [PanDeviceType]::Panorama)
+                  $Device.Type = [PanDeviceType]::Panorama
+               }
+               else {
+                  Write-Debug ("`t PanDeviceType: {0} (Ngfw)" -f [PanDeviceType]::Ngfw)
+                  $Device.Type = [PanDeviceType]::Ngfw
+               }
             }
             else { 
                Write-Error ('Error testing generated API key. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
