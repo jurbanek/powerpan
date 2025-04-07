@@ -43,10 +43,15 @@ None
             continue
          }
 
-         # Originally used an "@name" ending XPath (link below)
+         # Ordered, case sensitive hashtable. Must initialize this way and *not* with [ordered]@{} to maintain case sensitivity
+         $DeviceCurLocation = [System.Collections.Specialized.OrderedDictionary]::new()
+         # Update shared first as it is the same for both Panorama and Ngfw
+         $DeviceCurLocation.Add("shared", "/config/shared")
+
+         # Originally used an "@name" ending XPath (link below) to determine vsys and device-group list. Not ideal
          # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
          # $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry/@name"
-         # For broader compatibility between Panorama and NGFW instead using the config action=complete capability with the XML-API
+         # For broader compatibility between Panorama and NGFW, *instead* using the config action=complete capability with the XML-API
          if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/device-group"
             Write-Debug ('{0}: Panorama XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPath)
@@ -56,8 +61,6 @@ None
             Write-Debug ('{0}: NGFW XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPath)
          }
          
-         $DeviceCurLocationAgg = @()
-
          # Fetch the valid vsys (NGFW) or device-group (Panorama) using the relatively obscure config action=complete
          $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Complete -XPath $XPath
          if($PanResponse.Status -eq 'success') {
@@ -72,17 +75,17 @@ None
             $CustomResponse = [System.Xml.XmlDocument]$PanResponse.WRContent
             foreach($CompletionCur in $CustomResponse.response.completions.completion) {
                # Add each entry's name to an aggregate. In most firewalls there is a single entry with name 'vsys1'
-               $DeviceCurLocationAgg += $CompletionCur.value
+               $DeviceCurLocation.Add($CompletionCur.value, $CompletionCur.vxpath)
             }
 
-            # Update the PanDevice in PanDeviceDb
+            # Update the PanDevice
             if($PSCmdlet.ShouldProcess('PanDeviceDb','Update ' + $DeviceCur.Name + ' vsys/device-group layout')) {
-               $DeviceCur.Location = $DeviceCurLocationAgg
-               Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($DeviceCurLocationAgg -join ','))
+               $DeviceCur.Location = $DeviceCurLocation
+               Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($DeviceCurLocation.keys -join ','))
                $DeviceCur.LocationUpdated = $true
             }
-         }
-      }
+         } # End if PanResponse success
+      } # End foreach DeviceCur
    } # Process block
 
    End {

@@ -8,7 +8,7 @@ class XPanAddress {
       $this.Device = $Device
       $this.XDoc = $XDoc
       $this.XPath = $XPath
-   }
+   } # End constructor
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
    # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor
@@ -43,8 +43,27 @@ class XPanAddress {
          elseif($this.XDoc.Item('entry').GetElementsByTagName('fqdn').Count) { return 'fqdn' }
          elseif($this.XDoc.Item('entry').GetElementsByTagName('ip-range').Count) { return 'ip-range' }
          elseif($this.XDoc.Item('entry').GetElementsByTagName('ip-wildcard').Count) { return 'ip-wildcard' }
+      } -SecondValue {
+         # Setter
+         param($Set)
+         # "Renaming" a XmlElement is not easy
+         $OldElement = $this.XDoc.Item('entry').Item($this.Type)
+         $OldElementContent = $OldElement.InnerText
+         # Create new XmlElement with desired name and InnerText
+         $NewElement = $this.XDoc.CreateElement($Set)
+         $NewElement.InnerText = $OldElementContent
+         # Deep copy the attributes
+         foreach($AttributeCur in $OldElement.Attributes) {
+            $NewElement.SetAttribute($AttributeCur.Name,$AttributeCur.Value)
+         }
+         # Deep copy any ChildNodes
+         foreach($ChildNodeCur in $OldElement.ChildNodes) {
+            $ImportedNode = $this.XDoc.ImportNode($ChildNodeCur.Clone(),$true)
+            $NewElement.AppendChild($ImportedNode)
+         }
+         # Replace/relink the new tree
+         $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
       } -Force
-      # No Setter for Type. Changing type can be done by creating a new object.
 
       # Tag ScriptProperty linked to $XDoc.entry.tag It's also an array, watch out.
       # <tag><member>tag1</member><member>tag2</member><tag>
@@ -132,5 +151,11 @@ class XPanAddress {
                # $this.XPath = [Regex]::Replace($this.XPath,$RegexReplace,"vsys/entry[@name='{0}']" -f $Set)
             }
          } -Force
-   }
+   } # End static constructor
+
+   # ToString() Method
+   [String] ToString() {
+      return $this.Name
+   } # End method
+
 } # End class

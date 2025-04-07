@@ -16,7 +16,8 @@ class PanDevice {
    # Ngfw or Panorama. Defaults to Ngfw
    [PanDeviceType] $Type = [PanDeviceType]::Ngfw
    # For Ngfw, contains the list of vsys's. For Panorama, the list of device-groups. Not persisted to disk. Updated at runtime.
-   [System.Collections.Generic.List[String]] $Location = [System.Collections.Generic.List[String]]@()
+   # Hashtable keys are vsys1, vsys2. Hashtable values are the XPath's
+   [System.Collections.Specialized.OrderedDictionary] $Location = [System.Collections.Specialized.OrderedDictionary]::new()
    # Location layout updated at runtime. Only needs to be done once per session. Track whether it has been done here.
    $LocationUpdated = $false
    # Vsys layout for cmdlets that operate on multiple vsys. Not persisted to disk. Updated at runtime.
@@ -40,6 +41,7 @@ class PanDevice {
       $this.Protocol = $Protocol
       $this.Port = $Port
       $this.Type = $Type
+      $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
    }
    # Constructor accepting a SecureString (API key only)
    PanDevice([String] $Name, [SecureString] $Key, [System.Collections.Generic.List[String]] $Label = [System.Collections.Generic.List[String]]@(),
@@ -52,6 +54,7 @@ class PanDevice {
       $this.Protocol = $Protocol
       $this.Port = $Port
       $this.Type = $Type
+      $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
    }
    # Constructor accepting a PSCredential (username/password) and SecureString (API key)
    PanDevice([String] $Name, [PSCredential] $Credential, [SecureString] $Key, [System.Collections.Generic.List[String]] $Label = [System.Collections.Generic.List[String]]@(),
@@ -65,8 +68,9 @@ class PanDevice {
       $this.Protocol = $Protocol
       $this.Port = $Port
       $this.Type = $Type
+      $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
    }
-   # Oblitagory ToString() Method
+   # ToString() Method
    [String] ToString() {
       return $this.Name
    } # End method

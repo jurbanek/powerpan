@@ -18,7 +18,7 @@ class PanAddress:ICloneable {
    PanAddress() {
    }
 
-   # Constructor accepting...
+   # Constructor
    PanAddress([String] $Name, [String] $Value, [PanAddressType] $Type = [PanAddressType]::IpNetmask, [String] $Description = $null,
          [System.Collections.Generic.List[String]] $Tag = [System.Collections.Generic.List[String]]@(),
          [PanDevice] $Device = $null, [String] $Location = $null) {
@@ -29,9 +29,9 @@ class PanAddress:ICloneable {
       $this.Tag = $Tag
       $this.Device = $Device
       $this.Location = $Location
-   }
+   } # End constructor
 
-   # Constructor accepting...
+   # Constructor
    PanAddress([String] $Name, [String] $Value, [PanAddressType] $Type = [PanAddressType]::IpNetmask, [String] $Description = $null,
          [System.Collections.Generic.List[String]] $Tag = [System.Collections.Generic.List[String]]@()) {
       $this.Name = $Name
@@ -39,7 +39,12 @@ class PanAddress:ICloneable {
       $this.Type = $Type
       $this.Description = $Description
       $this.Tag = $Tag
-   }
+   } # End constructor
+
+   # ToString() Method
+   [String] ToString() {
+      return $this.Name
+   } # End method
 
    # Clone() method as part of ICloneable interface
    [Object] Clone() {
@@ -52,5 +57,5 @@ class PanAddress:ICloneable {
          $this.Device,
          $this.Location
       )
-   }
+   } # End method
 } # End class PanAddress
