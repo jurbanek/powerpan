@@ -70,6 +70,7 @@ class PanDevice {
       $this.Type = $Type
       $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
    }
+   
    # ToString() Method
    [String] ToString() {
       return $this.Name

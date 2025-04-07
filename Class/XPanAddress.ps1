@@ -1,13 +1,13 @@
-class XPanAddress {
+class XPanAddress:ICloneable {
    [PanDevice] $Device
    [System.Xml.XmlDocument] $XDoc
    [String] $XPath
 
    # Constructor
    XPanAddress([System.Xml.XmlDocument] $XDoc, [String] $XPath, [PanDevice] $Device) {
-      $this.Device = $Device
       $this.XDoc = $XDoc
       $this.XPath = $XPath
+      $this.Device = $Device
    } # End constructor
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
@@ -152,6 +152,15 @@ class XPanAddress {
             }
          } -Force
    } # End static constructor
+
+   # Clone() method as part of ICloneable interface
+   [Object] Clone() {
+      return [XPanAddress]::new(
+         $this.XDoc.Clone(),
+         $this.XPath.Clone(),
+         $this.Device
+      )
+   } # End method
 
    # ToString() Method
    [String] ToString() {
