@@ -97,9 +97,8 @@ Get-XPanAddress -Device $D | Where-Object {$_.Type -eq 'fqdn' -and $_.Value -lik
             }
          }
 
-         # Call the API for the XPathsToRun monster
+         # Call the API. The "search XPath" list ($Search or $SearchFilter) is determined by ParameterSetName
          foreach($SearchCur in $(if($PSCmdlet.ParameterSetName -eq 'Filter'){ $SearchFilter.GetEnumerator() } else{ $Search.GetEnumerator() })) {
-            # $XPathCur is a hashtable, not a string
             Write-Debug ('{0}: Device: {1} Type: {2} Location: {3}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key)
             Write-Debug ('{0}: XPath: {1}' -f $MyInvocation.MyCommand.Name,$SearchCur.Value)
             $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
@@ -107,8 +106,8 @@ Get-XPanAddress -Device $D | Where-Object {$_.Type -eq 'fqdn' -and $_.Value -lik
                foreach($EntryCur in $Response.Result.entry) {
                   # Build a new XPanAddress
                   [System.Xml.XmlDocument]$XDoc = $EntryCur.OuterXml
-                  # Regardless of Filter or NoFilter version, will use NoFilter for the PanAddress object's XPath
-                  # to avoid the contains() and translate() nonsense
+                  # Regardless of "search XPath" used, the base XPath is used to form the XPanAddress object's XPath
+                  # to avoid the contains() and translate() substrings
                   $AddressXPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
                   $Address = [XPanAddress]::new($XDoc, $AddressXPath, $DeviceCur)
                   # Send to pipeline
