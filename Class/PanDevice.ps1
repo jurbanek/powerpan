@@ -21,11 +21,6 @@ class PanDevice {
    # Location layout updated at runtime. Only needs to be done once per session. Track whether it has been done here.
    $LocationUpdated = $false
    # Vsys layout for cmdlets that operate on multiple vsys. Not persisted to disk. Updated at runtime.
-   [String[]] $Vsys = @('vsys1')
-   # Vsys layout updated at runtime. Only needs to be done once per session. Track whether it has been done here.
-   [Bool] $VsysUpdated = $false
-   # Default operational vsys for cmdlets that operate on multiple vsys. Not persisted to disk.
-   [String] $VsysDefault = 'vsys1'
 
    # Default Constructor
    PanDevice() {

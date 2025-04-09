@@ -4,9 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## 0.5.0 ???
 
-### Added
-- `Invoke-PanXApi` support for `-Config -Complete` action.
+Primary focus of `0.5.0` is a re-imagining of the PowerPAN internal data model to store PAN-OS objects (addresses, address-objects, etc.). The changes are non-breaking, but enable *significantly* simpler and faster development while enabling more features by letting `[System.Xml.***]` types/classes "do more of the work".
 
+- Each PowerPAN object representing a PAN-OS address, etc. now includes native XML components. Principally a `[System.Xml.XmlDocument] $XDoc` property represents the object's configuration in XML and a `[String] $XPath` property represents the location of the object within PAN-OS.
+- Expected properties like `Name` and `Value` are also available, of course, but have been changed to be `ScriptProperty` that get/set content within the `$XDoc` or `$XPath`. Manipulate the `$XDoc` or `$XPath` and `$Name` and `$Value` update automatically, or visa-versa. They are "linked" together because of the latter being a `ScriptProperty`.
+- This simple (and now obvious) redesign of the internal data model should have been done from the beginning. Since *PAN-OS* natively uses XML everywhere, it is useful for *PowerPAN* to keep as much of the XML as possible to *minimize* the code required to parse when fetching and re-create *from-scratch* when sending.
+
+This model was **not** adopted originally because I didn't know much about `[System.Xml.XmlNode]`, `[System.Xml.XmlDocument]`, `[System.Xml.XmlElement]`, the entire `[System.Xml] tree, all their properties, methods, and manners of "how does one *effectively* work with XML" in .NET. Frankly, in 2018 when this side-project started I originally wanted the "XML burden" to be gone as quickly as possible. In reality, my ignorance was making the entire set of project goals significantly harder.
+
+Alas, here we are. New data model available to make additional cmdlet development quicker and easier.
+
+### Added
+- Improved Panorama support given downstream effects of new data model.
+- `[PanDevice]` `Type` property is either `[PanDeviceType]::Panorama` or `[PanDeviceType]::Ngfw`
+- `Invoke-PanXApi` support for `-Config -Complete` action, a relatively obscure "config action" with little documentation but useful for *simulating* the `?` keyboard press when interactive on the CLI. If curious, see `Update-PanDeviceLocation` how it is used to get the list of device-groups or vsys's without having to download and parse many MiB of configuration.
+
+### Changed
+- `[PanDevice]` `Location` is an ordered dictionary (key:value) of device-specific vsys:xpath (NGFW) or device-group:xpath (Panorama) -- including "shared". Not persisted to disk and updated dynamically when the device is used.
+  - Used heavily by PowerPAN cmdlets, but also very useful when using `Invoke-PanXApi` for building the `-XPath`. Separately, the data model changes above makes building the `Invoke-PanXApi` `-Element` much easier too.
+- Renamed `Update-PanDeviceVsys` to `Update-PanDeviceLocation`. Now supports Panorama device-group (new), NGFW vsys, and shared (new).
 
 ## 0.4.0 2025-03-30
 

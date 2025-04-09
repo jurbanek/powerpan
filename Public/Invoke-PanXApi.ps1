@@ -408,7 +408,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
                }
                $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
             }
-            Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1}' -f $Response.Status, $Response.Code))
+            Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message))
             return $Response
          }
       } # Process block outermost foreach

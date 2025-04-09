@@ -1,10 +1,12 @@
 function Update-PanDeviceLocation {
 <#
 .SYNOPSIS
-Updates the PanDevice vsys layout within PanDeviceDb.
+Refresh the PanDevice device-group or vsys (and shared) layout in the PanDevice Location property.
 .DESCRIPTION
-Updates to the vsys layout do not persist across PowerShell sessions. The setting/layout is not saved to disk and is updated (refreshed) at runtime.
+Refresh the PanDevice device-group (Panorama) or vsys (NGFW) layout (and shared) in the PanDevice Location property. Not saved to disk. Refreshed at runtime.
 .NOTES
+Update-PanDeviceLocation doe *not* add new device-groups or vsys's. It simply refreshes what already exists on-device into the PanDevice Location property.
+Refresh- is not an approved verb. Update- it is.
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
@@ -48,10 +50,10 @@ None
          # Update shared first as it is the same for both Panorama and Ngfw
          $DeviceCurLocation.Add("shared", "/config/shared")
 
-         # Originally used an "@name" ending XPath (link below) to determine vsys and device-group list. Not ideal
+         # For broader compatibility between Panorama and NGFW, using the config action=complete capability with the XML-API
+         # Originally, used an "@name" ending XPath to determine vsys and device-group list. Not ideal
+         #  $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry/@name"
          # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
-         # $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry/@name"
-         # For broader compatibility between Panorama and NGFW, *instead* using the config action=complete capability with the XML-API
          if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/device-group"
             Write-Debug ('{0}: Panorama XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPath)
@@ -61,7 +63,7 @@ None
             Write-Debug ('{0}: NGFW XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPath)
          }
          
-         # Fetch the valid vsys (NGFW) or device-group (Panorama) using the relatively obscure config action=complete
+         # Fetch the valid device-group (Panorama) or vsys (NGFW) using config action=complete
          $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Complete -XPath $XPath
          if($PanResponse.Status -eq 'success') {
             # XML-API response to config action=complete is in <response><completions> and NOT <response><result> like everything else
@@ -74,7 +76,7 @@ None
             #  </completions></response>
             $CustomResponse = [System.Xml.XmlDocument]$PanResponse.WRContent
             foreach($CompletionCur in $CustomResponse.response.completions.completion) {
-               # Add each entry's name to an aggregate. In most firewalls there is a single entry with name 'vsys1'
+               # Add each entry's name to an aggregate
                $DeviceCurLocation.Add($CompletionCur.value, $CompletionCur.vxpath)
             }
 

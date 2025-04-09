@@ -1,105 +1,134 @@
 function Set-PanAddress {
-   <#
-   .SYNOPSIS
-   Create or update PanAddress objects in the candidate configuration
-   .DESCRIPTION
-   Set-PanAddress will update an existing address object, or create new if none exists already.
+<#
+.SYNOPSIS
+Update or create address objects in the candidate configuration
+.DESCRIPTION
+Set-PanAddress will update an address object if it's name already exists. If it does not exist (by name), it will be created.
+.NOTES
+Set-PanAddress is responsible for both creating new remote address objects and updating existing remote address objects. It is powerful, but nuanced.
 
-   .NOTES
-   Set-PanAddress cannot be used to rename objects. Use Rename- cmdlet
-   Set-PanAddress cannot be used to move object locations. Use Move- cmdlet
+There are two modes, -InputObject mode and -Device mode.
 
-   Cmdlet accepts two different pipeline inputs offering flexibility
-      PanDevice[] pipeline input
-         Pipe output of Get-PanDevice and operate on a single address object at a time
-      PanAddress[] pipeline input
-         Pipe output of Get-PanAddress (or other) and operate on one or more address objects at a time
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   PanAddress[]
-      You can pipe a PanAddress to this cmdlet
-   .OUTPUTS
-   PanAddress
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Set-PanAddress -Name "H-1.1.1.1" -Value "1.1.1.1"
+:: InputObject Mode (-InputObject)::
+InputObject is the easiest to understand. Take one or more PanAddress objects and apply them remotely as is to create or update.
+The device and location (vsys, device-group) are gleaned from PanAddress.Device and PanAddress.Location properties.
+An administrator can get PanAddress object "the way they want it" and then pipe it to Set-PanAddress.
 
-   Creates an ip-netmask (default) address object with name "H-1.1.1.1" and value "1.1.1.1".
-   If address object with specified name already exists, the value is updated to "1.1.1.1".
-   If address object with specified name already exists and the value is incompatible with the type, an error will be generated.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Set-PanAddress -Name "FQDN-raw.githubusercontent.com" -Value "raw.githubusercontent.com" -Type Fqdn
+:: Device Mode (-Device)::
+Device mode is more nuanced. It can also be used to create remote address objects or update remote address objects and does not take a PanAddress input.
+Required parameters are -Device, -Location, and -Name.
+From there everything *cmdlet optional* but may or may not be required by the XML API depending on if the object already exists or not.
+This flexibility offers interactive power as not all values have to be specified all the time.
 
-   Creates a fqdn address object with name "FQDN-raw.githubusercontent.com" and value "raw.githubusercontent.com".
-   If address object with specified name already exists, the value is updated to "raw.githubusercontent.com".
-   If address object with specified name already exists and the value is incompatible with the type, an error will be generated.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Set-PanAddress -Name "H-1.1.1.1" -Description "Updated description for H-1.1.1.1 address object!"
+:: Merge (default) & Replace (-Replace) ::
+By default Set-PanAddress uses "merge" API action=set (Invoke-PanXApi -Config -Set).
+To use "replace" API action=edit (Invoke-PanXApi -Config -Edit), include the -Replace switch.
 
-   Updates just the description property of an already existing address object named "H-1.1.1.1".
-   If there is no existing address object named "H-1.1.1.1" an error will be generated. New address objects require a value.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Get-PanAddress "H-" | Set-PanAddress -Description "Updated description for all address objects with H-".
+:: Rename & Move ::
+Set-PanAddress cannot be used to rename objects. Use Rename- cmdlet.
+Set-PanAddress cannot be used to move object locations. Use Move- cmdlet.
+.INPUTS
+PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+PanAddress[]
+   You can pipe a PanAddress to this cmdlet
+.OUTPUTS
+None
+.EXAMPLE
+Updates the PanAddress object locally adding/updating a description and tags (tags must already be defined in PAN-OS) and merges the configuration in the candidate configuration.
+Pipe to Set-PanAddress (InputObject)
 
-   Set-PanAddress accepts either PanDevice or PanAddress via pipeline for easier mid-pipeline filtering.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Get-PanAddress -Filter "H-" | Where-Object {$_.Name -match "^H-192\."} | Set-PanAddress -Description "Updated description for all address STARTING with H-192."
+$D = Get-PanDevice "fw.lab.local"
+$A = Get-PanAddress "H-1.1.1.1"
+$A.Description = "Updated Description!"
+$A.Tag = @('risky','review')
+$A | Set-PanAddress
+.EXAMPLE
+$D = Get-PanDevice "fw.lab.local"
+Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Description "Updated Description!"
 
-   Get-PanAddress -Filter parameter applies filter REMOTELY (via API) and reduces the number of objects processed by the PAN-OS API.
-   Where-Object applies filtering capabilities LOCALLY and provides far more advanced filtering capabilities.
-   Consider using both, simultaneously if needed, to optimize flexilibility and speed.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250","192.168.250.251" | Set-PanAddress -Name "H-1.1.1.1" -Tag "Sanctioned","MyCorp"
+Add a description to an object that already exists.
+If the object did NOT exist already, the command would error remotely by the API (with details) as a -Type and -Value are required for new objects to be created.
 
-   Overwrite tag configuration on address object "H-1.1.1.1" to have only "Sanctioned" and "MyCorp" tags on 192.168.250.250 and 192.168.250.251 devices.
-   Previous tags will be overwritten.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250","192.168.250.251" | Get-PanAddress | Set-PanAddress -Tag "" -Description ""
+Creates an ip-netmask (default) address object with name "H-1.1.1.1" and value "1.1.1.1".
+If address object with specified name already exists, the value is updated to "1.1.1.1".
+If address object with specified name already exists and the value is incompatible with the type, an error will be generated.
+.EXAMPLE
+Removing a description and removing tags: use -Replace
+Assume H-1.1.1.1 has a description to be removed and tags to be removed
+Pipe to Set-PanAddress (InputObject)
 
-   Removes all tags and all descriptions from all address objects on 192.168.250.250 and 192.168.250.251 devices..
-   Passing an empty string "" to both -Tag and -Description parameters will explicitly remove Tag(s) and Descriptions from the address object(s).
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Add("in") | Out-Null; $_ | Set-PanAddress }
+$D = Get-PanDevice "fw.lab.local"
+$A = Get-PanAddress "H-1.1.1.1"
+$A.Description = ""
+$A.Tag = @()
+$A | Set-PanAddress -Replace
 
-   PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Add("in") | Out-Null; $AddrCur | Set-PanAddress }
+.EXAMPLE
+PS> Get-PanDevice "fw.lab.local" | Set-PanAddress -Location "vsys1" -Type 'fqdn' -Name "FQDN-raw.githubusercontent.com" -Value "raw.githubusercontent.com"
 
-   Add a single tag to all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
-   The Out-Null is to eat the Boolean value returned by Add() method and keep the output clean.
-   In event the tag is already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
-   .EXAMPLE
-   PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Remove("in") | Out-Null; $_ | Set-PanAddress }
+Creates a fqdn address object with name "FQDN-raw.githubusercontent.com" and value "raw.githubusercontent.com"
+If address object with specified name already exists, the value is updated to "raw.githubusercontent.com".
+If address object with specified name already exists and the value is incompatible with the type, an error will be generated by the API
+.EXAMPLE
+PS> Get-PanDevice "fw.lab.local" | Get-PanAddress -Filter "10.16" | Where-Object {$_.Type -eq 'ip-netmask' -and $_.Value -match "^10\.16\."} | Set-PanAddress -Tag "DC-A"
 
-   PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Remove("in") | Out-Null; $AddrCur | Set-PanAddress }
+Set-PanAddress accepts either PanDevice or PanAddress via pipeline for easier mid-pipeline filtering.
+.EXAMPLE
+PS> Get-PanDevice "192.168.250.250" | Get-PanAddress -Filter "H-" | Where-Object {$_.Name -match "^H-192\."} | Set-PanAddress -Description "Updated description for all address STARTING with H-192."
 
-   Remove a single tag from all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
-   The Out-Null is to eat the Boolean value returned by Remove() method and keep the output clean.
-   In event the tag is not already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
-   #>
-   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
+Get-PanAddress -Filter parameter applies filter REMOTELY (via API) and reduces the number of objects processed by the PAN-OS API.
+Where-Object applies filtering capabilities LOCALLY and provides far more advanced filtering capabilities.
+Consider using both, simultaneously if needed, to optimize flexilibility and speed.
+.EXAMPLE
+PS> Get-PanDevice "192.168.250.250","192.168.250.251" | Set-PanAddress -Name "H-1.1.1.1" -Tag "Sanctioned","MyCorp"
+
+Overwrite tag configuration on address object "H-1.1.1.1" to have only "Sanctioned" and "MyCorp" tags on 192.168.250.250 and 192.168.250.251 devices.
+Previous tags will be overwritten.
+.EXAMPLE
+PS> Get-PanDevice "192.168.250.250","192.168.250.251" | Get-PanAddress | Set-PanAddress -Tag "" -Description ""
+
+Removes all tags and all descriptions from all address objects on 192.168.250.250 and 192.168.250.251 devices..
+Passing an empty string "" to both -Tag and -Description parameters will explicitly remove Tag(s) and Descriptions from the address object(s).
+.EXAMPLE
+PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Add("in") | Out-Null; $_ | Set-PanAddress }
+
+PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Add("in") | Out-Null; $AddrCur | Set-PanAddress }
+
+Add a single tag to all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
+The Out-Null is to eat the Boolean value returned by Add() method and keep the output clean.
+In event the tag is already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
+.EXAMPLE
+PS> Get-PanDevice "192.168.250.250" | Get-PanAddress | % { $_.Tag.Remove("in") | Out-Null; $_ | Set-PanAddress }
+
+PS> foreach( $AddrCur in (Get-PanDevice "192.168.250.250" | Get-PanAddress)) { $AddrCur.Tag.Remove("in") | Out-Null; $AddrCur | Set-PanAddress }
+
+Remove a single tag from all address objects using either foreach-object (%) or standard foreach. Both are equivalent.
+The Out-Null is to eat the Boolean value returned by Remove() method and keep the output clean.
+In event the tag is not already on the object, the PAN-OS API will return an error, but processing continues for subsequent address objects.
+#>
+   [CmdletBinding()]
    param(
-      [parameter( Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='Device', HelpMessage='PanDevice against which object will be created or updated')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',ValueFromPipeline=$true,HelpMessage='PanDevice against which address object(s) will be applied')]
       [PanDevice[]] $Device,
-      [parameter( Mandatory=$true, ValueFromPipeline=$true, ParameterSetName='Object', HelpMessage='PanAddress object to be updated')]
-      [PanAddress[]] $Address,
-      # $Name parameter only available in "Device" ParameterSetName, *not* in "Object" ParameterSetName. To rename the object, use a Rename- cmdlet
-      [parameter( Mandatory=$true, Position=0, ParameterSetName='Device', HelpMessage='Address object name')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive location: vsys1, shared, DeviceGroupA, etc.')]
+      [String] $Location,
+      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of address object')]
       [String] $Name,
-      # $Value parameter available in "Device" and "Object" ParameterSetName. Not mandatory, unless creating an object -- such a check will occur later in code.
-      # Only a positional parameter in "Device"
-      [parameter( Position=1, ParameterSetName='Device', HelpMessage='Address object value e.g. "10.1.1.1/32" , "server.acme.com"')]
-      [parameter( ParameterSetName='Object', HelpMessage='Address object value e.g. "10.1.1.1/32" , "server.acme.com"')]
+      [parameter(ParameterSetName='Device',HelpMessage='Value of the address object')]
       [String] $Value,
-      [parameter( ParameterSetName='Device', HelpMessage='IpNetmask, IpRange, IpWildcardMask, Fqdn')]
-      [parameter( ParameterSetName='Object', HelpMessage='IpNetmask, IpRange, IpWildcardMask, Fqdn')]
-      [PanAddressType] $Type = [PanAddressType]::IpNetmask,
-      [parameter( ParameterSetName='Device', HelpMessage='Address object description')]
-      [parameter( ParameterSetName='Object', HelpMessage='Address object description')]
-      [String] $Description = $null,
-      [parameter( ParameterSetName='Device', HelpMessage='PAN-OS tag(s) to be added to address object, tags must already exist')]
-      [parameter( ParameterSetName='Object', HelpMessage='PAN-OS tag(s) to be added to address object, tags must already exist')]
-      [System.Collections.Generic.List[String]] $Tag = [System.Collections.Generic.List[String]]@(),
-      [parameter( ParameterSetName='Device', HelpMessage='Device location')]
-      [String] $Location = $null
+      [parameter(ParameterSetName='Device',HelpMessage='Type of the address object: ip-netmask, fqdn, ip-range, ip-wildcard')]
+      [ValidateSet('ip-netmask','fqdn','ip-range','ip-wildcard')]
+      [String] $Type,
+      [parameter(ParameterSetName='Device',HelpMessage='Description')]
+      [String] $Description,
+      [parameter(ParameterSetName='Device',HelpMessage='One or more tags. Tags must exist already. Will not create tags')]
+      [String[]] $Tag,
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
+      [PanAddress[]] $InputObject,
+      [parameter(ParameterSetName='Device',HelpMessage='Replace (action=edit) instead of merge (action=set)')]
+      [parameter(ParameterSetName='InputObject',HelpMessage='Replace (action=edit) instead of merge (action=set)')]
+      [Switch] $Replace
    )
 
    Begin {
@@ -108,93 +137,119 @@ function Set-PanAddress {
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
-   }
+   } # Begin Block
 
-   # Two rather different ParameterSets require different iteration logic
    Process {
-      # Device ParameterSet, when PanDevice is present from call or from pipeline
-      if($PSCmdlet.ParameterSetName -eq 'Device') {
-         Write-Debug $($MyInvocation.MyCommand.Name + ': Device ParameterSetName')
-         foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
-
-            # Determine if there is a current object with this exact Name. If so, update only properties specified by caller
-            $PanObject = Get-PanAddress -Device $DeviceCur -Filter $PSBoundParameters.Name | Where-Object {$_.Name -ceq $PSBoundParameters.Name}
-            if($PanObject) {
-               Write-Debug $($MyInvocation.MyCommand.Name + ': Object "' + $PSBoundParameters.Name + '" found, updating')
-               # Update object properties only for those arguments specified. Parameters with default values (like Type in this function) do NOT populate PSBoundParameters
-               if($PSBoundParameters.Value) { $PanObject.Value = $PSBoundParameters.Value }
-               if($PSBoundParameters.Type) { $PanObject.Type = $PSBoundParameters.Type }
-               if($PSBoundParameters.Description.Count) { $PanObject.Description = $PSBoundParameters.Description }
-               if($PSBoundParameters.Tag.Capacity) { $PanObject.Tag = $PSBoundParameters.Tag }
-               if($PSBoundParameters.Location) {
-                  Write-Warning $($MyInvocation.MyCommand.Name + ': Ignoring location parameter "' + $PSBoundParameters.Location + '" for existing object "' +
-                     $PanObject.Name + '" on device "' + $DeviceCur.Name + '" To move, use Move- cmdlet.')
-               }
+      # ParameterSetName InputObject
+      if($PSCmdlet.ParameterSetName -eq 'InputObject') {
+         foreach($InputObjectCur in $PSBoundParameters.InputObject) {
+            Write-Debug ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
+            if(-not $PSBoundParameters.Replace.IsPresent) {
+               # NO -Replace, use action=set, NO overlap between XPath and Element (entry.InnerXml)
+               Write-Debug ('{0}: InputObject (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.InnerXml)
+               $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Set -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.InnerXml
             }
-            # No object with the exact Name. Create one
             else {
-               Write-Debug $($MyInvocation.MyCommand.Name + ': Object "' + $PSBoundParameters.Name + '" not found, creating')
-               # Verify a Value has been specified to continue creating object.
-               if([String]::IsNullOrEmpty($PSBoundParameters.Value)) {
-                  Write-Error $($MyInvocation.MyCommand.Name + ': Unable to create an object without a Value')
-                  # Break current loop iteration, continue to next Device
-                  continue
-               }
-               # Create a minimum viable object. Then update only the properties specified by caller
-               $PanObject = NewPanAddress -Name $PSBoundParameters.Name -Value $PSBoundParameters.Value -Device $DeviceCur
-               if($PSBoundParameters.Type) { $PanObject.Type = $PSBoundParameters.Type }
-               if($PSBoundParameters.Description.Count) { $PanObject.Description = $PSBoundParameters.Description }
-               if($PSBoundParameters.Tag.Capacity) { $PanObject.Tag = $PSBoundParameters.Tag }
-               if($PSBoundParameters.Location) {
-                  $PanObject.Location = $PSBoundParameters.Location
+               # -Replace, use action=edit, overlap between XPath and Element (entry.OuterXml)
+               Write-Debug ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
+               $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
+            }
+            # Check PanResponse
+            if($Response.Status -eq 'success') {
+               # Nothing
+            }
+            else {
+               Write-Error ('Error applying InputObject {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
+                  $InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
+            }
+         } # End foreach InputObjectCur
+      } # End ParameterSetName InputObject
+      
+      # ParameterSetName Device
+      elseif($PSCmdlet.ParameterSetName -eq 'Device') {
+         foreach($DeviceCur in $PSBoundParameters.Device) {
+            # If object already exists, use it
+            Write-Debug ('{0}: Device: {1} Location: {2} Name: {3} ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Location,$PSBoundParameters.Name)
+            # Find if object already exists, limit search to specified Location. Get-PanAddress is case-insensitive but performs server-side filtering greatly reducing returned objects
+            # Tighten up the case-sensitivity locally here with Where-Object
+            $Address = $null
+            $Address = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Filter $PSBoundParameters.Name | Where-Object {$_.Name -cmatch $PSBoundParameters.Name}
+            if($Address) {
+               Write-Debug ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Address.XPath)
+               # Use the existing address and modify the properties directly letting the PanAddress to the XML lifting
+               # Device, Location, and Name do not apply
+               if($PSBoundParameters.Value) { $Address.Value = $PSBoundParameters.Value }
+               if($PSBoundParameters.Type) { $Address.Type = $PSBoundParameters.Type }
+               if($PSBoundParameters.Description) { $Address.Description = $PSBoundParameters.Description }
+               if($PSBoundParameters.Tag) { $Address.Tag = $PSBoundParameters.Tag }
+
+               # Call API
+               if(-not $PSBoundParameters.Replace.IsPresent) {
+                  Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$Address.XDoc.entry.InnerXml)
+                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $Address.XPath -Element $Address.XDoc.entry.InnerXml
                }
                else {
-                  $PanObject.Location = 'local/' + $PSBoundParameters.Device.VsysDefault
+                  Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Address.XDoc.entry.OuterXml)
+                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Address.XPath -Element $Address.XDoc.entry.OuterXml
                }
             }
+            # If object does not exist, build it. Cmdlet does not check for completeness of built objects
+            else {
+               Write-Debug ('{0}: Cannot find {1} on Device: {2}/{3}. Building' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location)
+               # XPath
+               $XPath = "{0}/address/entry[@name='{1}']" -f $PSBoundParameters.Device.Location.($PSBoundParameters.Location),$PSBoundParameters.Name
+               # XDoc
+               $XDoc = [System.Xml.XmlDocument]::new()
+               # Create <entry name="MyName"></entry> and append to the XDoc
+               $XEntry = $XDoc.CreateElement('entry')
+               $XEntry.SetAttribute('name',$PSBoundParameters.Name)
+               $XDoc.AppendChild($XEntry) | Out-Null
 
-            if($PSCmdlet.ShouldProcess($PanObject.Device.Name,'Create/Update ' + $PanObject.Name)) {
-               # Call to helper which returns a PanResponse
-               $PanResponse = SetPanAddressHelper -Address $PanObject
-               # When successful send object to pipeline as confirmation. Failures will have errors written
-               if($PanResponse.Status -eq 'success') { $PanObject }
+               # Type
+               if($PSBoundParameters.Type) {
+                  $XType = $XDoc.CreateElement($PSBoundParameters.Type)
+                  $XType.InnerText = $PSBoundParameters.Value
+                  $XEntry.AppendChild($XType) | Out-Null
+               }
+               # Description
+               if($PSBoundParameters.Description) {
+                  $XDescription = $XDoc.CreateElement('description')
+                  $XDescription.InnerText = $PSBoundParameters.Description
+                  $XEntry.AppendChild($XDescription) | Out-Null
+               }
+               # Tag
+               if($PSBoundParameters.Tag) {
+                  $XTag = $XDoc.CreateElement('tag')
+                  $XEntry.AppendChild($XTag) | Out-Null
+                  foreach($TagCur in $PSBoundParameters.Tag) {
+                     $XMember = $XDoc.CreateElement('member')
+                     $XMember.InnerText = $TagCur
+                     $XTag.AppendChild($XMember) | Out-Null
+                  }
+               }
+
+               # Call API
+               if(-not $PSBoundParameters.Replace.IsPresent) {
+                  Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$XDoc.entry.InnerXml)
+                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $XPath -Element $XDoc.entry.InnerXml
+               }
                else {
-                  Write-Error $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' Object: ' + $PanObject.Name + ' Message: ' + $PanResponse.Message)
+                  Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$XDoc.entry.OuterXml)
+                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $XPath -Element $XDoc.entry.OuterXml
                }
+            } # End object does not exist, build
+
+            # Check PanResponse
+            if($Response.Status -eq 'success') {
+               # Nothing
             }
-         } # end foreach
-      } # end ParameterSetName Device
-
-      # Object ParameterSet, when PanAddress is specified from call or pipeline
-      elseif($PSCmdlet.ParameterSetName -eq 'Object') {
-         Write-Debug $($MyInvocation.MyCommand.Name + ': Object ParameterSetName')
-         foreach($AddressCur in $PSBoundParameters.Address) {
-            # AddressCur tracks the current passed-by-reference address
-            # AddressCurClone is a clone used to merge in additional requested changes from other parameters. Don't want to change original Address object passed-by-reference
-            Write-Debug $($MyInvocation.MyCommand.Name + ': Object: ' + $AddressCur.Name)
-
-            # Update object properties only for those arguments specified. Parameters with default values (like Type in this function) do NOT populate PSBoundParameters
-            $AddressCurClone = $AddressCur.Clone()
-            if($PSBoundParameters.Value) { $AddressCurClone.Value = $PSBoundParameters.Value }
-            if($PSBoundParameters.Type) { $AddressCurClone.Type = $PSBoundParameters.Type }
-            if($PSBoundParameters.Description.Count) { $AddressCurClone.Description = $PSBoundParameters.Description }
-            if($PSBoundParameters.Tag.Capacity) { $AddressCurClone.Tag = $PSBoundParameters.Tag }
-            # Location paramater not possible within Object ParameterSet based on Parameter() block definitions. To move objects, use Move- cmdlet
-
-            if($PSCmdlet.ShouldProcess($AddressCurClone.Device.Name,'Create/Update ' + $AddressCurClone.Name)) {
-               # Call to helper which returns a PanResponse
-               $PanResponse = SetPanAddressHelper -Address $AddressCurClone
-               # When successful send object to pipeline as confirmation. Failures will have errors written
-               if($PanResponse.Status -eq 'success') { $AddressCurClone }
-               else {
-                  Write-Error $($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name + ' Object: ' + $AddressCurClone.Name + ' Message: ' + $PanResponse.Message)
-               }
+            else {
+               Write-Error ('Error applying address {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
+                  $PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Response.Status,$Response.Code,$Response.Message)
             }
-         } # end foreach
-      } # end ParameterSetName Object
-   }
-
+         } # End foreach $DeviceCur
+      } # End ParameterSetName Device
+   } # Process block
    End {
-   }
+   } # End block
 } # Function
