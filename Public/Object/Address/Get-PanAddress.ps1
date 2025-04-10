@@ -192,7 +192,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                      }
                   }
                }
-               Write-Debug ('{0}: Location Search(Limited): {1}' -f $MyInvocation.MyCommand.Name,$Search.Keys -join ',')
+               Write-Debug ('{0}: Location Search(Limited): {1}' -f $MyInvocation.MyCommand.Name,($Search.Keys -join ','))
             }
             
             # No -Location specified, search all Locations on the PanDevice
