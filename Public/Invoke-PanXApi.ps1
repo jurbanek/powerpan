@@ -32,22 +32,22 @@ You can pipe a PanDevice to this cmdlet
 .OUTPUTS
 PanResponse
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Keygen
+Invoke-PanXApi -Device $Device -Keygen
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Version
+Invoke-PanXApi -Device $Device -Version
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
+Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Commit
+Invoke-PanXApi -Device $Device -Commit
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
+Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
+Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
+Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
 .EXAMPLE
 Import and process the certificate and private key within, note the -Category keypair
-PS> Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
 
 Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
 PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
@@ -85,6 +85,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Edit',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Delete',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Rename',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Move',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Complete',HelpMessage='Type: config ')]
       [Switch] $Config,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Get',HelpMessage='Retrieve candidate configuration')]
@@ -99,6 +100,8 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [Switch] $Delete,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Rename',HelpMessage='Rename')]
       [Switch] $Rename,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Move',HelpMessage='Move')]
+      [Switch] $Move,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Complete',HelpMessage='Retrieve auto-complete options')]
       [Switch] $Complete,
       [parameter(Mandatory=$true,ParameterSetName='Config-Get',HelpMessage='Config XPath')]
@@ -107,6 +110,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,ParameterSetName='Config-Edit',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Delete',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Complete',HelpMessage='Config XPath')]
       [String] $XPath,
       [parameter(ParameterSetName='Config-Get',HelpMessage='Config Element')]
@@ -117,6 +121,11 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [String] $Element,
       [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config NewName')]
       [String] $NewName,
+      [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config Where after, before, top, bottom')]
+      [ValidateSet('after','before','top','bottom')]
+      [String] $Where,
+      [parameter(ParameterSetName='Config-Move',HelpMessage='Config Dst required with after, before')]
+      [String] $Dst,
       # Begin Import parameter set
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Import-Default',HelpMessage='Type: import')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Import-Cert-Key',HelpMessage='Type: import')]
@@ -278,12 +287,17 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             elseif ($PSBoundParameters.Edit.IsPresent) { $PanApiAction = 'edit' }
             elseif ($PSBoundParameters.Delete.IsPresent) { $PanApiAction = 'delete' }
             elseif ($PSBoundParameters.Rename.IsPresent) { $PanApiAction = 'rename' }
+            elseif ($PSBoundParameters.Move.IsPresent) { $PanApiAction = 'move' }
             elseif ($PSBoundParameters.Complete.IsPresent) { $PanApiAction = 'complete' }
             Write-Debug ("{0}: type=config action={1}" -f $MyInvocation.MyCommand.Name,$PanApiAction)
 
             $PanApiXPath = $PSBoundParameters.XPath
             $PanApiElement = $PSBoundParameters.Element
+            # action=rename specific
             $PanApiNewName = $PSBoundParameters.NewName
+            # action=move specific
+            $PanApiWhere = $PSBoundParameters.Where
+            $PanApiDst = $PSBoundParameters.Dst
 
             $InvokeParams = [ordered]@{
                'Method' = 'Post'
@@ -300,6 +314,8 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             }
             if($PanApiElement) { $Body.Add('element', $PanApiElement) }
             if($PanApiNewName) { $Body.Add('newname', $PanApiNewName) }
+            if($PanApiWhere) { $Body.Add('where', $PanApiWhere) }
+            if($PanApiDst) { $Body.Add('dst', $PanApiDst) }
             $Body.Add('key', $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password)
             # Add the completed Body
             $InvokeParams.Add('body', $Body)

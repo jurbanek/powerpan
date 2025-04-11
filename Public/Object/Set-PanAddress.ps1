@@ -3,25 +3,25 @@ function Set-PanAddress {
 .SYNOPSIS
 Update or create address objects in the candidate configuration
 .DESCRIPTION
-Set-PanAddress will update an address object if it's name already exists. If it does not exist (by name), it will be created.
+Set-PanAddress will update an address object if the name already exists. If the name does not exist, it will be created.
 .NOTES
-Set-PanAddress is responsible for both creating new remote address objects and updating existing remote address objects. It is powerful, but nuanced.
+Set-PanAddress is responsible for both creating new remote address objects and updating existing remote address objects.
 
-There are two modes, -InputObject mode and -Device mode.
+Two modes: -InputObject mode and -Device mode.
 
 :: InputObject Mode (-InputObject)::
-InputObject is the easiest to understand. Take one or more PanAddress objects and apply them remotely as is to create or update.
+Take one or more PanAddress objects and apply them remotely as is to create or update using API action=edit (replace)
 The device and location (vsys, device-group) are gleaned from PanAddress.Device and PanAddress.Location properties.
 An administrator can get PanAddress object "the way they want it" and then pipe it to Set-PanAddress.
 
 :: Device Mode (-Device)::
-Device mode is more nuanced. It can also be used to create remote address objects or update remote address objects and does not take a PanAddress input.
-Required parameters are -Device, -Location, and -Name.
-From there everything *cmdlet optional* but may or may not be required by the XML API depending on if the object already exists or not.
+Device mode is more nuanced. It can also be used to create remote address objects or update remote address objects.
+Device mode does not take a PanAddress input. Required parameters are -Device, -Location, and -Name.
+Remaining parameters are not required by the cmdlet, but may be required by the XML API depending on if the object already exists or not.
 This flexibility offers interactive power as not all values have to be specified all the time.
 
-:: Merge (default) & Replace (-Replace) ::
-By default Set-PanAddress uses "merge" API action=set (Invoke-PanXApi -Config -Set).
+:: Device Mode Replace (-Device -Replace) ::
+By default Set-PanAddress -Device uses "merge" API action=set (Invoke-PanXApi -Config -Set).
 To use "replace" API action=edit (Invoke-PanXApi -Config -Edit), include the -Replace switch.
 
 :: Rename & Move ::
@@ -35,12 +35,19 @@ PanAddress[]
 .OUTPUTS
 PanAddress
 .EXAMPLE
-Create a new PanAddress
+Create a new PanAddress on NGFW
 
 $D = Get-PanDevice "fw.lab.local"
 Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Value "1.1.1.1" -Type "ip-netmask"
 
-If H-1.1.1.1 already exists in vsys1, the updates wll be merged.
+If H-1.1.1.1 already exists in vsys1, the update wll be merged.
+.EXAMPLE
+Create a new PanAddress on Panorama
+
+$D = Get-PanDevice "panorama.lab.local"
+Set-PanAddress -Device $D -Location "MyDeviceGroup" -Name "H-1.1.1.1" -Value "1.1.1.1" -Type "ip-netmask"
+
+If H-1.1.1.1 already exists in MyDeviceGroup, the update wll be merged.
 .EXAMPLE
 Add a description to an object that already exists.
 
@@ -49,24 +56,24 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Description "Upda
 
 If the object did NOT exist already, the command would error remotely by the API (with details) as a -Type and -Value are required for new objects to be created.
 .EXAMPLE
-Updates the PanAddress object locally adding/updating a description and tags (tags must already be defined in PAN-OS) and merges the configuration in the candidate configuration.
-Using a pipe to Set-PanAddress (-InputObject)
+Updates the PanAddress object locally adding/updating a description and tags (tags must already exist in PAN-OS) and replaces the configuration in the candidate configuration.
+Piping PanAddress to Set-PanAddress replaces the full object on the PanDevice (replace, not merge), WYSIWYG.
 
 $D = Get-PanDevice "fw.lab.local"
-$A = Get-PanAddress "H-1.1.1.1"
+$A = Get-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1"
 $A.Description = "Updated Description!"
 $A.Tag = @('risky','review')
 $A | Set-PanAddress
 .EXAMPLE
-Removing a description and removing tags: use -Replace
+Removing a description and removing tags
 Assume H-1.1.1.1 has a description to be removed and tags to be removed
-Using a pipe to Set-PanAddress (InputObject)
+Piping PanAddress to Set-PanAddress replaces the full object on the PanDevice (replace, not merge), WYSIWYG
 
 $D = Get-PanDevice "fw.lab.local"
-$A = Get-PanAddress "H-1.1.1.1"
+$A = Get-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1"
 $A.Description = ""
 $A.Tag = @()
-$A | Set-PanAddress -Replace
+$A | Set-PanAddress
 .EXAMPLE
 Get-PanDevice "fw.lab.local" | Set-PanAddress -Location "vsys1" -Type 'fqdn' -Name "FQDN-raw.githubusercontent.com" -Value "raw.githubusercontent.com"
 
@@ -81,7 +88,7 @@ Get-PanDevice "fw.lab.local" |
    Set-PanAddress 
 
 Adding a "DC-A" tag to all ip-netmask type objects starting with 10.16 on fw.lab.local
-Note the Set-PanAddress does not require use of -Replace since we are not removing anything, only adding the tag.
+Note: in example Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
 .EXAMPLE
 Get-PanDevice "fw1.lab.local","fw2.lab.local" |
    Get-PanAddress |
@@ -90,7 +97,7 @@ Get-PanDevice "fw1.lab.local","fw2.lab.local" |
    Set-PanAddress -Replace
 
 Remove the "review" tag from every address object on fw1.lab.local and fw2.lab.local
-Note the Set-PanAddress -Replace switch given the need to remove a tag.
+Note: in example Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
 
 Not quite a PowerShell "one-liner" as the Foreach-Object ScriptBlock contains semi-colons, but close.
 Illustrates the capabilities of the PowerPAN, but not wise to do it exactly this way.
@@ -118,7 +125,6 @@ On large devices with many objects with the "review" tag, might take a while.
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
       [PanAddress[]] $InputObject,
       [parameter(ParameterSetName='Device',HelpMessage='Replace (action=edit) instead of merge (action=set)')]
-      [parameter(ParameterSetName='InputObject',HelpMessage='Replace (action=edit) instead of merge (action=set)')]
       [Switch] $Replace
    )
 
@@ -135,16 +141,9 @@ On large devices with many objects with the "review" tag, might take a while.
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
             Write-Debug ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
-            if(-not $PSBoundParameters.Replace.IsPresent) {
-               # NO -Replace, use action=set, NO overlap between XPath and Element (entry.InnerXml)
-               Write-Debug ('{0}: InputObject (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.InnerXml)
-               $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Set -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.InnerXml
-            }
-            else {
-               # -Replace, use action=edit, overlap between XPath and Element (entry.OuterXml)
-               Write-Debug ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
-               $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
-            }
+            # InputObject is always action=edit, overlap between XPath and Element (entry.OuterXml)
+            Write-Debug ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
+            $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
             # Check PanResponse
             if($Response.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display

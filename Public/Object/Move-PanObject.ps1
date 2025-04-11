@@ -1,13 +1,16 @@
-function Rename-PanObject {
+function Move-PanObject {
 <#
 .SYNOPSIS
-Rename address object in candidate configuration
+Move object(s) (multiple types) to 
 .DESCRIPTION
-Rename address object in candidate configuration
+Move multiple object types from a single cmdlet based on the alias used
 .NOTES
-There are two modes, -InputObject mode and -Device mode.
+Move-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases:
+   Move-PanAddress
+   ...
 
-Rename-PanObject is intended to be called by it's aliases (Remove-PanAddress, Remove-PanService, etc.)
+Two modes: -InputObject mode and -Device mode.
+
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
@@ -15,6 +18,7 @@ PanAddress[]
    You can pipe a PanAddress to this cmdlet
 .OUTPUTS
 PanAddress
+.EXAMPLE
 .EXAMPLE
 #>
    [CmdletBinding()]
@@ -50,10 +54,10 @@ PanAddress
             # Check PanResponse
             if($Response.Status -eq 'success') {
                # Return newly renamed object to pipeline
-               if($PSBoundParameters.InputObject.GetType().Name -eq 'PanAddress') {
+               if($InputObjectCur.GetType().Name -eq 'PanAddress') {
                   Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName
                }
-               elseif($PSBoundParameters.InputObject.GetType().Name -eq 'PanAddressGroup') {
+               elseif($InputObjectCur.GetType().Name -eq 'PanAddressGroup') {
                   # Future planning
                   # Get-PanAddressGroup...
                }
@@ -69,7 +73,7 @@ PanAddress
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} NewName: {5} ' -f 
-               $MyInvocation.MyCommand.Name, $MyInvoCation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name, $PSBoundParameters.NewName)
+               $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name, $PSBoundParameters.NewName)
             # Rename-PanAddress
             if($MyInvocation.InvocationName -eq 'Rename-PanAddress') {
                $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
@@ -94,7 +98,7 @@ PanAddress
                }
                # Failure on Invoke-PanXApi
                else {
-                  Write-Error ('Rename [{0}] {1} failed on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
+                  Write-Error ('Error renaming [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
                      $Obj.GetType().Name, $Obj.Name, $Obj.Device.Name, $Obj.Location, $Response.Status, $Response.Code, $Response.Message)
                }
             }

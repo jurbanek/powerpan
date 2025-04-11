@@ -1,10 +1,14 @@
-function Get-PanAddress {
+function Get-PanObject {
 <#
 .SYNOPSIS
-Get address objects from a PanDevice
+Retrieve objects (multiple types) from PanDevice
 .DESCRIPTION
-Get all address objects from a PanDevice or specify the -Filter parameter for a remote (not local) filtered search
+Get-PanObjectGet all address objects from a PanDevice or specify the -Filter parameter for a remote (not local) filtered search
 .NOTES
+Get-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases:
+   Get-PanAddress
+   ...
+
 :: At-a-Glance ::
 -Name parameter(s) are always case-sensitive in PowerPAN, for getting exact names if you know them
 -Filter parameter is case-INsensitive in PowerPAN, just like PAN-OS GUI search bar
@@ -14,9 +18,9 @@ Get all address objects from a PanDevice or specify the -Filter parameter for a 
 The -Filter parameter emulates the PAN-OS filter/search bar which is case-insensitive and searches across address object name, value, description, and tag.
 Within PAN-OS itself, names are case-sensitive. PAN-OS search bar provides case-INsensitive search across name, value, description, and tag to be helpful.
 
-For additional filtering capabilities (matching type, or *exact* matches on value, tag, or description), pipe output to Where-Object (see example).
+For additional filtering capabilities within the local PowerShell session, pipe output to Where-Object (see example).
 
-XPath References for base search, -Name search, and -Filter search.
+XPath References for base search, -Name search, and -Filter search for PanAddress objects. Other object types have slightly different suffixes and filters.
    Name: {0} becomes Name, as is
    Filter: {0} becomes Filter.ToLower()
 
@@ -124,9 +128,6 @@ Syntactic sugar for fetching an object recently set with less typing.
       elseif($PSCmdlet.ParameterSetName -like '*-Name') {
          Write-Debug ($MyInvocation.MyCommand.Name + (': Exact match Name Applied "{0}"' -f $PSBoundParameters.Name))
       }
-
-      # Track aggregate device aggregate results in Process block
-      $AddressAgg = [System.Collections.Generic.List[PanAddress]]@()
    } # Begin Block
 
    Process {
@@ -138,19 +139,22 @@ Syntactic sugar for fetching an object recently set with less typing.
             Update-PanDeviceLocation -Device $InputObjectCur.Device
             $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
             # Check PanResponse
-            if($Response.Status -eq 'success') {   
-               # Build a new PanAddress
-               [System.Xml.XmlDocument]$XDoc = $Response.Result.entry.OuterXml
-               $AddressXPath = $PSBoundParameters.InputObject.XPath
-               $Address = [PanAddress]::new($XDoc, $AddressXPath, $PSBoundParameters.InputObject.Device)
-               # Send to pipeline
-               $Address
-               # Add the new PanAddress object to aggregate for purposes of being counted in Debug (and future feature)
-               $AddressAgg.Add($AddressNew)
+            if($Response.Status -eq 'success') {
+               # Build new object based on InvocationName
+               if($MyInvocation.InvocationName -eq 'Get-PanAddress') {
+                  [System.Xml.XmlDocument]$XDoc = $Response.Result.entry.OuterXml
+                  $XPath = $InputObjectCur.XPath
+                  $Obj = [PanAddress]::new($XDoc, $XPath, $InputObjectCur.Device)
+                  # Send to pipeline
+                  $Obj
+               }
+               elseif($MyInvocation.InvocationName -eq 'Get-PanAddressGroup') {
+                  # Future
+               }
             }
             else {
-               Write-Error ('Error applying InputObject {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
-                  $InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
+               Write-Error ('Error retrieving InputObject [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
+                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
             }
          } # foreach InputObject
       } # ParameterSetName
@@ -159,24 +163,37 @@ Syntactic sugar for fetching an object recently set with less typing.
       else {
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0}: Device: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
-   
             # Ensure Location map is up to date for current device
             Update-PanDeviceLocation -Device $DeviceCur
-   
-            # Build XPaths from existing PanDevice.Location, appending a suffix to Location XPath
-            # Suffixes are the same for Panorama and Ngfw
+            
+            # Define XPath suffixes to be appended to PanDevice.Location(s), based on object type
+            # Each object type gets it's own set of suffixes, but the same set of suffixes are used whether Panorama or NGFW (which is nice) 
+            if($MyInvocation.InvocationName -eq 'Get-PanAddress') {
+               # NoFilter (no search filter)
+               $XPathSuffixBase = "/address/entry"
+               # Filter (search filter)
+               $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
+               # Name (exact)
+               $XPathSuffixName = "/address/entry[@name='{0}']"   
+            }
+            elseif($MyInvocation.InvocationName -eq 'Get-PanAddressGroup') {
+
+            }
+
+            # Time to build two sets of hashtables based on suffixes defined above and ParameterSet
+            # Hashtable Key is the location (vys1,shared,MyDG), Hashtable Value is the usable XPath
+            # Search (base) is used when NO -Filter is specified. Also used to build the XPath when passing to object constructor further down
+            # SearhCustom is used when -Filter or -Name is specified to specify remote API search specifics (no local filtering)
             # Case SENSITIVE ordered hashtables are used as Panorama device-groups are case sensitive "Grandparent" and "grandparent" to discrete DG's
             $Search = [System.Collections.Specialized.OrderedDictionary]::new()
             $SearchCustom = [System.Collections.Specialized.OrderedDictionary]::new()
-            $XPathSuffix = "/address/entry"
-            $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
-            $XPathSuffixName = "/address/entry[@name='{0}']"
+            
             # If -Location, limit the searches to the valid Locations specified
             if($PSBoundParameters.Location) {
                foreach($LocationCur in $PSBoundParameters.Location) {
                   # -cin for case-sensitive match
                   if($LocationCur -cin $DeviceCur.Location.Keys) {
-                     $NewXPath = $DeviceCur.Location.($LocationCur) + $XPathSuffix
+                     $NewXPath = $DeviceCur.Location.($LocationCur) + $XPathSuffixBase
                      $Search.Add($LocationCur, $NewXPath)
                      # With the -Filter parameter as format string input into the contains(translate()) XPath voodoo
                      # Note the Filter string is ToLower() to align with the XPath translate()
@@ -194,11 +211,10 @@ Syntactic sugar for fetching an object recently set with less typing.
                }
                Write-Debug ('{0}: Location Search(Limited): {1}' -f $MyInvocation.MyCommand.Name,($Search.Keys -join ','))
             }
-            
             # No -Location specified, search all Locations on the PanDevice
             else {
                foreach($LocationCur in $DeviceCur.Location.GetEnumerator()) {
-                  $NewXPath = $DeviceCur.Location.($LocationCur.Key) + $XPathSuffix
+                  $NewXPath = $DeviceCur.Location.($LocationCur.Key) + $XPathSuffixBase
                   $Search.Add($LocationCur.Key, $NewXPath)
                   # With the -Filter parameter as input into the contains(translate()) XPath voodoo
                   # Note the Filter string is ToLower() to align with the XPath translate()
@@ -214,31 +230,38 @@ Syntactic sugar for fetching an object recently set with less typing.
                   }
                }
             }
+            # Finished building the Search and SearchCustom XPaths
    
-            # Call the API. The "search XPath" list ($Search or $SearchFilter) is determined by ParameterSetName
+            # Call the API. The actual search used ($Search or $SearchCustom) is determined by ParameterSetName
             foreach($SearchCur in $(if($PSCmdlet.ParameterSetName -like '*-Filter' -or $PSCmdlet.ParameterSetName -like '*-Name'){ $SearchCustom.GetEnumerator() } else{ $Search.GetEnumerator() })) {
                Write-Debug ('{0}: Device: {1} Type: {2} Location: {3}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key)
                Write-Debug ('{0}: XPath: {1}' -f $MyInvocation.MyCommand.Name,$SearchCur.Value)
                $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
                if($Response.Status -eq 'success') {
                   foreach($EntryCur in $Response.Result.entry) {
-                     # Build a new PanAddress
-                     [System.Xml.XmlDocument]$XDoc = $EntryCur.OuterXml
-                     # Regardless of "search XPath" used, the base XPath is used to form the PanAddress object's XPath
-                     # to avoid the contains() and translate() substrings
-                     $AddressXPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
-                     $Address = [PanAddress]::new($XDoc, $AddressXPath, $DeviceCur)
-                     # Send to pipeline
-                     $Address
-                     # Add the new PanAddress object to aggregate for purposes of being counted in Debug (and future feature)
-                     $AddressAgg.Add($AddressNew)
+                     # Build new object based on InvocationName
+                     if($MyInvocation.InvocationName -eq 'Get-PanAddress') {
+                        [System.Xml.XmlDocument]$XDoc = $EntryCur.OuterXml
+                        # Regardless of "search XPath" used, the base XPath is used to form the object's XPath
+                        # to avoid the contains() and translate() substrings
+                        $XPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
+                        $Obj = [PanAddress]::new($XDoc, $XPath, $DeviceCur)
+                        # Send to pipeline
+                        $Obj
+                     }
+                     elseif($MyInvocation.InvocationName -eq 'Get-PanAddressGroup') {
+                        # Future
+                     }
                   } # foreach entry
                } # if Reponse success
+               else {
+                  Write-Error ('Error retrieving objects on {0}/{1} XPath: {2} Status: {3} Code: {4} Message: {5}' -f
+                     $DeviceCur.Name,$SearchCur.Key,$SearchCur.Value,$Response.Status,$Response.Code,$Response.Message)
+               }
             } # foreach Search/SearchFilter
          } # foreach Device
       } # ParameterSetName
    } # Process block
    End {
-      Write-Debug ('{0}: Final address count: {1}' -f $MyInvocation.MyCommand.Name,$AddressAgg.Count)
    } # End block
 } # Function
