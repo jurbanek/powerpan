@@ -60,7 +60,8 @@ PanAddress
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
             Write-Debug ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} DstLocation: {6} ' -f
-               $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,$InputObjectCur.GetType().Name,$InputObjectCur.Name,$PSBoundParameters.DstLocation)
+               $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,$InputObjectCur.GetType().Name,
+               $InputObjectCur.Name,$PSBoundParameters.DstLocation)
             
             # Counter-intuitive, but action=multi-move is needed for moving address/address-group/service/service-group objects most effectively. action=move is best for policy rules
             # Within multi-move:
@@ -81,8 +82,9 @@ PanAddress
                }
             }
             else {
-               Write-Error ('Error renaming [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
-                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
+               Write-Error ('Error moving [{0}] {1} on {2}/{3} to DstLocation: {4} Status: {5} Code: {6} Message: {7}' -f
+                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,
+                  $PSBoundParameters.DstLocation,$Response.Status,$Response.Code,$Response.Message)
             }
          } # End foreach InputObjectCur
       } # End ParameterSetName InputObject
@@ -91,7 +93,8 @@ PanAddress
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} DstLocation: {5} ' -f 
-               $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name, $PSBoundParameters.DstLocation)
+               $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location,
+               $PSBoundParameters.Name, $PSBoundParameters.DstLocation)
             # Given -Device ParameterSet, fetch the object for its XPath
             switch ($MyInvocation.InvocationName) {
                'Move-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
@@ -114,7 +117,8 @@ PanAddress
                # Failure on Invoke-PanXApi
                else {
                   Write-Error ('Error moving [{0}] {1} on {2}/{3} to DstLocation: {4} Status: {5} Code: {6} Message: {7}' -f
-                     $Obj.GetType().Name, $Obj.Name, $Obj.Device.Name, $Obj.Location, $PSBoundParameters.DstLocation, $Response.Status, $Response.Code, $Response.Message)
+                     $Obj.GetType().Name, $Obj.Name, $Obj.Device.Name, $Obj.Location, $PSBoundParameters.DstLocation,
+                     $Response.Status, $Response.Code, $Response.Message)
                }
             }
             # Object by name was not found
