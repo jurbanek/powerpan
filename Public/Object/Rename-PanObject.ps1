@@ -30,12 +30,12 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
       [PanDevice[]] $Device,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive location: vsys1, shared, DeviceGroupA, etc.')]
       [String] $Location,
-      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of address object')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of object')]
       [String] $Name,
-      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be applied as is')]
       [PanAddress[]] $InputObject,
-      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive NEW name of address object')]
-      [parameter(Mandatory=$true,ParameterSetName='InputObject',HelpMessage='Case-sensitive NEW name of address object')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive NEW name of object')]
+      [parameter(Mandatory=$true,ParameterSetName='InputObject',HelpMessage='Case-sensitive NEW name of object')]
       [String] $NewName
    )
 
@@ -45,6 +45,12 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
+      
+      # Terminating error if called directly. Use a supported alias.
+      if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
+         $Alias = (Get-Alias | Where-Object {$_.ResolvedCommandName -eq $($MyInvocation.MyCommand.Name)} | Select-Object -ExpandProperty Name) -join ','
+         Write-Error ('{0} called directly. {0} MUST be called by an alias: {1}' -f $MyInvocation.MyCommand.Name,$Alias) -ErrorAction Stop
+      }
    } # Begin Block
 
    Process {
@@ -57,12 +63,9 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
             # Check PanResponse
             if($Response.Status -eq 'success') {
                # Return newly renamed object to pipeline
-               if($InputObjectCur.GetType().Name -eq 'PanAddress') {
-                  Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName
-               }
-               elseif($InputObjectCur.GetType().Name -eq 'PanAddressGroup') {
-                  # Future planning
-                  # Get-PanAddressGroup...
+               switch ($MyInvocation.InvocationName) {
+                  'Rename-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue}
+                  'Rename-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
                }
             }
             else {
@@ -77,13 +80,10 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} NewName: {5} ' -f 
                $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name, $PSBoundParameters.NewName)
-            # Rename-PanAddress
-            if($MyInvocation.InvocationName -eq 'Rename-PanAddress') {
-               $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
-            }
-            elseif($MyInvocation.InvocationName -eq 'Rename-PanAddressGroup') {
-               # Future planning
-               # $Obj = Get-PanAddressGroup...
+            # Given Device ParameterSet, fetch object for its XPath
+            switch ($MyInvocation.InvocationName) {
+               'Rename-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Rename-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
             }
 
             # Call API
@@ -91,12 +91,9 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                $Response = Invoke-PanXApi -Device $Obj.Device -Config -Rename -XPath $Obj.XPath -NewName $PSBoundParameters.NewName
                if($Response.Status -eq 'success') {
                   # Return newly renamed object to pipeline
-                  if($Obj.GetType().Name -eq 'PanAddress') {
-                     Get-PanAddress -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName
-                  }
-                  elseif($Obj.GetType().Name -eq 'PanAddressGroup') {
-                     # Future planning
-                     # Get-PanAddressGroup...
+                  switch ($MyInvocation.InvocationName) {
+                     'Rename-PanAddress' { Get-PanAddress -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
+                     'Rename-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
                   }
                }
                # Failure on Invoke-PanXApi
@@ -111,7 +108,6 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
             }
          } # End foreach DeviceCur
       } # End ParameterSetName Device
-      #>
    } # Process block
    End {
    } # End block

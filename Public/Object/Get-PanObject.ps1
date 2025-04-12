@@ -95,9 +95,9 @@ Syntactic sugar for fetching an object recently set with less typing.
 #>
    [CmdletBinding(DefaultParameterSetName='Device-NoFilter')]
    param(
-      [parameter(Mandatory=$true,ParameterSetName='Device-NoFilter',ValueFromPipeline=$true,HelpMessage='PanDevice against which address object(s) will be retrieved.')]   
-      [parameter(Mandatory=$true,ParameterSetName='Device-Filter',ValueFromPipeline=$true,HelpMessage='PanDevice against which address object(s) will be retrieved.')]
-      [parameter(Mandatory=$true,ParameterSetName='Device-Name',ValueFromPipeline=$true,HelpMessage='PanDevice against which address object(s) will be retrieved.')]
+      [parameter(Mandatory=$true,ParameterSetName='Device-NoFilter',ValueFromPipeline=$true,HelpMessage='PanDevice against which object(s) will be retrieved.')]   
+      [parameter(Mandatory=$true,ParameterSetName='Device-Filter',ValueFromPipeline=$true,HelpMessage='PanDevice against which object(s) will be retrieved.')]
+      [parameter(Mandatory=$true,ParameterSetName='Device-Name',ValueFromPipeline=$true,HelpMessage='PanDevice against which object(s) will be retrieved.')]
       [PanDevice[]] $Device,
       [parameter(Mandatory=$true,ParameterSetName='Device-Filter',HelpMessage='Case-INsensitive name, value, description, tag filter. Filter applied remotely (via API) identical to GUI filter bar behavior.')]
       [String] $Filter,
@@ -107,7 +107,7 @@ Syntactic sugar for fetching an object recently set with less typing.
       [parameter(ParameterSetName='Device-Filter',HelpMessage='Limit search to PanDevice locations (shared, vsys1, MyDeviceGroup)')]
       [parameter(ParameterSetName='Device-Name',HelpMessage='Limit search to PanDevice locations (shared, vsys1, MyDeviceGroup)')]
       [String[]] $Location,
-      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be retrieved')]
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be retrieved')]
       [PanAddress[]] $InputObject
    )
 
@@ -116,17 +116,24 @@ Syntactic sugar for fetching an object recently set with less typing.
       if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
 
-      # No local filtering defined. Return everything.
-      if($PSCmdlet.ParameterSetName -like '*-NoFilter') {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': No Filter Applied')
+      # Terminating error if called directly. Use a supported alias.
+      if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
+         $Alias = (Get-Alias | Where-Object {$_.ResolvedCommandName -eq $($MyInvocation.MyCommand.Name)} | Select-Object -ExpandProperty Name) -join ','
+         Write-Error ('{0} called directly. {0} MUST be called by an alias: {1}' -f $MyInvocation.MyCommand.Name,$Alias) -ErrorAction Stop
       }
-      elseif($PSCmdlet.ParameterSetName -like '*-Filter') {
-         Write-Debug ($MyInvocation.MyCommand.Name + (': Filter Applied "{0}"' -f $PSBoundParameters.Filter))
+
+      switch -Wildcard ($PSCmdlet.ParameterSetName) {
+         '*-NoFilter'   { Write-Debug ('{0} (as {1}): No Filter Applied' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName); continue }
+         '*-Filter'     { Write-Debug ('{0} (as {1}): Filter Applied "{2}"' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$PSBoundParameters.Filter); continue }
+         '*-Name'       { Write-Debug ('{0} (as {1}): Exact match Name Applied "{2}"' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$PSBoundParameters.Name); continue}
       }
-      elseif($PSCmdlet.ParameterSetName -like '*-Name') {
-         Write-Debug ($MyInvocation.MyCommand.Name + (': Exact match Name Applied "{0}"' -f $PSBoundParameters.Name))
+
+      # Aggregate to hold objects until End {} block. See note at end
+      switch ($MyInvocation.InvocationName) {
+         'Get-PanAddress' { $ObjAgg = [System.Collections.Generic.List[PanAddress]]@(); continue }
+         'Get-PanAddressGroup' { <# Future $ObjAgg = [System.Collections.Generic.List[PanAddressGroup]]@() #> continue }
       }
    } # Begin Block
 
@@ -134,24 +141,28 @@ Syntactic sugar for fetching an object recently set with less typing.
       # InputObject ParameterSetName
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
-            Write-Debug ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
+            Write-Debug ('{0} (as {1}): InputObject Device: {2} XPath: {3}' -f
+               $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
             # Ensure Location map is up to date for current device
             Update-PanDeviceLocation -Device $InputObjectCur.Device
             $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
             # Check PanResponse
             if($Response.Status -eq 'success') {
+               Write-Debug ('{0} (as {1}): API return entry count: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count)
                # Build new object based on InvocationName
-               if($MyInvocation.InvocationName -eq 'Get-PanAddress') {
-                  [System.Xml.XmlDocument]$XDoc = $Response.Result.entry.OuterXml
-                  $XPath = $InputObjectCur.XPath
-                  $Obj = [PanAddress]::new($XDoc, $XPath, $InputObjectCur.Device)
-                  # Send to pipeline
-                  $Obj
-               }
-               elseif($MyInvocation.InvocationName -eq 'Get-PanAddressGroup') {
-                  # Future
-               }
-            }
+               switch ($MyInvocation.InvocationName) {
+                  'Get-PanAddress' {
+                     [System.Xml.XmlDocument]$XDoc = $Response.Result.entry.OuterXml
+                     $XPath = $InputObjectCur.XPath
+                     $ObjAgg.Add([PanAddress]::new($XDoc, $XPath, $InputObjectCur.Device))
+                     continue
+                  }
+                  'Get-PanAddressGroup' {
+                     # Future
+                     continue
+                  }
+               } # switch
+            } 
             else {
                Write-Error ('Error retrieving InputObject [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
                   $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
@@ -168,16 +179,20 @@ Syntactic sugar for fetching an object recently set with less typing.
             
             # Define XPath suffixes to be appended to PanDevice.Location(s), based on object type
             # Each object type gets it's own set of suffixes, but the same set of suffixes are used whether Panorama or NGFW (which is nice) 
-            if($MyInvocation.InvocationName -eq 'Get-PanAddress') {
-               # NoFilter (no search filter)
-               $XPathSuffixBase = "/address/entry"
-               # Filter (search filter)
-               $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
-               # Name (exact)
-               $XPathSuffixName = "/address/entry[@name='{0}']"   
-            }
-            elseif($MyInvocation.InvocationName -eq 'Get-PanAddressGroup') {
-
+            switch ($MyInvocation.InvocationName) {
+               'Get-PanAddress' {
+                  # NoFilter (no search filter)
+                  $XPathSuffixBase = "/address/entry"
+                  # Filter (search filter)
+                  $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
+                  # Name (exact)
+                  $XPathSuffixName = "/address/entry[@name='{0}']"
+                  continue
+               }
+               'Get-PanAddressGroup' {
+                  # Future
+                  continue
+               }
             }
 
             # Time to build two sets of hashtables based on suffixes defined above and ParameterSet
@@ -211,6 +226,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                }
                Write-Debug ('{0}: Location Search(Limited): {1}' -f $MyInvocation.MyCommand.Name,($Search.Keys -join ','))
             }
+            
             # No -Location specified, search all Locations on the PanDevice
             else {
                foreach($LocationCur in $DeviceCur.Location.GetEnumerator()) {
@@ -234,23 +250,26 @@ Syntactic sugar for fetching an object recently set with less typing.
    
             # Call the API. The actual search used ($Search or $SearchCustom) is determined by ParameterSetName
             foreach($SearchCur in $(if($PSCmdlet.ParameterSetName -like '*-Filter' -or $PSCmdlet.ParameterSetName -like '*-Name'){ $SearchCustom.GetEnumerator() } else{ $Search.GetEnumerator() })) {
-               Write-Debug ('{0}: Device: {1} Type: {2} Location: {3}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key)
-               Write-Debug ('{0}: XPath: {1}' -f $MyInvocation.MyCommand.Name,$SearchCur.Value)
+               Write-Debug ('{0} (as {1}): Device: {2} Type: {3} Location: {4} XPath: {5}' -f
+                  $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key,$SearchCur.Value)
                $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
                if($Response.Status -eq 'success') {
+                  Write-Debug ('{0} (as {1}): API return entry count: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count)
                   foreach($EntryCur in $Response.Result.entry) {
                      # Build new object based on InvocationName
-                     if($MyInvocation.InvocationName -eq 'Get-PanAddress') {
-                        [System.Xml.XmlDocument]$XDoc = $EntryCur.OuterXml
-                        # Regardless of "search XPath" used, the base XPath is used to form the object's XPath
-                        # to avoid the contains() and translate() substrings
-                        $XPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
-                        $Obj = [PanAddress]::new($XDoc, $XPath, $DeviceCur)
-                        # Send to pipeline
-                        $Obj
-                     }
-                     elseif($MyInvocation.InvocationName -eq 'Get-PanAddressGroup') {
-                        # Future
+                     switch ($MyInvocation.InvocationName) {
+                        'Get-PanAddress' {
+                           [System.Xml.XmlDocument]$XDoc = $EntryCur.OuterXml
+                           # Regardless of "search XPath" used, the base XPath is used to form the object's XPath
+                           # to avoid the contains() and translate() substrings
+                           $XPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
+                           $ObjAgg.Add([PanAddress]::new($XDoc, $XPath, $DeviceCur))
+                           continue
+                        }
+                        'Get-PanAddressGroup' {
+                           # Future
+                           continue
+                        }   
                      }
                   } # foreach entry
                } # if Reponse success
@@ -263,5 +282,17 @@ Syntactic sugar for fetching an object recently set with less typing.
       } # ParameterSetName
    } # Process block
    End {
+      # Objects are aggrated during Process block and NOT sent to pipeline immediately when they are found. It's for a reason, and a wild one
+      # Setup: "MyAddress" currently located in shared
+      # Get-PanAddress -Device $D -Name "MyAddress" | Move-PanAddress -DstLocation vsys1
+      # If Get-PanAddress were to send to pipeline in Process block:
+      #  1) MyAddress would be found in shared and the (shared) MyAddress would be moved to vsys1 successfully
+      #  2) Get-PanAddress would then find MyAddress again in vsys1 on the iteration through vsys1 and pipe the (vsys1) MyAddress to Move-PanAddress -DstLocation vsys1
+      #       Context: Since the Get-PanAddress call does not specify a -Location (it's optional), all Locations (shared, vsys1, vsys2, etc.) are searched
+      #  3) The Move- from vsys1 to vsys1 produces an error.
+      # Easiest way to avoid this situation is to aggregate the results in Get- and output at the end. :(
+      foreach($ObjCur in $ObjAgg) {
+         $ObjCur
+      }
    } # End block
 } # Function

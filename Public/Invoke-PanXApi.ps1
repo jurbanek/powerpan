@@ -3,7 +3,7 @@ function Invoke-PanXApi {
 .SYNOPSIS
 Abstracts PAN-OS XML API core modes (actions)
 .DESCRIPTION
--Keygen is for generating API key (don't use for normal operations, use New-PanDevice)
+-Keygen is for generating API key (don't use for normal operations, use New-PanDevice instead)
 
 -Version is an easy way to verify API access is functioning
 
@@ -47,10 +47,12 @@ Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<ou
 Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
 .EXAMPLE
 Import and process the certificate and private key within, note the -Category keypair
+
 Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
 
 Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
-PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+
+Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
 #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='None')]
    param(
@@ -86,6 +88,9 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Delete',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Rename',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Move',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-MultiMove',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Clone',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-MultiClone',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Complete',HelpMessage='Type: config ')]
       [Switch] $Config,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Get',HelpMessage='Retrieve candidate configuration')]
@@ -102,6 +107,12 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [Switch] $Rename,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Move',HelpMessage='Move')]
       [Switch] $Move,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-MultiMove',HelpMessage='MultiMove')]
+      [Switch] $MultiMove,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Clone',HelpMessage='Clone')]
+      [Switch] $Clone,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-MultiClone',HelpMessage='MultiClone')]
+      [Switch] $MultiClone,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Complete',HelpMessage='Retrieve auto-complete options')]
       [Switch] $Complete,
       [parameter(Mandatory=$true,ParameterSetName='Config-Get',HelpMessage='Config XPath')]
@@ -111,6 +122,9 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,ParameterSetName='Config-Delete',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-MultiMove',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-MultiClone',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Complete',HelpMessage='Config XPath')]
       [String] $XPath,
       [parameter(ParameterSetName='Config-Get',HelpMessage='Config Element')]
@@ -118,14 +132,19 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,ParameterSetName='Config-Set',HelpMessage='Config Element')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Edit',HelpMessage='Config Element')]
       [parameter(ParameterSetName='Config-Delete',HelpMessage='Config Element')]
+      [parameter(ParameterSetName='Config-MultiMove',HelpMessage='Config Element')]
+      [parameter(ParameterSetName='Config-MultiClone',HelpMessage='Config Element')]
       [String] $Element,
       [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config NewName')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config NewName')]
       [String] $NewName,
       [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config Where after, before, top, bottom')]
       [ValidateSet('after','before','top','bottom')]
       [String] $Where,
       [parameter(ParameterSetName='Config-Move',HelpMessage='Config Dst required with after, before')]
       [String] $Dst,
+      [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config From')]
+      [String] $From,
       # Begin Import parameter set
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Import-Default',HelpMessage='Type: import')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Import-Cert-Key',HelpMessage='Type: import')]
@@ -288,14 +307,16 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             elseif ($PSBoundParameters.Delete.IsPresent) { $PanApiAction = 'delete' }
             elseif ($PSBoundParameters.Rename.IsPresent) { $PanApiAction = 'rename' }
             elseif ($PSBoundParameters.Move.IsPresent) { $PanApiAction = 'move' }
+            elseif ($PSBoundParameters.MultiMove.IsPresent) { $PanApiAction = 'multi-move' }
+            elseif ($PSBoundParameters.Clone.IsPresent) { $PanApiAction = 'clone' }
+            elseif ($PSBoundParameters.MultiClone.IsPresent) { $PanApiAction = 'multi-clone' }
             elseif ($PSBoundParameters.Complete.IsPresent) { $PanApiAction = 'complete' }
             Write-Debug ("{0}: type=config action={1}" -f $MyInvocation.MyCommand.Name,$PanApiAction)
 
             $PanApiXPath = $PSBoundParameters.XPath
             $PanApiElement = $PSBoundParameters.Element
-            # action=rename specific
+            $PanApiFrom = $PSBoundParameters.From
             $PanApiNewName = $PSBoundParameters.NewName
-            # action=move specific
             $PanApiWhere = $PSBoundParameters.Where
             $PanApiDst = $PSBoundParameters.Dst
 
@@ -313,6 +334,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
                'xpath' = $PanApiXPath
             }
             if($PanApiElement) { $Body.Add('element', $PanApiElement) }
+            if($PanApiFrom) { $Body.Add('from', $PanApiFrom) }
             if($PanApiNewName) { $Body.Add('newname', $PanApiNewName) }
             if($PanApiWhere) { $Body.Add('where', $PanApiWhere) }
             if($PanApiDst) { $Body.Add('dst', $PanApiDst) }

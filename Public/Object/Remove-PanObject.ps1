@@ -46,6 +46,12 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
+
+      # Terminating error if called directly. Use a supported alias.
+      if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
+         $Alias = (Get-Alias | Where-Object {$_.ResolvedCommandName -eq $($MyInvocation.MyCommand.Name)} | Select-Object -ExpandProperty Name) -join ','
+         Write-Error ('{0} called directly. {0} MUST be called by an alias: {1}' -f $MyInvocation.MyCommand.Name,$Alias) -ErrorAction Stop
+      }
    } # Begin Block
 
    Process {
@@ -71,13 +77,10 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4}' -f 
                $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name)
-            # Remove-PanAddress
-            if($MyInvocation.InvocationName -eq 'Remove-PanAddress') {
-               $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
-            }
-            elseif($MyInvocation.InvocationName -eq 'Remove-PanAddressGroup') {
-               # Future planning
-               # $Obj = Get-PanAddressGroup...
+            # Given -Device ParameterSet, fetch the object for its XPath
+            switch ($MyInvocation.InvocationName) {
+               'Remove-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue}
+               'Remove-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
             }
 
             # Call API
@@ -97,7 +100,6 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
             }
          } # End foreach DeviceCur
       } # End ParameterSetName Device
-      #>
    } # Process block
    End {
    } # End block
