@@ -39,25 +39,43 @@ Ngfw
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[@name='{0}']
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' ))]
 
-:: Panorama Searches Ending in /entry ::
+:: Panorama Adding a "loc" (location) Attribute ::
 Panorama does something unique when searching device-groups. 
 Given:
 Grandparent device-group contains a H-1.1.1.1 address object
 Parent device-group is *empty* and an ancestor of Grandparent
 Child device-group is *empty* and an ancestor of Parent
 
-action=get where XPath = /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address/entry
-Result:
-<entry name="H-1.1.1.1" loc="Grandparent"><ip-netmask>1.1.1.1</ip-netmask><disable-override>no</disable-override></entry>
-   - Note the search in Child device group with /address/entry on the end. Child is empty, but there is an entry returned.
-   - Note the entry contains loc="Grandparent" attribute which conveys the object is in Grandparent, despite us querying for Child
+:::: /address ::::
+action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address
+Returns: <result><address/></result>
+- No /entry on the end of XPath. Empty list as it should be. Panorama display DG container as it really exists
+- Works great, but no server-side filtering support
 
-action=get where XPath = /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address
-Result:
-<result><address/></result>
-   - Note the only difference is the lack of /entry on the end of the XPath
-   - Without an /entry, Panorama displays the device-group container as it really exists.
-   - With an /entry, Panorama weaves in objects from ancestors and adds a "loc" attribute
+:::: /address/entry ::::
+action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address/entry
+Returns: <result><entry name="H-1.1.1.1" loc="Grandparent"><ip-netmask>1.1.1.1</ip-netmask><disable-override>no</disable-override></entry></result>
+- Search in Child DG with /address/entry on the end. Child is actually empty, but an entry returned with loc="Grandparent"
+- Might be useful for some cases (like the PAN-OS GUI), but not what we want for PowerPAN
+
+In order to perform *server-side* filtering, we *need* to end in /entry for stuff like /entry[@name='H-1.1.1.1']
+But don't want to have to transfer across the wire and locally filter out a bunch of other ancestor objects as
+the ancestor device-groups will likely be searched explicitly anyway.
+
+:::: Double Slash ::::
+Found the fix:
+"Double slash" //entry. a.k.a. XPath descendant operator
+
+:::: /address//entry ::::
+action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Grandparent']/address//entry
+action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Grandparent']/address//entry[@name='H-1.1.1.1']
+Both return: <result><entry name="H-1.1.1.1"><ip-netmask>1.1.1.1</ip-netmask><disable-override>no</disable-override></entry></result>
+- "Double slash" on //entry. Query Grandparent (where object actually lives). Object is returned without loc attribute. Yes!
+
+action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address//entry
+action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address//entry[@name='H-1.1.1.1']
+Both return: <result/>
+   - Double "slash" on //entry. Query Child and it returns empty which is ideal for PowerPAN. Yes!
 
 This cmdlet returns objects in the requested locations only. To see ancestors, specify their locations as well.
 
