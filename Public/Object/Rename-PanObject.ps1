@@ -1,13 +1,12 @@
 function Rename-PanObject {
 <#
 .SYNOPSIS
-Rename object(s) (multiple types)
+Rename object(s)
 .DESCRIPTION
-Rename multiple object types from a single cmdlet based on the alias used
+Rename object(s)
 .NOTES
-Rename-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases:
-   Rename-PanAddress
-   ...
+Rename-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases.
+Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Rename-PanObject' }
 
 Two modes: -InputObject mode and -Device mode.
 
@@ -26,13 +25,13 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
 #>
    [CmdletBinding()]
    param(
-      [parameter(Mandatory=$true,ParameterSetName='Device',ValueFromPipeline=$true,HelpMessage='PanDevice against which address object(s) will be applied')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',ValueFromPipeline=$true,HelpMessage='PanDevice to target')]
       [PanDevice[]] $Device,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive location: vsys1, shared, DeviceGroupA, etc.')]
       [String] $Location,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of object')]
       [String] $Name,
-      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be applied as is')]
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to target')]
       [PanAddress[]] $InputObject,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive NEW name of object')]
       [parameter(Mandatory=$true,ParameterSetName='InputObject',HelpMessage='Case-sensitive NEW name of object')]

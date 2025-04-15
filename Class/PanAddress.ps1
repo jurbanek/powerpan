@@ -117,6 +117,49 @@ class PanAddress:ICloneable {
             $this.XDoc.Item('entry').AppendChild($XDescription)
          }
       } -Force
+
+      # DisableOverride ScriptProperty linked to $XDoc.entry.Item('disable-override').InnerText
+      'PanAddress' | Update-TypeData -MemberName DisableOverride -MemberType ScriptProperty -Value {
+         # Getter
+         switch ($this.XDoc.Item('entry').Item('disable-override').InnerText) {
+            no       { return $false }
+            yes      { return $true }
+            default  { return $null }
+         }
+      } -SecondValue {
+         # Setter
+         param($Set)
+         # If <disable-override> element exists
+         if($this.XDoc.Item('entry').Item('disable-override').Count) {
+            if([String]::IsNullOrEmpty($Set)) {
+               # Remove the <description> element entirely
+               $XDisable = $this.XDoc.Item('entry').Item('disable-override')
+               $this.XDoc.Item('entry').RemoveChild($XDisable)
+            }
+            else {
+               switch($Set) {
+                  $false   { $this.XDoc.Item('entry').Item('disable-override').InnerText = 'no' }
+                  $true    { $this.XDoc.Item('entry').Item('disable-override').InnerText = 'yes' }
+                  # In case someone sets to 'no' or 'yes'
+                  no       { $this.XDoc.Item('entry').Item('disable-override').InnerText = 'no' }
+                  yes      { $this.XDoc.Item('entry').Item('disable-override').InnerText = 'yes' }
+               }
+            }
+         }
+         # No existing <disable-override>
+         else {
+            # Build a new <description> element
+            $XDisable = $this.XDoc.CreateElement('disable-override')
+            switch($Set) {
+               $false   { $XDisable.InnerText = 'no' }
+               $true    { $XDisable.InnerText = 'yes' }
+               # In case someone sets to 'no' or 'yes'
+               no       { $XDisable.InnerText = 'no' }
+               yes      { $XDisable.InnerText = 'yes' }
+            }
+            $this.XDoc.Item('entry').AppendChild($XDisable)
+         }
+      } -Force
       
       # Location ScriptProperty linked to $XPath matching 
       #  Panorama 'MyDeviceGroup' part of device-group/entry[@name='MyDeviceGroup']

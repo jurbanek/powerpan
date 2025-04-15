@@ -1,13 +1,12 @@
 function Get-PanObject {
 <#
 .SYNOPSIS
-Retrieve objects (multiple types) from PanDevice
+Retrieve object(s)
 .DESCRIPTION
-Get-PanObjectGet all address objects from a PanDevice or specify the -Filter parameter for a remote (not local) filtered search
+Get-PanObject can retrieve all object on a Device, specify a list of Location(s), specify a specific Name, or perform remote Filtering
 .NOTES
-Get-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases:
-   Get-PanAddress
-   ...
+Get-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases.
+Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Get-PanObject' }
 
 :: At-a-Glance ::
 -Name parameter(s) are always case-sensitive in PowerPAN, for getting exact names if you know them
@@ -18,8 +17,9 @@ Get-PanObject provides feature coverage for many object types. It should NOT be 
 The -Filter parameter emulates the PAN-OS filter/search bar which is case-insensitive and searches across address object name, value, description, and tag.
 Within PAN-OS itself, names are case-sensitive. PAN-OS search bar provides case-INsensitive search across name, value, description, and tag to be helpful.
 
-For additional filtering capabilities within the local PowerShell session, pipe output to Where-Object (see example).
+For additional filtering capabilities within the local PowerShell session, pipe output to Where-Object (see examples).
 
+:: IMPLEMENTATION NOTES ::
 XPath References for base search, -Name search, and -Filter search for PanAddress objects. Other object types have slightly different suffixes and filters.
    Name: {0} becomes Name, as is
    Filter: {0} becomes Filter.ToLower()
@@ -38,6 +38,29 @@ Ngfw
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[@name='{0}']
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' ))]
+
+:: Panorama Searches Ending in /entry ::
+Panorama does something unique when searching device-groups. 
+Given:
+Grandparent device-group contains a H-1.1.1.1 address object
+Parent device-group is *empty* and an ancestor of Grandparent
+Child device-group is *empty* and an ancestor of Parent
+
+action=get where XPath = /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address/entry
+Result:
+<entry name="H-1.1.1.1" loc="Grandparent"><ip-netmask>1.1.1.1</ip-netmask><disable-override>no</disable-override></entry>
+   - Note the search in Child device group with /address/entry on the end. Child is empty, but there is an entry returned.
+   - Note the entry contains loc="Grandparent" attribute which conveys the object is in Grandparent, despite us querying for Child
+
+action=get where XPath = /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address
+Result:
+<result><address/></result>
+   - Note the only difference is the lack of /entry on the end of the XPath
+   - Without an /entry, Panorama displays the device-group container as it really exists.
+   - With an /entry, Panorama weaves in objects from ancestors and adds a "loc" attribute
+
+This cmdlet returns objects in the requested locations only. To see ancestors, specify their locations as well.
+
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
@@ -95,13 +118,13 @@ Syntactic sugar for fetching an object recently set with less typing.
 #>
    [CmdletBinding(DefaultParameterSetName='Device-NoFilter')]
    param(
-      [parameter(Mandatory=$true,ParameterSetName='Device-NoFilter',ValueFromPipeline=$true,HelpMessage='PanDevice against which object(s) will be retrieved.')]   
-      [parameter(Mandatory=$true,ParameterSetName='Device-Filter',ValueFromPipeline=$true,HelpMessage='PanDevice against which object(s) will be retrieved.')]
-      [parameter(Mandatory=$true,ParameterSetName='Device-Name',ValueFromPipeline=$true,HelpMessage='PanDevice against which object(s) will be retrieved.')]
+      [parameter(Mandatory=$true,ParameterSetName='Device-NoFilter',ValueFromPipeline=$true,HelpMessage='PanDevice to target')]   
+      [parameter(Mandatory=$true,ParameterSetName='Device-Filter',ValueFromPipeline=$true,HelpMessage='PanDevice to target')]
+      [parameter(Mandatory=$true,ParameterSetName='Device-Name',ValueFromPipeline=$true,HelpMessage='PanDevice to target')]
       [PanDevice[]] $Device,
-      [parameter(Mandatory=$true,ParameterSetName='Device-Filter',HelpMessage='Case-INsensitive name, value, description, tag filter. Filter applied remotely (via API) identical to GUI filter bar behavior.')]
+      [parameter(Mandatory=$true,ParameterSetName='Device-Filter',HelpMessage='Case-INsensitive property filter (see notes for detail). Filtered remotely (API)')]
       [String] $Filter,
-      [parameter(Mandatory=$true,ParameterSetName='Device-Name',HelpMessage='Exact match name. Matched remotely (via API).')]
+      [parameter(Mandatory=$true,ParameterSetName='Device-Name',HelpMessage='Exact match object name. Matched remotely (API)')]
       [String] $Name,
       [parameter(ParameterSetName='Device-NoFilter',HelpMessage='Limit search to PanDevice locations (shared, vsys1, MyDeviceGroup)')]
       [parameter(ParameterSetName='Device-Filter',HelpMessage='Limit search to PanDevice locations (shared, vsys1, MyDeviceGroup)')]
@@ -148,11 +171,20 @@ Syntactic sugar for fetching an object recently set with less typing.
             $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
             # Check PanResponse
             if($Response.Status -eq 'success') {
-               Write-Debug ('{0} (as {1}): API return entry count: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count)
-               # Build new object based on InvocationName
+               # Panorama includes ancestors in responses (not ideal, see NOTES) and denotes them as <entry name='name' loc='Ancestor-DG'>
+               # Limit <entry> to searched device-group only by matching desired loc attribute, or if in shared loc will not exist as shared has no ancestors
+               if($InputObjectCur.Device.Type -eq [PanDeviceType]::Panorama) {
+                  $Entry = $Response.Result.entry | Where-Object {$_.loc -ceq $InputObjectCur.Location -or [String]::IsNullOrEmpty($_.loc)}
+               }
+               elseif($InputObjectCur.Device.Type -eq [PanDeviceType]::Ngfw) {
+                  $Entry = $Response.Result.entry
+               }
+               Write-Debug ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
+                  $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count,$Entry.Count)
+               # Build new object based on InvocationName. Only one object given InputObject, no loop required
                switch ($MyInvocation.InvocationName) {
                   'Get-PanAddress' {
-                     [System.Xml.XmlDocument]$XDoc = $Response.Result.entry.OuterXml
+                     [System.Xml.XmlDocument]$XDoc = $Entry.OuterXml
                      $XPath = $InputObjectCur.XPath
                      $ObjAgg.Add([PanAddress]::new($XDoc, $XPath, $InputObjectCur.Device))
                      continue
@@ -173,7 +205,7 @@ Syntactic sugar for fetching an object recently set with less typing.
       # NoFilter and Filter ParameterSetName
       else {
          foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug ('{0}: Device: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+            Write-Debug ('{0} (as {1}): Device: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name)
             # Ensure Location map is up to date for current device
             Update-PanDeviceLocation -Device $DeviceCur
             
@@ -224,7 +256,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                      }
                   }
                }
-               Write-Debug ('{0}: Location Search(Limited): {1}' -f $MyInvocation.MyCommand.Name,($Search.Keys -join ','))
+               Write-Debug ('{0} (as {1}): Location Search(Limited): {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,($Search.Keys -join ','))
             }
             
             # No -Location specified, search all Locations on the PanDevice
@@ -252,10 +284,22 @@ Syntactic sugar for fetching an object recently set with less typing.
             foreach($SearchCur in $(if($PSCmdlet.ParameterSetName -like '*-Filter' -or $PSCmdlet.ParameterSetName -like '*-Name'){ $SearchCustom.GetEnumerator() } else{ $Search.GetEnumerator() })) {
                Write-Debug ('{0} (as {1}): Device: {2} Type: {3} Location: {4} XPath: {5}' -f
                   $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key,$SearchCur.Value)
+               
                $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
+               
                if($Response.Status -eq 'success') {
-                  Write-Debug ('{0} (as {1}): API return entry count: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count)
-                  foreach($EntryCur in $Response.Result.entry) {
+                  # Panorama includes ancestors in responses (not ideal, see NOTES) and denotes them as <entry name='name' loc='Ancestor-DG'>
+                  # Limit <entry> to searched device-group only by matching desired loc attribute, or if in shared loc will not exist as shared has no ancestors
+                  if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
+                     $Entry = $Response.Result.entry | Where-Object {$_.loc -ceq $SearchCur.Key -or [String]::IsNullOrEmpty($_.loc)}
+                  }
+                  elseif($DeviceCur.Type -eq [PanDeviceType]::Ngfw) {
+                     $Entry = $Response.Result.entry
+                  }
+                  Write-Debug ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
+                     $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count,$Entry.Count)
+                  
+                  foreach($EntryCur in $Entry) {
                      # Build new object based on InvocationName
                      switch ($MyInvocation.InvocationName) {
                         'Get-PanAddress' {

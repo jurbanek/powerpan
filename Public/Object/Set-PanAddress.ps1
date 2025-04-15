@@ -122,10 +122,13 @@ On large devices with many objects with the "review" tag, might take a while.
       [String] $Description,
       [parameter(ParameterSetName='Device',HelpMessage='One or more tags. Tags must exist already. Will not create tags')]
       [String[]] $Tag,
-      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
-      [PanAddress[]] $InputObject,
       [parameter(ParameterSetName='Device',HelpMessage='Replace (action=edit) instead of merge (action=set)')]
-      [Switch] $Replace
+      [Switch] $Replace,
+      [parameter(ParameterSetName='Device',HelpMessage='Disable ability to override (Panorama device-group objects only)')]
+      [Bool] $DisableOverride,
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
+      [PanAddress[]] $InputObject
+      
    )
 
    Begin {
@@ -173,6 +176,8 @@ On large devices with many objects with the "review" tag, might take a while.
                if($PSBoundParameters.Type) { $Address.Type = $PSBoundParameters.Type }
                if($PSBoundParameters.Description) { $Address.Description = $PSBoundParameters.Description }
                if($PSBoundParameters.Tag) { $Address.Tag = $PSBoundParameters.Tag }
+               # Since DisableOverride value can be $false, need to check its presence with ContainsKey()
+               if($PSBoundParameters.ContainsKey('DisableOverride')) { $Address.DisableOverride = $PSBoundParameters.DisableOverride }
 
                # Call API
                if(-not $PSBoundParameters.Replace.IsPresent) {
@@ -217,6 +222,15 @@ On large devices with many objects with the "review" tag, might take a while.
                      $XMember.InnerText = $TagCur
                      $XTag.AppendChild($XMember) | Out-Null
                   }
+               }
+               # DisableOverride
+               if($PSBoundParameters.ContainsKey('DisableOverride')) {
+                  $XDisable = $XDoc.CreateElement('disable-override')
+                  switch($PSBoundParameters.DisableOverride) {
+                     $false   { $XDisable.InnerText = 'no' }
+                     $true    { $XDisable.InnerText = 'yes' }
+                  }
+                  $XEntry.AppendChild($XDisable) | Out-Null
                }
 
                # Call API

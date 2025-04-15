@@ -138,10 +138,10 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
       [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config NewName')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config NewName')]
       [String] $NewName,
-      [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config Where after, before, top, bottom')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config Where: after, before, top, bottom')]
       [ValidateSet('after','before','top','bottom')]
       [String] $Where,
-      [parameter(ParameterSetName='Config-Move',HelpMessage='Config Dst required with after, before')]
+      [parameter(ParameterSetName='Config-Move',HelpMessage='Config Dst (required with -Where after or -Where before)')]
       [String] $Dst,
       [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config From')]
       [String] $From,

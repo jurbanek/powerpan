@@ -1,16 +1,14 @@
 function Move-PanObject {
 <#
 .SYNOPSIS
-Move object(s) (multiple types) to 
+Move object(s) to a different Location (shared, vsys1, MyDeviceGroup) on the same Device
 .DESCRIPTION
-Move multiple object types from a single cmdlet based on the alias used
+Move object(s) to a different Location (shared, vsys1, MyDeviceGroup) on the same Device
 .NOTES
-Move-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases:
-   Move-PanAddress
-   ...
+Move-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases.
+Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Move-PanObject' }
 
 Two modes: -InputObject mode and -Device mode.
-
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
@@ -23,13 +21,13 @@ PanAddress
 #>
    [CmdletBinding()]
    param(
-      [parameter(Mandatory=$true,ParameterSetName='Device',ValueFromPipeline=$true,HelpMessage='PanDevice against which address object(s) will be applied')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',ValueFromPipeline=$true,HelpMessage='PanDevice(s) to target')]
       [PanDevice[]] $Device,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive location: vsys1, shared, DeviceGroupA, etc.')]
       [String] $Location,
-      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of address object')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of object')]
       [String] $Name,
-      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to target')]
       [PanAddress[]] $InputObject,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive destination location for object (vsys1, shared, MyDG, etc.)')]
       [parameter(Mandatory=$true,ParameterSetName='InputObject',HelpMessage='Case-sensitive destination location for object (vsys1, shared, MyDG, etc.)')]
@@ -65,13 +63,15 @@ PanAddress
             
             # Counter-intuitive, but action=multi-move is needed for moving address/address-group/service/service-group objects most effectively. action=move is best for policy rules
             # Within multi-move:
-            #  XPath is the destination container (for example, ending in /address)
-            #  Element is the source built as <selected-list><source xpath="/path/to/container"><member>name1</member></selected-list><all-errors>no</all-errors>
+            #  XPath: destination container (for example, ending in /address)
+            #  Element: source built as <selected-list><source xpath="/path/to/container"><member>name1</member></selected-list><all-errors>no</all-errors>
             #  While Element can contain multiple <source> and multiple <member>, we will build 1:1 for now
+            $DstXPath = '{0}{1}' -f $InputObject.Device.Location.($PSBoundParameters.DstLocation),$Suffix
             $SrcXPath = '{0}{1}' -f $InputObjectCur.Device.Location.($InputObjectCur.Location),$Suffix
             $Element = "<selected-list><source xpath=`"{0}`"><member>{1}</member></source></selected-list><all-errors>no</all-errors>" -f $SrcXPath,$InputObjectCur.Name
-            $DstXPath = '{0}{1}' -f $InputObject.Device.Location.($PSBoundParameters.DstLocation),$Suffix
-            
+
+            Write-Debug ('{0} as ({1}: Device: {2} Config: MultiMove: XPath: {3} Element: {4}' -f 
+               $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$DstXPath,$Element)
             $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -MultiMove -XPath $DstXPath -Element $Element
             # Check PanResponse
             if($Response.Status -eq 'success') {
