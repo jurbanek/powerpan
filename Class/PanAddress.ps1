@@ -132,7 +132,7 @@ class PanAddress:ICloneable {
          # If <disable-override> element exists
          if($this.XDoc.Item('entry').Item('disable-override').Count) {
             if([String]::IsNullOrEmpty($Set)) {
-               # Remove the <description> element entirely
+               # Remove the <disable-override> element entirely
                $XDisable = $this.XDoc.Item('entry').Item('disable-override')
                $this.XDoc.Item('entry').RemoveChild($XDisable)
             }
@@ -201,6 +201,16 @@ class PanAddress:ICloneable {
                # Using .NET [Regex]::Replace() static method
                # $this.XPath = [Regex]::Replace($this.XPath,$RegexReplace,"vsys/entry[@name='{0}']" -f $Set)
             }
+         } -Force
+         
+         # Overrides ScriptProperty linked to $XDoc.entry.overrides
+         'PanAddress' | Update-TypeData -MemberName Overrides -MemberType ScriptProperty -Value {
+            # Getter
+            return $this.XDoc.Item('entry').GetAttribute('overrides')
+         } -SecondValue {
+            # Setter
+            param($Set)
+            $this.XDoc.Item('entry').SetAttribute('overrides',$Set)
          } -Force
    } # End static constructor
 

@@ -9,6 +9,9 @@ Move-PanObject provides feature coverage for many object types. It should NOT be
 Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Move-PanObject' }
 
 Two modes: -InputObject mode and -Device mode.
+
+Note: Objects in a Panorama device-group with DisableOverride: $true (which is <disable-override>yes</disable-override>) cannot be moved to shared
+It's enforced by Panorama (and an API error). Update the object and use Set-*, then move as needed.
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
@@ -60,7 +63,7 @@ PanAddress
             Write-Debug ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} DstLocation: {6} ' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,$InputObjectCur.GetType().Name,
                $InputObjectCur.Name,$PSBoundParameters.DstLocation)
-            
+
             # Counter-intuitive, but action=multi-move is needed for moving address/address-group/service/service-group objects most effectively. action=move is best for policy rules
             # Within multi-move:
             #  XPath: destination container (for example, ending in /address)

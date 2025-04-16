@@ -39,14 +39,31 @@ Ngfw
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[@name='{0}']
 /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='{0}']/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{1}' ))]
 
-:: Panorama Adding a "loc" (location) Attribute ::
-Panorama does something unique when searching device-groups. 
-Given:
+:: Panorama <entry loc='MyDeviceGroup' overrides='MyObject'> Attributes ::
+Panorama can add two additional attributes to <entry>: loc and overrides
+loc:
+   - Some XPath queries return the content of the DG and all ancestor DG's (but not shared) weaved together
+   - Conceivably to make it easier to "see" what objects are available for use
+   - The loc attribute tracks the actual location where the object resides
+overrides:
+   - In cases where an object with the same name lives in both an ancestor and descendant, the descendant is considered an ovverride
+   - The overrides attribute tracks which ancestor is being overriden
+   - If MyObj in Child is overriding MyObj in Parent, then <entry name="MyObj" loc="Child" overrides="Parent">stuff</entry>
+
+To perform *server-side* filtering, XPath needs to end in /entry for stuff like /entry[@name='H-1.1.1.1']
+/entry with single slashes returns full lineage including ancestors with "loc" and "overrides" attributes
+//entry with double slashes returns only the contents of the location *without* "loc" and "overrides" attributes
+
+Returning full lineage is greater data transfer and local processing, but grants visibility into "overrides" without having to compute locally
+
+This cmdlet returns returns full lineage for overrides visibility, then filters locally only returning specified locations
+
+:: Panorama Single-Slash and Double-Slash XPath ::
 Grandparent device-group contains a H-1.1.1.1 address object
 Parent device-group is *empty* and an ancestor of Grandparent
 Child device-group is *empty* and an ancestor of Parent
 
-:::: /address ::::
+:::: /address (no /entry)::::
 action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address
 Returns: <result><address/></result>
 - No /entry on the end of XPath. Empty list as it should be. Panorama display DG container as it really exists
@@ -58,26 +75,31 @@ Returns: <result><entry name="H-1.1.1.1" loc="Grandparent"><ip-netmask>1.1.1.1</
 - Search in Child DG with /address/entry on the end. Child is actually empty, but an entry returned with loc="Grandparent"
 - Might be useful for some cases (like the PAN-OS GUI), but not what we want for PowerPAN
 
-In order to perform *server-side* filtering, we *need* to end in /entry for stuff like /entry[@name='H-1.1.1.1']
-But don't want to have to transfer across the wire and locally filter out a bunch of other ancestor objects as
-the ancestor device-groups will likely be searched explicitly anyway.
-
 :::: Double Slash ::::
-Found the fix:
 "Double slash" //entry. a.k.a. XPath descendant operator
 
 :::: /address//entry ::::
 action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Grandparent']/address//entry
 action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Grandparent']/address//entry[@name='H-1.1.1.1']
 Both return: <result><entry name="H-1.1.1.1"><ip-netmask>1.1.1.1</ip-netmask><disable-override>no</disable-override></entry></result>
-- "Double slash" on //entry. Query Grandparent (where object actually lives). Object is returned without loc attribute. Yes!
+- "Double slash" on //entry. Query Grandparent (where object actually lives). Object is returned without loc attribute.
 
 action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address//entry
 action=get XPath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Child']/address//entry[@name='H-1.1.1.1']
 Both return: <result/>
-   - Double "slash" on //entry. Query Child and it returns empty which is ideal for PowerPAN. Yes!
+   - Double "slash" on //entry. Query Child and it returns empty.
 
-This cmdlet returns objects in the requested locations only. To see ancestors, specify their locations as well.
+:: Single Slash Performance ::
+This cmdlet uses single slash /entry to get overrides attribute and filters out ancestors locally.
+Originally thought it would be too time consuming to have to transfer and filter so much locally.
+Performance tested a three-deep device-group
+Grandparent (10,000 address objects)
+   Parent
+      Child
+Pulling all device-groups using single-slash /address/entry (Get-PanAddress -Device $Panorama) is 10,000 objects 3 times for 30,000, throwing out 20,000
+Took on average 4.1 seconds with screen paint
+Took on average 2.4 seconds without screen paint
+Computers are fast. Overrides attribute and code simplicity is worth using single slash.
 
 .INPUTS
 PanDevice[]
@@ -176,6 +198,24 @@ Syntactic sugar for fetching an object recently set with less typing.
          'Get-PanAddress' { $ObjAgg = [System.Collections.Generic.List[PanAddress]]@(); continue }
          'Get-PanAddressGroup' { <# Future $ObjAgg = [System.Collections.Generic.List[PanAddressGroup]]@() #> continue }
       }
+
+      # Define XPath suffixes to be appended to PanDevice.Location(s), based on object type
+      # Each object type gets it's own set of suffixes, but the same set of suffixes are used whether Panorama or NGFW (which is nice) 
+      switch ($MyInvocation.InvocationName) {
+         'Get-PanAddress' {
+            # NoFilter (no search filter). "Double slash"
+            $XPathSuffixBase = "/address/entry"
+            # Filter (search filter). "Double slash"
+            $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
+            # Name (exact). "Double slash"
+            $XPathSuffixName = "/address/entry[@name='{0}']"
+            continue
+         }
+         'Get-PanAddressGroup' {
+            # Future
+            continue
+         }
+      }
    } # Begin Block
 
    Process {
@@ -227,24 +267,6 @@ Syntactic sugar for fetching an object recently set with less typing.
             # Ensure Location map is up to date for current device
             Update-PanDeviceLocation -Device $DeviceCur
             
-            # Define XPath suffixes to be appended to PanDevice.Location(s), based on object type
-            # Each object type gets it's own set of suffixes, but the same set of suffixes are used whether Panorama or NGFW (which is nice) 
-            switch ($MyInvocation.InvocationName) {
-               'Get-PanAddress' {
-                  # NoFilter (no search filter)
-                  $XPathSuffixBase = "/address/entry"
-                  # Filter (search filter)
-                  $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
-                  # Name (exact)
-                  $XPathSuffixName = "/address/entry[@name='{0}']"
-                  continue
-               }
-               'Get-PanAddressGroup' {
-                  # Future
-                  continue
-               }
-            }
-
             # Time to build two sets of hashtables based on suffixes defined above and ParameterSet
             # Hashtable Key is the location (vys1,shared,MyDG), Hashtable Value is the usable XPath
             # Search (base) is used when NO -Filter is specified. Also used to build the XPath when passing to object constructor further down
@@ -306,10 +328,10 @@ Syntactic sugar for fetching an object recently set with less typing.
                $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
                
                if($Response.Status -eq 'success') {
-                  # Panorama includes ancestors in responses (not ideal, see NOTES) and denotes them as <entry name='name' loc='Ancestor-DG'>
+                  # Panorama includes ancestors in responses (see NOTES) and denotes them as <entry name='name' loc='Ancestor-DG'>
                   # Limit <entry> to searched device-group only by matching desired loc attribute, or if in shared loc will not exist as shared has no ancestors
                   if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
-                     $Entry = $Response.Result.entry | Where-Object {$_.loc -ceq $SearchCur.Key -or [String]::IsNullOrEmpty($_.loc)}
+                     $Entry = $Response.Result.entry | Where-Object {$_.loc -ceq $SearchCur.Key <#Panorama DG's#> -or [String]::IsNullOrEmpty($_.loc) <#Panorama shared#>}
                   }
                   elseif($DeviceCur.Type -eq [PanDeviceType]::Ngfw) {
                      $Entry = $Response.Result.entry

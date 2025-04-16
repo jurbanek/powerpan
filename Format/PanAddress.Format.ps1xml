@@ -14,6 +14,8 @@
                <TableColumnHeader><Label>Tag</Label></TableColumnHeader>
                <TableColumnHeader><Label>Device</Label></TableColumnHeader>
                <TableColumnHeader><Label>Location</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Overrides</Label></TableColumnHeader>
+
             </TableHeaders>
             <TableRowEntries>
                <TableRowEntry>
@@ -24,6 +26,7 @@
                         <TableColumnItem><PropertyName>Tag</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Location</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Overrides</PropertyName></TableColumnItem>
                   </TableColumnItems>
                </TableRowEntry>
             </TableRowEntries>
@@ -32,7 +35,7 @@
       <View>
          <Name>DefaultList</Name>
          <ViewSelectedBy>
-            <TypeName>XPanAddress</TypeName>
+            <TypeName>PanAddress</TypeName>
          </ViewSelectedBy>
          <ListControl>
             <ListEntries>
@@ -44,6 +47,9 @@
                      <ListItem><PropertyName>Tag</PropertyName></ListItem>
                      <ListItem><PropertyName>Device</PropertyName></ListItem>
                      <ListItem><PropertyName>Location</PropertyName></ListItem>
+                     <ListItem><PropertyName>Overrides</PropertyName></ListItem>
+                     <ListItem><PropertyName>DisableOverride</PropertyName></ListItem>
+                     <ListItem><PropertyName>Description</PropertyName></ListItem>
                   </ListItems>
                </ListEntry>
             </ListEntries>
