@@ -36,4 +36,51 @@ class PanResponse {
    # Default Constructor
    PanResponse() {
    }
+
+   # Constructor
+   PanResponse([Microsoft.PowerShell.Commands.WebResponseObject] $WebResponse, [PanDevice] $Device) {
+      $this.WRStatus = $WebResponse.StatusCode
+      $this.WRStatusDescription = $WebResponse.StatusDescription
+      $this.WRHeaders = $WebResponse.Headers
+      $this.WRContent = $WebResponse.Content
+      $this.WRRawContent = $WebResponse.RawContent
+      
+      $this.Device = $Device
+      
+      if($WebResponse.Headers.'Content-Type' -Match 'application\/xml') {
+         Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/xml')
+         # Turn the XML body into an XmlDocument object with XmlDocument doing the parse heavy lifting
+         # Interesting note, [xml] is the PowerShell type accelerator (alias) for [System.Xml.XmlDocument]. Let's be verbose.
+         $XmlDoc = [System.Xml.XmlDocument]$WebResponse.Content
+         # Populate PanResponse with XML body details
+         # Status
+         $this.Status = $XmlDoc.response.status
+         # Code
+         $this.Code = $XmlDoc.response.code
+         # Message
+         # Variety A: msg contains no other elements
+         # Example: Commits with no pending changes return <msg>There are no changes to commit.</msg> which is mapped to a string.
+         if($XmlDoc.response.msg -is [String]) {
+            $this.Message = $XmlDoc.response.msg
+         }
+         # Variety B: msg contains other nested elements
+         # Example: ??? <msg><line>Some Message</line></msg>
+         elseif($XmlDoc.response.msg -is [System.Xml.XmlElement]) {
+            $this.Message = $XmlDoc.response.msg.InnerText
+         }
+         # Result
+         $this.Result = $XmlDoc.response.result
+      }
+      elseif ($WebResponse.Headers.'Content-Type' -Match 'application\/json') {
+         Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/json')
+   
+         # Turn the JSON body into a JSON object
+         $JsonContentObj = ConvertFrom-Json -InputObject $WebResponse.Content
+         # Populate with JSON body details
+         $this.Status = $JsonContentObj.response.status
+         $this.Code = $JsonContentObj.response.code
+         $this.Message = $JsonContentObj.response.msg
+         $this.Result = $JsonContentObj.response.result
+      }
+   }
 }
