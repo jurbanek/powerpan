@@ -41,7 +41,7 @@ See help for NewPanJob for time zone related context.
     # Container for processed software items
     $SoftwareAgg = [System.Collections.Generic.List[PanSoftware]]@()
 
-    foreach($EntryCur in $PSBoundParameters.Response.Result.'sw-updates'.versions.entry) {
+    foreach($EntryCur in $PSBoundParameters.Response.Response.result.'sw-updates'.versions.entry) {
         $SoftwareNew = [PanSoftware]::new()
         $SoftwareNew.Version = $EntryCur.version
         $SoftwareNew.Filename = $EntryCur.filename

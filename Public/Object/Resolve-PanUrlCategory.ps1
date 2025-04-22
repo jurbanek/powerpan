@@ -53,13 +53,13 @@ function Resolve-PanUrlCategory {
             $Cmd = '<test><url>{0}</url></test>' -f $UrlCur
             Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
 
-            $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+            $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
 
-            if($PanResponse.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                # Two lines of text returned, separated by newline
-               $SplitResult = $PanResponse.Result.split("`n")
+               $SplitResult = $R.Response.result.split("`n")
 
                # First [0] is the Base Db (management-plane), grab a named capture group 'cat'
                if( $SplitResult[0] -match "$UrlCur (?<cat>[-\w\s]+) \(Base db\)" ) {

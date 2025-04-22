@@ -226,19 +226,19 @@ Syntactic sugar for fetching an object recently set with less typing.
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
             # Ensure Location map is up to date for current device
             Update-PanDeviceLocation -Device $InputObjectCur.Device
-            $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
+            $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                # Panorama includes ancestors in responses (not ideal, see NOTES) and denotes them as <entry name='name' loc='Ancestor-DG'>
                # Limit <entry> to searched device-group only by matching desired loc attribute, or if in shared loc will not exist as shared has no ancestors
                if($InputObjectCur.Device.Type -eq [PanDeviceType]::Panorama) {
-                  $Entry = $Response.Result.entry | Where-Object {$_.loc -ceq $InputObjectCur.Location -or [String]::IsNullOrEmpty($_.loc)}
+                  $Entry = $R.Response.result.entry | Where-Object {$_.loc -ceq $InputObjectCur.Location -or [String]::IsNullOrEmpty($_.loc)}
                }
                elseif($InputObjectCur.Device.Type -eq [PanDeviceType]::Ngfw) {
-                  $Entry = $Response.Result.entry
+                  $Entry = $R.Response.result.entry
                }
                Write-Debug ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
-                  $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count,$Entry.Count)
+                  $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$R.Response.result.entry.Count,$Entry.Count)
                # Build new object based on InvocationName. Only one object given InputObject, no loop required
                switch ($MyInvocation.InvocationName) {
                   'Get-PanAddress' {
@@ -255,7 +255,7 @@ Syntactic sugar for fetching an object recently set with less typing.
             } 
             else {
                Write-Error ('Error retrieving InputObject [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
-                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
+                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$R.Status,$R.Code,$R.Message)
             }
          } # foreach InputObject
       } # ParameterSetName
@@ -325,19 +325,19 @@ Syntactic sugar for fetching an object recently set with less typing.
                Write-Debug ('{0} (as {1}): Device: {2} Type: {3} Location: {4} XPath: {5}' -f
                   $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key,$SearchCur.Value)
                
-               $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
+               $R = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
                
-               if($Response.Status -eq 'success') {
+               if($R.Status -eq 'success') {
                   # Panorama includes ancestors in responses (see NOTES) and denotes them as <entry name='name' loc='Ancestor-DG'>
                   # Limit <entry> to searched device-group only by matching desired loc attribute, or if in shared loc will not exist as shared has no ancestors
                   if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
-                     $Entry = $Response.Result.entry | Where-Object {$_.loc -ceq $SearchCur.Key <#Panorama DG's#> -or [String]::IsNullOrEmpty($_.loc) <#Panorama shared#>}
+                     $Entry = $R.Response.result.entry | Where-Object {$_.loc -ceq $SearchCur.Key <#Panorama DG's#> -or [String]::IsNullOrEmpty($_.loc) <#Panorama shared#>}
                   }
                   elseif($DeviceCur.Type -eq [PanDeviceType]::Ngfw) {
-                     $Entry = $Response.Result.entry
+                     $Entry = $R.Response.result.entry
                   }
                   Write-Debug ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
-                     $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$Response.Result.entry.Count,$Entry.Count)
+                     $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$R.Response.result.entry.Count,$Entry.Count)
                   
                   foreach($EntryCur in $Entry) {
                      # Build new object based on InvocationName
@@ -359,7 +359,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                } # if Reponse success
                else {
                   Write-Error ('Error retrieving objects on {0}/{1} XPath: {2} Status: {3} Code: {4} Message: {5}' -f
-                     $DeviceCur.Name,$SearchCur.Key,$SearchCur.Value,$Response.Status,$Response.Code,$Response.Message)
+                     $DeviceCur.Name,$SearchCur.Key,$SearchCur.Value,$R.Status,$R.Code,$R.Message)
                }
             } # foreach Search/SearchFilter
          } # foreach Device

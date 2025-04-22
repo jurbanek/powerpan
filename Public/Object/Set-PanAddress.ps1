@@ -146,15 +146,15 @@ On large devices with many objects with the "review" tag, might take a while.
             Write-Debug ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
             # InputObject is always action=edit, overlap between XPath and Element (entry.OuterXml)
             Write-Debug ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
-            $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
+            $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
                Get-PanAddress -InputObject $InputObjectCur
             }
             else {
                Write-Error ('Error applying InputObject {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
-                  $InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
+                  $InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach InputObjectCur
       } # End ParameterSetName InputObject
@@ -182,11 +182,11 @@ On large devices with many objects with the "review" tag, might take a while.
                # Call API
                if(-not $PSBoundParameters.Replace.IsPresent) {
                   Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$Address.XDoc.entry.InnerXml)
-                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $Address.XPath -Element $Address.XDoc.entry.InnerXml
+                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $Address.XPath -Element $Address.XDoc.entry.InnerXml
                }
                else {
                   Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Address.XDoc.entry.OuterXml)
-                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Address.XPath -Element $Address.XDoc.entry.OuterXml
+                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Address.XPath -Element $Address.XDoc.entry.OuterXml
                }
             }
             # If object does not exist, build it. Cmdlet does not check for completeness of built objects
@@ -236,22 +236,22 @@ On large devices with many objects with the "review" tag, might take a while.
                # Call API
                if(-not $PSBoundParameters.Replace.IsPresent) {
                   Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$XDoc.entry.InnerXml)
-                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $XPath -Element $XDoc.entry.InnerXml
+                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $XPath -Element $XDoc.entry.InnerXml
                }
                else {
                   Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$XDoc.entry.OuterXml)
-                  $Response = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $XPath -Element $XDoc.entry.OuterXml
+                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $XPath -Element $XDoc.entry.OuterXml
                }
             } # End object does not exist, build
 
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
                Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             }
             else {
                Write-Error ('Error applying address {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
-                  $PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Response.Status,$Response.Code,$Response.Message)
+                  $PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach $DeviceCur
       } # End ParameterSetName Device

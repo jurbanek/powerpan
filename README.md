@@ -289,21 +289,21 @@ $LECert = Get-PACertificate
 # Add -Debug and -Verbose if you want to see more detail
 # -Category 'keypair' is for certificate including private key. -Category 'certificate' is for certificate only
 # Consider appending an ISO8601 date suffix representing issue date on the end, especially when renewing every 30/60 days
-$Response = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
-if($Response.Status -eq 'success') {
+$R = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
+if($R.Status -eq 'success') {
   Write-Host ('Upload successful')
 }
 else {
-  Write-Error ('Upload not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message) -ErrorAction Stop
+  Write-Error ('Upload not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message) -ErrorAction Stop
 }
 
 # Optionally, update a SSL/TLS Service Profile to use the certificate
 $XPath = "/config/shared/ssl-tls-service-profile/entry[@name='{0}']" -f 'GP-Portal-Gateway-Profile'
 $Element = "<certificate>{0}</certificate>" -f 'gp.acme.io-20250221'
-$Response = Invoke-PanXApi -Device $D -Config -Set -XPath $XPath -Element $Element
-if($Response.Status -eq 'success') {
+$R = Invoke-PanXApi -Device $D -Config -Set -XPath $XPath -Element $Element
+if($R.Status -eq 'success') {
   Write-Host ('Update successful')
 }
 else {
-  Write-Error ('Update not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message) -ErrorAction Stop
+  Write-Error ('Update not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message) -ErrorAction Stop
 }

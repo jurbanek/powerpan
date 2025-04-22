@@ -14,7 +14,7 @@
                      <ListItem><PropertyName>Status</PropertyName></ListItem>
                      <ListItem><PropertyName>Code</PropertyName></ListItem>
                      <ListItem><PropertyName>Message</PropertyName></ListItem>
-                     <ListItem><PropertyName>Result</PropertyName></ListItem>
+                     <ListItem><PropertyName>Response</PropertyName></ListItem>
                      <ListItem><PropertyName>Device</PropertyName></ListItem>
                   </ListItems>
                </ListEntry>
@@ -32,18 +32,18 @@
                <TableColumnHeader><Label>Status</Label></TableColumnHeader>
                <TableColumnHeader><Label>Code</Label></TableColumnHeader>
                <TableColumnHeader><Label>Message</Label></TableColumnHeader>
-               <TableColumnHeader><Label>Result</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Response</Label></TableColumnHeader>
                <TableColumnHeader><Label>Device</Label></TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
                <TableRowEntry>
                   <TableColumnItems>
                         <TableColumnItem><PropertyName>WRStatus</PropertyName></TableColumnItem>
-                        <TableColumnItem><PropertyName>Status</PropertyName></TableColumnItem>                            
-                        <TableColumnItem><PropertyName>Code</PropertyName></TableColumnItem>                            
-                        <TableColumnItem><PropertyName>Message</PropertyName></TableColumnItem>                            
-                        <TableColumnItem><PropertyName>Result</PropertyName></TableColumnItem>                            
-                        <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>                            
+                        <TableColumnItem><PropertyName>Status</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Code</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Message</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Response</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>
                   </TableColumnItems>
                </TableRowEntry>
             </TableRowEntries>

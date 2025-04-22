@@ -52,8 +52,8 @@ function Clear-PanRegisteredIp {
       foreach($DeviceCur in $Device) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
          Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $Cmd
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
+         $R = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $Cmd
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
       }
    } # Process
 

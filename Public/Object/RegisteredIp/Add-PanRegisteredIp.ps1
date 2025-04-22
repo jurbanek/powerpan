@@ -113,9 +113,9 @@ function Add-PanRegisteredIp {
 '@
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $Device.Name)
          Write-Debug ($MyInvocation.MyCommand.Name + ': Prepared uid-message: ' + $CmdCur)
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+         $R = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
       } # foreach Device
    } # Process block
 

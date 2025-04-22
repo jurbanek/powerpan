@@ -64,8 +64,8 @@ None
          }
          
          # Fetch the valid device-group (Panorama) or vsys (NGFW) using config action=complete
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Config -Complete -XPath $XPath
-         if($PanResponse.Status -eq 'success') {
+         $R = Invoke-PanXApi -Device $DeviceCur -Config -Complete -XPath $XPath
+         if($R.Status -eq 'success') {
             # XML-API response to config action=complete is in <response><completions> and NOT <response><result> like everything else
             # The [PanResponse] type does NOT include a named "Completions" property (like it does "Result")
             # We can get at <completions> through the [PanResponse] "WRContent" property (that exists for just this type of obscure purpose)
@@ -74,7 +74,7 @@ None
             #     <completion value="Parent" vxpath="/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Parent']"/>
             #     <completion value="Grandparent" vxpath="/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Grandparent']"/>
             #  </completions></response>
-            $CustomResponse = [System.Xml.XmlDocument]$PanResponse.WRContent
+            $CustomResponse = [System.Xml.XmlDocument]$R.WRContent
             foreach($CompletionCur in $CustomResponse.response.completions.completion) {
                # Add each entry's name to an aggregate
                $DeviceCurLocation.Add($CompletionCur.value, $CompletionCur.vxpath)

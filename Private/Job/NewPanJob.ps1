@@ -71,7 +71,7 @@ Optionally, store the TimeZoneInfo object as well should ever want to display fr
     # Container for processed job items
     $JobAgg = [System.Collections.Generic.List[PanJob]]@()
 
-    foreach($ResponseJobCur in $PSBoundParameters.Response.Result.job) {
+    foreach($ResponseJobCur in $PSBoundParameters.Response.Response.result.job) {
         $JobNew = [PanJob]::new()
         $JobNew.Id = $ResponseJobCur.id
         $JobNew.Type = $ResponseJobCur.type

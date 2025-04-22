@@ -68,25 +68,25 @@ Returns the details for job ID 837.
             
             # Determine the Device Time Zone name from deviceconfig/system/timezone
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/timezone"
-            $Response = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
-            if($Response.Status -eq 'success') {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $Response.Result.timezone))
-                $TimeZoneName = $Response.Result.timezone
+            $R = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
+            if($R.Status -eq 'success') {
+                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
+                $TimeZoneName = $R.Response.result.timezone
             }
             else {
                 Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
-                Write-Error ('Retrieving Device Time Zone not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+                Write-Error ('Retrieving Device Time Zone not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 Write-Warning ('Unable to determine Device Time Zone, using "UTC"')
                 $TimeZoneName = 'UTC'
             }
 
             # Get the jobs
-            $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-            if($Response.Status -eq 'success') {
-                NewPanJob -Device $DeviceCur -Response $Response -TimeZoneName $TimeZoneName
+            $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+            if($R.Status -eq 'success') {
+                NewPanJob -Device $DeviceCur -Response $R -TimeZoneName $TimeZoneName
             }
             else {
-                Write-Error ('Retrieving PAN Jobs not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+                Write-Error ('Retrieving PAN Jobs not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
             }
 
         } # foreach Device

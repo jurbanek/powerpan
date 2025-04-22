@@ -101,12 +101,12 @@ Returns $True is changes are pending in candidate configuration. $False if there
             if($PSCmdlet.ParameterSetName -eq 'Pending-Changes') {
                 Write-Debug ($MyInvocation.MyCommand.Name + ': -PendingChanges')
                 $Cmd = '<check><pending-changes></pending-changes></check>'
-                $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-                if($Response.result -eq 'no') {
+                $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+                if($R.Response.result -eq 'no') {
                     Write-Debug ($MyInvocation.MyCommand.Name + (': Device : {0} has NO pending changes to be committed.' -f $DeviceCur.Name))
                     return $False
                 }
-                elseif($Response.result -eq 'yes') {
+                elseif($R.Response.result -eq 'yes') {
                     Write-Debug ($MyInvocation.MyCommand.Name + (': Device : {0} HAS pending changes to be committed.' -f $DeviceCur.Name))
                     return $True
                 }
@@ -257,15 +257,15 @@ Returns $True is changes are pending in candidate configuration. $False if there
                 # Finished building XML. Make the request.
                 if($PSCmdlet.ParameterSetName -like 'Commit-Full') {
                     Write-Debug ($MyInvocation.MyCommand.Name + ': -Commit Cmd: {0}' -f $XmlRoot.OuterXml)
-                    $Response = Invoke-PanXApi -Device $DeviceCur -Commit -Cmd $XmlRoot.OuterXml
+                    $R = Invoke-PanXApi -Device $DeviceCur -Commit -Cmd $XmlRoot.OuterXml
                 }
                 elseif($PSCmdlet.ParameterSetName -like 'Commit-Partial') {
                     Write-Debug ($MyInvocation.MyCommand.Name + ': -Commit -Action "partial" Cmd: {0}' -f $XmlRoot.OuterXml)
-                    $Response = Invoke-PanXApi -Device $DeviceCur -Commit -Action 'partial' -Cmd $XmlRoot.OuterXml
+                    $R = Invoke-PanXApi -Device $DeviceCur -Commit -Action 'partial' -Cmd $XmlRoot.OuterXml
                 }
                 elseif($PSCmdlet.ParameterSetName -like 'Validate-*') {
                     Write-Debug ($MyInvocation.MyCommand.Name + ': -Validate Cmd: {0}' -f $XmlRoot.OuterXml)
-                    $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $XmlRoot.OuterXml
+                    $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $XmlRoot.OuterXml
                 }
                 # PAN-OS responses are same for commit and validate operations. Can use same logic for both
                 # Validate responses are identical to below, just change word "commit" to "validate"
@@ -281,22 +281,22 @@ Returns $True is changes are pending in candidate configuration. $False if there
                 # </response>
                 # NO Pending Changes:
                 # <response status="success" code="19"><msg>There are no changes to commit.</msg></response>
-                if($Response.Status -eq 'success') {
+                if($R.Status -eq 'success') {
                     # If pending changes and a job
-                    if($Response.Result.job) {
+                    if($R.Response.result.job) {
                     # Inform an interactive user of the JobID using Write-Host given operation is asynchronous
-                    Write-Host $Response.Result.msg.line
+                    Write-Host $R.Response.result.msg.line
                     # Send a PanJob object down the pipeline
-                    Get-PanJob -Device $DeviceCur -Id $Response.Result.job
+                    Get-PanJob -Device $DeviceCur -Id $R.Response.result.job
                     }
                     # No pending changes
                     else {
-                        Write-Warning $Response.Message
+                        Write-Warning $R.Message
                     }
                 }
                 # If request to commit did not succeed.
                 else {
-                    Write-Error ('Commit/Validate request failed. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+                    Write-Error ('Commit/Validate request failed. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 }
             } # else Any other ParameterSetName
         } # foreach $DeviceCur

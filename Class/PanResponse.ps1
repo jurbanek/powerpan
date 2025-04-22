@@ -22,14 +22,17 @@ class PanResponse {
    # WebRequest/HTTP RawContent - comes directly from WebRequestObject. The raw content *headers* AND *body*
    [String] $WRRawContent
 
-   # PAN API response body status, examples "success" or "error"
+   # PAN API <response> status attribute, examples "success" or "error"
    [String] $Status
-   # PAN API response body "code", used to further describe successes and errors
+   # PAN API <response> code attribute, used to further describe successes and errors
    [Int] $Code
-   # PAN API response body "message", commonly populated during errors
+   # PAN API <response><msg>, commonly populated during errors
    [String] $Message
-   # PAN API response body "result" -- the "goods", commonly populated during successes
-   [Object] $Result
+   # PAN API <response> element and all children. The goods.
+   [Object] $Response
+   # PAN API <response><result> element and all children. This property is deprecated and should not be used.
+   # Preserved for < PowerPAN 0.5.0 compatibility within existing scripts and will be removed in future.
+   hidden [Object] $Result
    # Parent PanDevice / Source of response
    [PanDevice] $Device
 
@@ -51,26 +54,30 @@ class PanResponse {
          Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/xml')
          # Turn the XML body into an XmlDocument object with XmlDocument doing the parse heavy lifting
          # Interesting note, [xml] is the PowerShell type accelerator (alias) for [System.Xml.XmlDocument]. Let's be verbose.
-         $XmlDoc = [System.Xml.XmlDocument]$WebResponse.Content
+         $XDoc = [System.Xml.XmlDocument]$WebResponse.Content
          # Populate PanResponse with XML body details
          # Status
-         $this.Status = $XmlDoc.response.status
+         $this.Status = $XDoc.Item('response').GetAttribute('status')
          # Code
-         $this.Code = $XmlDoc.response.code
+         $this.Code = $XDoc.Item('response').GetAttribute('code')
          # Message
          # Variety A: msg contains no other elements
          # Example: Commits with no pending changes return <msg>There are no changes to commit.</msg> which is mapped to a string.
-         if($XmlDoc.response.msg -is [String]) {
-            $this.Message = $XmlDoc.response.msg
+         if($XDoc.Item('response').msg -is [String]) {
+            $this.Message = $XDoc.Item('response').msg
          }
          # Variety B: msg contains other nested elements
          # Example: ??? <msg><line>Some Message</line></msg>
-         elseif($XmlDoc.response.msg -is [System.Xml.XmlElement]) {
-            $this.Message = $XmlDoc.response.msg.InnerText
+         elseif($XDoc.Item('response').msg -is [System.Xml.XmlElement]) {
+            $this.Message = $XDoc.Item('response').msg.InnerText
          }
-         # Result
-         $this.Result = $XmlDoc.response.result
+
+         # Response
+         $this.Response = $XDoc.Item('response')
+         # Result (deprecated, but preserved for compatibility for now)
+         $this.Result = $XDoc.Item('response').Item('result')
       }
+      <#
       elseif ($WebResponse.Headers.'Content-Type' -Match 'application\/json') {
          Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/json')
    
@@ -82,5 +89,6 @@ class PanResponse {
          $this.Message = $JsonContentObj.response.msg
          $this.Result = $JsonContentObj.response.result
       }
+      #>
    }
 }

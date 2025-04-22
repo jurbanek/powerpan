@@ -71,9 +71,9 @@ PanAddress
                'Config' = $true
             }
             if( ($PSBoundParameters.DstLocation -and $PSBoundParameters.NewName) -or $PSBoundParameters.DstLocation ) {
-               # BOTH DstLocation and NewName, need to 1) Invoke-PanXApi -Config -MultiClone to clone to new location and 2) Rename-*
-               # JUST DstLocation, Invoke-PanXApi -Config -MultiClone to clone to new location only
-               # -MultiClone switch
+               # BOTH DstLocation and NewName, need to 1) Invoke-PanXApi -Config -MultiClone to clone to new location and 2) Rename-* to NewName
+               # JUST DstLocation, 1) Invoke-PanXApi -Config -MultiClone to clone to new location and 2) Rename-* to same name as InputObjectCur
+               # -MultiClone switch, the API action appends a "-1" onto the cloned object's name in the destination
                $InvokeParams.Add('MultiClone',$true)
                # Counter-intuitive, but action=multi-clone is needed for cloning address/address-group/service/service-group objects most effectively. action=clone is best for policy rules
                # Within multi-clone:
@@ -87,9 +87,9 @@ PanAddress
                $InvokeParams.Add('XPath',$DstXPath)
                $InvokeParams.Add('Element',$Element)
             }
-            # Just NewName, Invoke-PanXApi -Config -Clone only
+            # Just NewName, Invoke-PanXApi -Config -Clone only.
             elseif($PSBoundParameters.NewName) {
-               # -Clone switch
+               # -Clone switch. The API action does NOT append a "-1" onto the object's name.
                $InvokeParams.Add('Clone',$true)
                # Within clone:
                #  XPath: source container (for example, ending in /address)
@@ -107,25 +107,21 @@ PanAddress
             $Msg += foreach($ParamCur in $InvokeParams.GetEnumerator()) {'{0}: {1} ' -f $ParamCur.Key,$ParamCur.Value}
             Write-Debug ($Msg)
             # Call API with splat
-            $Response = Invoke-PanXApi @InvokeParams
+            $R = Invoke-PanXApi @InvokeParams
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                
-               # Rename required. Process rename in DstLocation renaming to NewName
-               if($PSBoundParameters.DstLocation -and $PSBoundParameters.NewName) {
+               if( ($PSBoundParameters.DstLocation -and $PSBoundParameters.NewName) -or $PSBoundParameters.DstLocation ) {
+                  # Rename required given -MultiClone to new DstLocation
                   # -MultiClone appends a "-1" onto the same. Name is returned in the <response>
                   # <response status="success" to="/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Parent']/address"><member>MyObject-1</member></response>
-                  
-                  ###
-                  ### COME BACK HERE AFTER UPDATING NEWPANRESPONSE to include more than Response.Result
-                  ###
-
-
-                  $ClonedTempName = $Response.member
+                  $FromName = $R.Response.member
+                  # Based on whether the -NewName was specified
+                  $ToName = if($PSBoundParameters.NewName) { $PSBoundParameters.NewName } else { $PSBoundParameters.InputObjectCur.Name }
                   $RenamedObj = $null
                   switch ($MyInvocation.InvocationName) {
                      # Process the rename and return renamed object to to pipeline
-                     'Copy-PanAddress' { $RenamedObj = Rename-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name -NewName $PSBoundParameters.NewName; continue }
+                     'Copy-PanAddress' { $RenamedObj = Rename-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
                      'Copy-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }   
                   }
                   if($RenamedObj) {
@@ -134,14 +130,7 @@ PanAddress
                   }
                   else {
                      Write-Error ('Error renaming [{0}] {1} on {2}/{3} after successful copy' -f
-                        $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$PSBoundParameters.DstLocation)
-                  }
-               }
-               # No rename required. Object has same name in different location. Return object to pipeline
-               elseif($PSBoundParameters.DstLocation) {
-                  switch ($MyInvocation.InvocationName) {
-                     'Copy-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
-                     'Copy-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                        $InputObjectCur.GetType().Name,$FromName,$InputObjectCur.Device.Name,$PSBoundParameters.DstLocation)
                   }
                }
                # No rename required. Object has different name in same location. Return object to pipeline
@@ -153,9 +142,9 @@ PanAddress
                }
             }
             else {
-               Write-Error ('Error copying [{0}] {1} on {2}/{3} to DstLocation: {4} Status: {5} Code: {6} Message: {7}' -f
+               Write-Error ('Error copying [{0}] {1} on {2}/{3} to NewName: {4} DstLocation: {5} Status: {6} Code: {7} Message: {8}' -f
                   $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,
-                  $PSBoundParameters.DstLocation,$Response.Status,$Response.Code,$Response.Message)
+                  $PSBoundParameters.NewName,$PSBoundParameters.DstLocation,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach InputObjectCur
       } # End ParameterSetName InputObject
@@ -173,9 +162,9 @@ PanAddress
                'Config' = $true
             }
             if( ($PSBoundParameters.DstLocation -and $PSBoundParameters.NewName) -or $PSBoundParameters.DstLocation ) {
-               # BOTH DstLocation and NewName, need to 1) Invoke-PanXApi -Config -MultiClone to clone to new location and 2) Rename-*
-               # JUST DstLocation, Invoke-PanXApi -Config -MultiClone to clone to new location only
-               # -MultiClone switch
+               # BOTH DstLocation and NewName, need to 1) Invoke-PanXApi -Config -MultiClone to clone to new location and 2) Rename-* to NewName
+               # JUST DstLocation, 1) Invoke-PanXApi -Config -MultiClone to clone to new location and 2) Rename-* to same name as InputObjectCur
+               # -MultiClone switch, the API action appends a "-1" onto the cloned object's name in the destination
                $InvokeParams.Add('MultiClone',$true)
                # Counter-intuitive, but action=multi-clone is needed for cloning address/address-group/service/service-group objects most effectively. action=clone is best for policy rules
                # Within multi-clone:
@@ -191,7 +180,7 @@ PanAddress
             }
             # Just NewName, Invoke-PanXApi -Config -Clone only
             elseif($PSBoundParameters.NewName) {
-               # -Clone switch
+               # -Clone switch. The API action does NOT append a "-1" onto the object's name.
                $InvokeParams.Add('Clone',$true)
                # Within clone:
                #  XPath: source container (for example, ending in /address)
@@ -211,16 +200,21 @@ PanAddress
             $Msg += foreach($ParamCur in $InvokeParams.GetEnumerator()) {'{0}: {1} ' -f $ParamCur.Key,$ParamCur.Value}
             Write-Debug ($Msg)
             # Call API with splat
-            $Response = Invoke-PanXApi @InvokeParams
+            $R = Invoke-PanXApi @InvokeParams
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                
-               # Rename required. Process rename in DstLocation renaming to NewName
-               if($PSBoundParameters.DstLocation -and $PSBoundParameters.NewName) {
+               if( ($PSBoundParameters.DstLocation -and $PSBoundParameters.NewName) -or $PSBoundParameters.DstLocation) {
+                  # Rename required given -MultiClone to new DstLocation
+                  # -MultiClone appends a "-1" onto the same. Name is returned in the <response>
+                  # <response status="success" to="/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Parent']/address"><member>MyObject-1</member></response>
+                  $FromName = $R.Response.member
+                  # Based on whether -NewName was specified
+                  $ToName = if($PSBoundParameters.NewName) { $PSBoundParameters.NewName } else { $PSBoundParameters.Name }
                   $RenamedObj = $null
                   switch ($MyInvocation.InvocationName) {
                      # Process the rename and return renamed object to to pipeline
-                     'Copy-PanAddress' { $RenamedObj = Rename-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $PSBoundParameters.Name -NewName $PSBoundParameters.NewName; continue }
+                     'Copy-PanAddress' { $RenamedObj = Rename-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
                      'Copy-PanAddressGroup' { <# Future Rename-PanAddressGroup #> continue }   
                   }
                   if($RenamedObj) {
@@ -229,14 +223,7 @@ PanAddress
                   }
                   else {
                      Write-Error ('Error renaming {0} on {1}/{2} after successful copy' -f
-                        $PSBoundParameters.Name,$PSBoundParameters.Device.Name,$PSBoundParameters.DstLocation)
-                  }
-               }
-               # No rename required. Object has same name in different location. Return object to pipeline
-               elseif($PSBoundParameters.DstLocation) {
-                  switch ($MyInvocation.InvocationName) {
-                     'Copy-PanAddress' { Get-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $PSBoundParameters.Name; continue }
-                     'Copy-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                        $FromName,$PSBoundParameters.Device.Name,$PSBoundParameters.DstLocation)
                   }
                }
                # No rename required. Object has different name in same location. Return object to pipeline
@@ -248,9 +235,9 @@ PanAddress
                }
             }
             else {
-               Write-Error ('Error copying {0} on {1}/{2} to DstLocation: {3} Status: {4} Code: {5} Message: {6}' -f
+               Write-Error ('Error copying {0} on {1}/{2} to NewName: {3} DstLocation: {4} Status: {5} Code: {6} Message: {7}' -f
                   $PSBoundParameters.Name,$PSBoundParameters.Device.Name,$PSBoundParameters.Location,
-                  $PSBoundParameters.DstLocation,$Response.Status,$Response.Code,$Response.Message)
+                  $PSBoundParameters.NewName,$PSBoundParameters.DstLocation,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach DeviceCur
       } # End ParameterSetName Device

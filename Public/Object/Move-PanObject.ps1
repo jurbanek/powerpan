@@ -75,9 +75,9 @@ PanAddress
 
             Write-Debug ('{0} as ({1}: Device: {2} Config: MultiMove: XPath: {3} Element: {4}' -f 
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$DstXPath,$Element)
-            $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -MultiMove -XPath $DstXPath -Element $Element
+            $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -MultiMove -XPath $DstXPath -Element $Element
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                # Return newly moved object to pipeline
                switch ($MyInvocation.InvocationName) {
                   'Move-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
@@ -87,7 +87,7 @@ PanAddress
             else {
                Write-Error ('Error moving [{0}] {1} on {2}/{3} to DstLocation: {4} Status: {5} Code: {6} Message: {7}' -f
                   $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,
-                  $PSBoundParameters.DstLocation,$Response.Status,$Response.Code,$Response.Message)
+                  $PSBoundParameters.DstLocation,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach InputObjectCur
       } # End ParameterSetName InputObject
@@ -109,8 +109,8 @@ PanAddress
                $SrcXPath = '{0}{1}' -f $Obj.Device.Location.($Obj.Location),$Suffix
                $Element = "<selected-list><source xpath=`"{0}`"><member>{1}</member></source></selected-list><all-errors>no</all-errors>" -f $SrcXPath,$Obj.Name
                $DstXPath = '{0}{1}' -f $Obj.Device.Location.($PSBoundParameters.DstLocation),$Suffix
-               $Response = Invoke-PanXApi -Device $Obj.Device -Config -MultiMove -XPath $DstXPath -Element $Element
-               if($Response.Status -eq 'success') {
+               $R = Invoke-PanXApi -Device $Obj.Device -Config -MultiMove -XPath $DstXPath -Element $Element
+               if($R.Status -eq 'success') {
                   # Return newly moved object to pipeline
                   switch ($MyInvocation.InvocationName) {
                      'Move-PanAddress' { Get-PanAddress -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
@@ -121,7 +121,7 @@ PanAddress
                else {
                   Write-Error ('Error moving [{0}] {1} on {2}/{3} to DstLocation: {4} Status: {5} Code: {6} Message: {7}' -f
                      $Obj.GetType().Name, $Obj.Name, $Obj.Device.Name, $Obj.Location, $PSBoundParameters.DstLocation,
-                     $Response.Status, $Response.Code, $Response.Message)
+                     $R.Status, $R.Code, $R.Message)
                }
             }
             # Object by name was not found

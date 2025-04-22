@@ -157,23 +157,23 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
       # Optionally generate API key
       if($Keygen.IsPresent) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: Generating API key')
-         $PanResponse = Invoke-PanXApi -Device $Device -Keygen
+         $R = Invoke-PanXApi -Device $Device -Keygen
 
-         if($PanResponse.Status -eq 'success'){
+         if($R.Status -eq 'success'){
             Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: API key generation successful')
-            $Device.Key = ConvertTo-SecureString -String $PanResponse.Result.key -AsPlainText -Force
+            $Device.Key = ConvertTo-SecureString -String $R.Response.result.key -AsPlainText -Force
 
             # Test API key
             Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: Testing generated API key')
-            $PanResponse = Invoke-PanXApi -Device $Device -Op -Cmd '<show><system><info></info></system></show>'
-            if($PanResponse.Status -eq 'success'){
+            $R = Invoke-PanXApi -Device $Device -Op -Cmd '<show><system><info></info></system></show>'
+            if($R.Status -eq 'success'){
                Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Generated API key tested successfully')
-               Write-Debug ("`t DeviceName: {0} Family: {1} Model: {2}" -f $PanResponse.Result.system.devicename,$PanResponse.Result.system.family,$PanResponse.Result.system.model)
-               if($PanResponse.Result.system.family -eq 'vm') {
-                  Write-Debug ("`t VM-License: {0} VM-Mode: {1}" -f $PanResponse.Result.system.'vm-license',$PanResponse.Result.system.'vm-mode')
+               Write-Debug ("`t DeviceName: {0} Family: {1} Model: {2}" -f $R.Response.result.system.devicename,$R.Response.result.system.family,$R.Response.result.system.model)
+               if($R.Response.result.system.family -eq 'vm') {
+                  Write-Debug ("`t VM-License: {0} VM-Mode: {1}" -f $R.Response.result.system.'vm-license',$R.Response.result.system.'vm-mode')
                }
-               Write-Debug ("`t Serial: {0} Software Version: {1}" -f $PanResponse.Result.system.serial,$PanResponse.Result.system.'sw-version')
-               if($PanResponse.Result.system.model -eq 'Panorama') {
+               Write-Debug ("`t Serial: {0} Software Version: {1}" -f $R.Response.result.system.serial,$R.Response.result.system.'sw-version')
+               if($R.Response.result.system.model -eq 'Panorama') {
                   Write-Debug ("`t PanDeviceType: {0} (Panorama)" -f [PanDeviceType]::Panorama)
                   $Device.Type = [PanDeviceType]::Panorama
                }
@@ -183,12 +183,12 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
                }
             }
             else { 
-               Write-Error ('Error testing generated API key. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+               Write-Error ('Error testing generated API key. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                return $false
             }
          }
          else {
-            Write-Error ('Error generating API key. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+            Write-Error ('Error generating API key. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
             return $false 
          }
       } # End optional generate API key

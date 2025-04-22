@@ -45,16 +45,16 @@ No prompt for confirmation
       foreach($DeviceCur in $Device) {
          if($Force -or $PSCmdlet.ShouldProcess($DeviceCur.Name, 'request restart system')) {
             Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Cmd: {1}' -f $DeviceCur.Name, $Cmd))
-            $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-            if($Response.Status -eq 'success') {
+            $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+            if($R.Status -eq 'success') {
                # No need for Write-Host since there is no error. Keep in Verbose stream.
                Write-Verbose ('Restart system success')
             }
             else {
-               Write-Error ('Restart system failed. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+               Write-Error ('Restart system failed. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
             }
             # Send response to pipeline
-            $Response
+            $R
          } # if Force -or ShouldProcess
       } # foreach
    } # Process block

@@ -59,14 +59,14 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
             Write-Debug ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5}' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,$InputObjectCur.GetType().Name,$InputObjectCur.Name)
-            $Response = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Delete -XPath $InputObjectCur.XPath
+            $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Delete -XPath $InputObjectCur.XPath
             # Check PanResponse
-            if($Response.Status -eq 'success') {
+            if($R.Status -eq 'success') {
                # Nothing to do on successful delete
             }
             else {
                Write-Error ('Error deleting [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
-                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$Response.Status,$Response.Code,$Response.Message)
+                  $InputObjectCur.GetType().Name,$InputObjectCur.Name,$InputObjectCur.Device.Name,$InputObjectCur.Location,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach InputObjectCur
       } # End ParameterSetName InputObject
@@ -84,13 +84,13 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
 
             # Call API
             if($Obj) {
-               $Response = Invoke-PanXApi -Device $Obj.Device -Config -Delete -XPath $Obj.XPath
-               if($Response.Status -eq 'success') {
+               $R = Invoke-PanXApi -Device $Obj.Device -Config -Delete -XPath $Obj.XPath
+               if($R.Status -eq 'success') {
                   # Nothing to do on successful delete
                }
                else {
                   Write-Error ('Error deleting [{0}] {1} on {2}/{3} Status: {4} Code: {5} Message: {6}' -f
-                     $Obj.GetType().Name, $Obj.Name, $Obj.Device.Name, $Obj.Location, $Response.Status, $Response.Code, $Response.Message)
+                     $Obj.GetType().Name, $Obj.Name, $Obj.Device.Name, $Obj.Location, $R.Status, $R.Code, $R.Message)
                }
             }
             # Object by name was not found
