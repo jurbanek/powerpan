@@ -50,7 +50,7 @@ ConvertFromPanTimeZone -Name 'America/Chicago'
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    # PowerShell 6+ (PowerPAN supports 7+ LTS releases)
-   if($PSVersionTable.PSVersion.Major -ge 8) {
+   if($PSVersionTable.PSVersion.Major -ge 7) {
       Write-Debug ($MyInvocation.MyCommand.Name + ': PowerShell 6+')
       # Use .NET native FindSystemTimeZoneById to return a TimeZoneInfo object
       return [TimeZoneInfo]::FindSystemTimeZoneById($PSBoundParameters.Name)
