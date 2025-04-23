@@ -21,6 +21,6 @@ Set-Alias -Name Remove-PanService -Value Remove-PanObject -Scope Global
 Set-Alias -Name Copy-PanAddress -Value Copy-PanObject -Scope Global
 Set-Alias -Name Copy-PanService -Value Copy-PanObject -Scope Global
 
-# New-PanObject
-Set-Alias -Name New-PanAddress -Value New-PanObject -Scope Global
-Set-Alias -Name New-PanService -Value New-PanObject -Scope Global
+# Construct-PanObject (unapproved verb given unique semantics)
+Set-Alias -Name Construct-PanAddress -Value Construct-PanObject -Scope Global
+Set-Alias -Name Construct-PanService -Value Construct-PanObject -Scope Global
