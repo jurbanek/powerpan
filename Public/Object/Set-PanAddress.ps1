@@ -1,32 +1,31 @@
 function Set-PanAddress {
 <#
 .SYNOPSIS
-Update or create address objects in the candidate configuration
+Create or update address objects in the device candidate configuration.
 .DESCRIPTION
-Set-PanAddress will update an address object if the name already exists. If the name does not exist, it will be created.
+Create an address object in the device candidate configuration if the name does *not* exist.
+Update an address object in the device candidate configuration if the name already exists.
 .NOTES
-Set-PanAddress is responsible for both creating new remote address objects and updating existing remote address objects.
-
 Two modes: -InputObject mode and -Device mode.
 
 :: InputObject Mode (-InputObject)::
-Take one or more PanAddress objects and apply them remotely as is to create or update using API action=edit (replace)
-The device and location (vsys, device-group) are gleaned from PanAddress.Device and PanAddress.Location properties.
-An administrator can get PanAddress object "the way they want it" and then pipe it to Set-PanAddress.
+Take one or more objects "as is" and apply them to the candidate configuration to create or update using API action=edit (replace)
+The Device and Location (vsys, device-group) are gleaned from object's own Device and Location properties.
+Set the object properties as desired and pipe the object to the cmdlet.
 
 :: Device Mode (-Device)::
-Device mode is more nuanced. It can also be used to create remote address objects or update remote address objects.
-Device mode does not take a PanAddress input. Required parameters are -Device, -Location, and -Name.
+Device mode is more nuanced. Used to create objects or update objects in candidate configuration.
+Device mode does not take an InputObject. Required parameters are -Device, -Location, and -Name.
 Remaining parameters are not required by the cmdlet, but may be required by the XML API depending on if the object already exists or not.
 This flexibility offers interactive power as not all values have to be specified all the time.
 
 :: Device Mode Replace (-Device -Replace) ::
-By default Set-PanAddress -Device uses "merge" API action=set (Invoke-PanXApi -Config -Set).
+By default, uses "merge" API action=set (Invoke-PanXApi -Config -Set).
 To use "replace" API action=edit (Invoke-PanXApi -Config -Edit), include the -Replace switch.
 
 :: Rename & Move ::
-Set-PanAddress cannot be used to rename objects. Use Rename- cmdlet.
-Set-PanAddress cannot be used to move object locations. Use Move- cmdlet.
+Set- cannot be used to rename objects. Use Rename- cmdlet.
+Set- cannot be used to move object locations. Use Move- cmdlet.
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
@@ -35,19 +34,19 @@ PanAddress[]
 .OUTPUTS
 PanAddress
 .EXAMPLE
-Create a new PanAddress on NGFW
+Create new on NGFW
 
 $D = Get-PanDevice "fw.lab.local"
 Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Value "1.1.1.1" -Type "ip-netmask"
 
-If H-1.1.1.1 already exists in vsys1, the update wll be merged.
+If H-1.1.1.1 already exists in vsys1, a merge will occur.
 .EXAMPLE
-Create a new PanAddress on Panorama
+Create new on Panorama
 
 $D = Get-PanDevice "panorama.lab.local"
 Set-PanAddress -Device $D -Location "MyDeviceGroup" -Name "H-1.1.1.1" -Value "1.1.1.1" -Type "ip-netmask"
 
-If H-1.1.1.1 already exists in MyDeviceGroup, the update wll be merged.
+If H-1.1.1.1 already exists in MyDeviceGroup, a merge will occur.
 .EXAMPLE
 Add a description to an object that already exists.
 
@@ -56,8 +55,8 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Description "Upda
 
 If the object did NOT exist already, the command would error remotely by the API (with details) as a -Type and -Value are required for new objects to be created.
 .EXAMPLE
-Updates the PanAddress object locally adding/updating a description and tags (tags must already exist in PAN-OS) and replaces the configuration in the candidate configuration.
-Piping PanAddress to Set-PanAddress replaces the full object on the PanDevice (replace, not merge), WYSIWYG.
+Update the object Description and Tag properties in the PowerShell session (tags must already exist in PAN-OS) and pipe.
+Piping to Set-PanAddress (-InputObject) replaces the full object on the PanDevice (replace, not merge).
 
 $D = Get-PanDevice "fw.lab.local"
 $A = Get-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1"
@@ -67,7 +66,7 @@ $A | Set-PanAddress
 .EXAMPLE
 Removing a description and removing tags
 Assume H-1.1.1.1 has a description to be removed and tags to be removed
-Piping PanAddress to Set-PanAddress replaces the full object on the PanDevice (replace, not merge), WYSIWYG
+Piping to Set-PanAddress replaces the full object on the PanDevice (replace, not merge).
 
 $D = Get-PanDevice "fw.lab.local"
 $A = Get-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1"
@@ -75,32 +74,34 @@ $A.Description = ""
 $A.Tag = @()
 $A | Set-PanAddress
 .EXAMPLE
-Get-PanDevice "fw.lab.local" | Set-PanAddress -Location "vsys1" -Type 'fqdn' -Name "FQDN-raw.githubusercontent.com" -Value "raw.githubusercontent.com"
-
-Creates a fqdn address object with name "FQDN-raw.githubusercontent.com" and value "raw.githubusercontent.com"
+Create fqdn address object with name "FQDN-raw.githubusercontent.com" and value "raw.githubusercontent.com"
 If address object with specified name already exists, the value is updated to "raw.githubusercontent.com".
 If address object with specified name already exists and the value is incompatible with the type, an error will be generated by the API
+
+Get-PanDevice "fw.lab.local" | Set-PanAddress -Location "vsys1" -Type 'fqdn' -Name "FQDN-raw.githubusercontent.com" -Value "raw.githubusercontent.com"
 .EXAMPLE
+Adding a "DC-A" tag to all ip-netmask type objects starting with 10.16 on fw.lab.local
+Note: Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
+Note: Newline after pipe character
+
 Get-PanDevice "fw.lab.local" |
    Get-PanAddress -Filter "10.16" |
    Where-Object {$_.Type -eq 'ip-netmask' -and $_.Value -match "^10\.16\."} |
    ForEach-Object {$_.Tag += "DC-A"; $_} |
    Set-PanAddress 
-
-Adding a "DC-A" tag to all ip-netmask type objects starting with 10.16 on fw.lab.local
-Note: in example Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
 .EXAMPLE
+Remove the "review" tag from every address object on fw1.lab.local and fw2.lab.local
+Note: Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
+Note: Newline after pipe character
+
 Get-PanDevice "fw1.lab.local","fw2.lab.local" |
    Get-PanAddress |
    Where-Object {"review" -in $_.Tag} |
    ForEach-Object {$_.Tag = $_.Tag | Where-Object {$_ -ne "review"}; $_} |
    Set-PanAddress -Replace
 
-Remove the "review" tag from every address object on fw1.lab.local and fw2.lab.local
-Note: in example Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
-
-Not quite a PowerShell "one-liner" as the Foreach-Object ScriptBlock contains semi-colons, but close.
-Illustrates the capabilities of the PowerPAN, but not wise to do it exactly this way.
+Not quite a PowerShell "one-liner" as Foreach-Object ScriptBlock contains semi-colons, but close.
+Illustrates the capabilities of PowerPAN, but not wise to do it exactly this way.
 If doing something like this in production, use proper foreach() loops and a few more variables.
 The $_ nesting present in the ForEach-Object and nested Where-Object is error-prone if not careful.
 On large devices with many objects with the "review" tag, might take a while.
@@ -126,9 +127,8 @@ On large devices with many objects with the "review" tag, might take a while.
       [Switch] $Replace,
       [parameter(ParameterSetName='Device',HelpMessage='Disable ability to override (Panorama device-group objects only)')]
       [Bool] $DisableOverride,
-      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='PanAddress input object(s) to be applied as is')]
+      [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be created/updated as is')]
       [PanAddress[]] $InputObject
-      
    )
 
    Begin {
@@ -144,7 +144,7 @@ On large devices with many objects with the "review" tag, might take a while.
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
             Write-Debug ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
-            # InputObject is always action=edit, overlap between XPath and Element (entry.OuterXml)
+            # InputObject is always action=edit, requires overlap between XPath and Element (entry.OuterXml)
             Write-Debug ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
             $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
             # Check PanResponse
@@ -162,100 +162,53 @@ On large devices with many objects with the "review" tag, might take a while.
       # ParameterSetName Device
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
-            # If object already exists, use it
             Write-Debug ('{0}: Device: {1} Location: {2} Name: {3} ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Location,$PSBoundParameters.Name)
-            # Find if object already exists, limit search to specified Location. Get-PanAddress is case-insensitive but performs server-side filtering greatly reducing returned objects
-            # Tighten up the case-sensitivity locally here with Where-Object
-            $Address = $null
-            $Address = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Filter $PSBoundParameters.Name | Where-Object {$_.Name -cmatch $PSBoundParameters.Name}
-            if($Address) {
-               Write-Debug ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Address.XPath)
-               # Use the existing address and modify the properties directly letting the PanAddress to the XML lifting
-               # Device, Location, and Name do not apply
-               if($PSBoundParameters.Value) { $Address.Value = $PSBoundParameters.Value }
-               if($PSBoundParameters.Type) { $Address.Type = $PSBoundParameters.Type }
-               if($PSBoundParameters.Description) { $Address.Description = $PSBoundParameters.Description }
-               if($PSBoundParameters.Tag) { $Address.Tag = $PSBoundParameters.Tag }
-               # Since DisableOverride value can be $false, need to check its presence with ContainsKey()
-               if($PSBoundParameters.ContainsKey('DisableOverride')) { $Address.DisableOverride = $PSBoundParameters.DisableOverride }
-
-               # Call API
-               if(-not $PSBoundParameters.Replace.IsPresent) {
-                  Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$Address.XDoc.entry.InnerXml)
-                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $Address.XPath -Element $Address.XDoc.entry.InnerXml
-               }
-               else {
-                  Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Address.XDoc.entry.OuterXml)
-                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Address.XPath -Element $Address.XDoc.entry.OuterXml
-               }
+            # If object already exists, use it. If object does not exist, create a minimimum viable object with a call to ::new($Device,$Location,$Name)
+            $A = $null
+            $A = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
+            if($A) {
+               Write-Debug ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$A.XPath)
             }
-            # If object does not exist, build it. Cmdlet does not check for completeness of built objects
+            # Object does not exist, build it
             else {
                Write-Debug ('{0}: Cannot find {1} on Device: {2}/{3}. Building' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location)
-               # XPath
-               $XPath = "{0}/address/entry[@name='{1}']" -f $PSBoundParameters.Device.Location.($PSBoundParameters.Location),$PSBoundParameters.Name
-               # XDoc
-               $XDoc = [System.Xml.XmlDocument]::new()
-               # Create <entry name="MyName"></entry> and append to the XDoc
-               $XEntry = $XDoc.CreateElement('entry')
-               $XEntry.SetAttribute('name',$PSBoundParameters.Name)
-               $XDoc.AppendChild($XEntry) | Out-Null
+               $A = [PanAddress]::new($DeviceCur,$PSBoundParameters.Location,$PSBoundParameters.Name)
+            }
+               
+            # Modify properties directly letting Getter/Setter do heavy XML lifting
+            # Device, Location, and Name do not apply
+            if($PSBoundParameters.Value) { $A.Value = $PSBoundParameters.Value }
+            if($PSBoundParameters.Type) { $A.Type = $PSBoundParameters.Type }
+            if($PSBoundParameters.Description) { $A.Description = $PSBoundParameters.Description }
+            if($PSBoundParameters.Tag) { $A.Tag = $PSBoundParameters.Tag }
+            # Since DisableOverride value can be $false, need to check its presence with ContainsKey()
+            if($PSBoundParameters.ContainsKey('DisableOverride')) { $Address.DisableOverride = $PSBoundParameters.DisableOverride }
 
-               # Type
-               if($PSBoundParameters.Type) {
-                  $XType = $XDoc.CreateElement($PSBoundParameters.Type)
-                  $XType.InnerText = $PSBoundParameters.Value
-                  $XEntry.AppendChild($XType) | Out-Null
-               }
-               # Description
-               if($PSBoundParameters.Description) {
-                  $XDescription = $XDoc.CreateElement('description')
-                  $XDescription.InnerText = $PSBoundParameters.Description
-                  $XEntry.AppendChild($XDescription) | Out-Null
-               }
-               # Tag
-               if($PSBoundParameters.Tag) {
-                  $XTag = $XDoc.CreateElement('tag')
-                  $XEntry.AppendChild($XTag) | Out-Null
-                  foreach($TagCur in $PSBoundParameters.Tag) {
-                     $XMember = $XDoc.CreateElement('member')
-                     $XMember.InnerText = $TagCur
-                     $XTag.AppendChild($XMember) | Out-Null
-                  }
-               }
-               # DisableOverride
-               if($PSBoundParameters.ContainsKey('DisableOverride')) {
-                  $XDisable = $XDoc.CreateElement('disable-override')
-                  switch($PSBoundParameters.DisableOverride) {
-                     $false   { $XDisable.InnerText = 'no' }
-                     $true    { $XDisable.InnerText = 'yes' }
-                  }
-                  $XEntry.AppendChild($XDisable) | Out-Null
-               }
-
-               # Call API
-               if(-not $PSBoundParameters.Replace.IsPresent) {
-                  Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$XDoc.entry.InnerXml)
-                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $XPath -Element $XDoc.entry.InnerXml
-               }
-               else {
-                  Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$XDoc.entry.OuterXml)
-                  $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $XPath -Element $XDoc.entry.OuterXml
-               }
-            } # End object does not exist, build
-
+            # Call API
+            if(-not $PSBoundParameters.Replace.IsPresent) {
+               # (No -Replace) action=set, requires non-overlap between XPath and Element (entry.InnerXml)
+               Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$A.XDoc.entry.InnerXml)
+               $R = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $A.XPath -Element $A.XDoc.entry.InnerXml
+            }
+            else {
+               # -Replace action=edit, requires overlap between XPath and Element (entry.OuterXml)
+               Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$A.XDoc.entry.OuterXml)
+               $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $A.XPath -Element $A.XDoc.entry.OuterXml
+            }
+            
             # Check PanResponse
             if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
                Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             }
             else {
-               Write-Error ('Error applying address {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
+               Write-Error ('Error applying {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
                   $PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$R.Status,$R.Code,$R.Message)
             }
          } # End foreach $DeviceCur
       } # End ParameterSetName Device
    } # Process block
+
    End {
    } # End block
 } # Function
