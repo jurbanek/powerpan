@@ -20,3 +20,7 @@ Set-Alias -Name Remove-PanService -Value Remove-PanObject -Scope Global
 # Copy-PanObject
 Set-Alias -Name Copy-PanAddress -Value Copy-PanObject -Scope Global
 Set-Alias -Name Copy-PanService -Value Copy-PanObject -Scope Global
+
+# New-PanObject
+Set-Alias -Name New-PanAddress -Value New-PanObject -Scope Global
+Set-Alias -Name New-PanService -Value New-PanObject -Scope Global

@@ -19,6 +19,7 @@ $Cfg.Add('TmpDirPath', (Join-Path $Cfg.Root $Cfg.TmpDirName))
 $Cfg.Add('ExcludeRegEx',"$($Cfg.TmpDirName)|\.vscode|\.git|\.DS_Store")
 # Initialize, to be populated
 $Cfg.Add('FunctionsToExport',@())
+$Cfg.Add('FormatsToProcess',@())
 
 <#*************************************
 * UPDATE Manifest FunctionstoExport() *
@@ -28,6 +29,15 @@ foreach($File in Get-ChildItem -Path "$($Cfg.Root)/Public/*.ps1" -Recurse -Exclu
    $Cfg.FunctionsToExport += $File.BaseName
 }
 Update-ModuleManifest -Path "$($Cfg.Root)/$($Cfg.ModuleName).psd1" -FunctionsToExport $Cfg.FunctionsToExport
+
+<#*************************************
+* UPDATE Manifest FormatsToProcess() *
+*************************************#>
+# Get all Formats within Format/*, one per file, update the manifest to include relative path "Format/File.Format.ps1xml"
+foreach($File in Get-ChildItem -Path "$($Cfg.Root)/Format/*.ps1xml" -Recurse -ErrorAction SilentlyContinue) {
+   $Cfg.FormatsToProcess += "Format/$($File.BaseName)"
+}
+Update-ModuleManifest -Path "$($Cfg.Root)/$($Cfg.ModuleName).psd1" -FormatsToProcess $Cfg.FormatsToProcess
 
 <#***********************
 * CLONE TO Publish-NNNN *

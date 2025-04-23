@@ -1,14 +1,18 @@
 class PanObject : System.ICloneable {
     [PanDevice] $Device
-    [System.Xml.XmlDocument] $XDoc
     [String] $XPath
+    [System.Xml.XmlDocument] $XDoc
  
-    # Constructor
-    PanObject([System.Xml.XmlDocument] $XDoc, [String] $XPath, [PanDevice] $Device) {
-        $this.XDoc = $XDoc
-        $this.XPath = $XPath
+    # Default constructor. If used, must assign properties manually
+    PanObject() {
+    }
+
+    # Constructor accepting XML content
+    PanObject([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) {
         $this.Device = $Device
-    } # End constructor
+        $this.XPath = $XPath
+        $this.XDoc = $XDoc
+    }
 
     # Static constructor for creating ScriptProperty properties using Update-TypeData
     # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor

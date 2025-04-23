@@ -1,13 +1,27 @@
 class PanAddress : PanObject, ICloneable {
    # Defined in the base class
    # [PanDevice] $Device
-   # [System.Xml.XmlDocument] $XDoc
    # [String] $XPath
+   # [System.Xml.XmlDocument] $XDoc
 
-   # Constructor calling the base class constructor
-   PanAddress([System.Xml.XmlDocument] $XDoc, [String] $XPath, [PanDevice] $Device) : base ($XDoc, $XPath, $Device) {
+   # Constructor accepting XML content with call to base class to do assignment
+   PanAddress([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base($Device, $XPath, $XDoc) {
       # Nothing to do here in derived class
    } # End constructor
+
+   # Constructor for building a basic shell from non-XML content. Build/assign XML content in this constructor.
+   # Handy for creating shell objects. Goal is to build out a basic shell .XDoc, .XPath, and assign the .Device
+   PanAddress([PanDevice] $Device, [String] $Location, [String] $Name) : base() {
+      $Suffix = "/address/entry[@name='{0}']" -f $Name
+      $XPath =  "{0}{1}" -f $Device.Location.($Location),$Suffix
+      # Build a minimum viable XDoc/Api Element with obvious non-common values
+      $Xml = "<entry name='{0}'><ip-netmask>0.0.0.0</ip-netmask></entry>" -f $Name
+      $XDoc = [System.Xml.XmlDocument]$Xml
+      
+      $this.XPath = $XPath
+      $this.XDoc = $XDoc
+      $this.Device = $Device
+   }
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
    # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor

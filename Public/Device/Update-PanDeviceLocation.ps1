@@ -29,10 +29,6 @@ None
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
-
-      # Initialize PanDeviceDb
-      InitializePanDeviceDb
-
    } # Begin block
 
    Process {

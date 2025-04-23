@@ -1,13 +1,27 @@
 class PanService : PanObject, System.ICloneable {
    # Defined in the base class
    # [PanDevice] $Device
-   # [System.Xml.XmlDocument] $XDoc
    # [String] $XPath
+   # [System.Xml.XmlDocument] $XDoc
 
-   # Constructor calling the base class constructor
-   PanService([System.Xml.XmlDocument] $XDoc, [String] $XPath, [PanDevice] $Device) : base ($XDoc, $XPath, $Device) {
+   # Constructor accepting XML content with call to base class to do assignment
+   PanService([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base ($Device, $XPath, $XDoc) {
       # Nothing to do here in derived class
    } # End constructor
+
+   # Constructor for building a basic shell from non-XML content. Build/assign XML content in this constructor.
+   # Handy for creating shell objects. Goal is to build out a basic shell .XDoc, .XPath, and assign the .Device
+   PanService([PanDevice] $Device, [String] $Location, [String] $Name) : base() {
+      $Suffix = "/service/entry[@name='{0}']" -f $Name
+      $XPath =  "{0}{1}" -f $Device.Location.($Location),$Suffix
+      # Build a minimum viable object with obvious non-common values
+      $Xml = "<entry name='{0}'><protocol><tcp><port>0</port></tcp></protocol></entry>" -f $Name
+      $XDoc = [System.Xml.XmlDocument]$Xml
+      
+      $this.XPath = $XPath
+      $this.XDoc = $XDoc
+      $this.Device = $Device
+   }
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
    # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor
@@ -28,8 +42,8 @@ class PanService : PanObject, System.ICloneable {
       # Protocol ScriptProperty linked to $XDoc.entry.protocol.tcp or udp
       'PanService' | Update-TypeData -MemberName Protocol -MemberType ScriptProperty -Value {
          # Getter
-         if($this.XDoc.Item('entry').Item('protocol').GetElementsByTagName('tcp').Count) { return 'tcp' }
-         elseif($this.XDoc.Item('entry').Item('protocol').GetElementsByTagName('udp').Count) { return 'udp' }
+         if($this.XDoc.Item('entry').Item('protocol').Item('tcp').Count) { return 'tcp' }
+         elseif($this.XDoc.Item('entry').Item('protocol').Item('udp').Count) { return 'udp' }
       } -SecondValue {
          # Setter
          param($Set)
@@ -87,61 +101,150 @@ class PanService : PanObject, System.ICloneable {
             $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XSourcePort)
          }
       } -Force
-      
-      # OverrideTimeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.Item('yes') or no
-      'PanService' | Update-TypeData -MemberName OverrideTimeout -MemberType ScriptProperty -Value {
+
+      # Timeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.yes.timeout.InnerText
+      'PanService' | Update-TypeData -MemberName Timeout -MemberType ScriptProperty -Value {
          # Getter
-         if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').GetElementsByTagName('yes').Count) {
-            return $true
-         }
-         elseif($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').GetElementsByTagName('no').Count) {
-            return $false
-         }
+         return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').InnerText
       } -SecondValue {
          # Setter
          param($Set)
-         # If <override><yes> already exists
-         if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').GetElementsByTagName('yes').Count) {
-            if($Set) {
-               # Do nothing
-            }
-            elseif(-not $Set) {
-               # Change to <no>
-               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')
-               # Create new XmlElement
-               $NewElement = $this.XDoc.CreateElement('no')
-               # Replace/relink the new tree
-               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
-            }
-         }
-         # If <override><no> already exists
-         elseif($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').GetElementsByTagName('no').Count) {
-            if($Set) {
-               # Change to <yes>, no children
-               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
-               # Create new XmlElement
-               $NewElement = $this.XDoc.CreateElement('yes')
-               # Replace/relink the new tree
-               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
-            }
-            elseif(-not $Set) {
-               # Make sure there are no children
-               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').RemoveAll()
-            }
-         }
-         # Make sure <override> already exists
-         elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).GetElementsByTagName('override').Count) {
+         # If <override> doesn't exist, create
+         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Count) {
             $XOverride = $this.XDoc.CreateElement('override')
-            if($Set) { $XValue = $this.XDoc.CreateElement('yes') } else { $XValue = $this.XDoc.CreateElement('no') }
-            $XOverride.AppendChild($XValue)
             $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XOverride)
+         }
+         if($Set) {
+            # If <override><no>, replace with <yes>
+            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').Count) {
+               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
+               $NewElement = $this.XDoc.CreateElement('yes')
+               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
+            }
+            # If <override><yes> doesn't exist, create
+            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Count) {
+               $XYes = $this.XDoc.CreateElement('yes')
+               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').AppendChild($XYes)
+            }
+
+            # If <override><yes><timeout> doesn't exist, create
+            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').Count) {
+               $XTimeout = $this.XDoc.CreateElement('timeout')
+               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').AppendChild($XTimeout)
+            }
+
+            $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').InnerText = $Set
+         }      
+         elseif(-not $Set) {
+            $XTimeout = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout')
+            $XTimeout.ParentNode.RemoveChild($XTimeout)
+         }
+         
+         # If timeout, halfclose-timeout, timewait-timeout are no longer present, change to <override><no>
+         if([String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').InnerText) -and
+            [String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').InnerText) -and
+            [String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').InnerText) ) {
+               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')
+               $NewElement = $this.XDoc.CreateElement('no')
+               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
          }
       } -Force
 
-      ### LEFT OFF HERE
-      ### timeout, halfclose-timeout, timewait-timeout
-      ###
+      # HalfCloseTimeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.yes.halfclose-timeout.InnerText
+      'PanService' | Update-TypeData -MemberName HalfCloseTimeout -MemberType ScriptProperty -Value {
+         # Getter
+         return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').InnerText
+      } -SecondValue {
+         # Setter
+         param($Set)
+         # If <override> doesn't exist, create
+         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Count) {
+            $XOverride = $this.XDoc.CreateElement('override')
+            $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XOverride)
+         }
+         if($Set) {
+            # If <override><no>, replace with <yes>
+            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').Count) {
+               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
+               $NewElement = $this.XDoc.CreateElement('yes')
+               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
+            }
+            # If <override><yes> doesn't exist, create
+            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Count) {
+               $XYes = $this.XDoc.CreateElement('yes')
+               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').AppendChild($XYes)
+            }
 
+            # If <override><yes><halfclose-timeout> doesn't exist, create
+            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').Count) {
+               $XTimeout = $this.XDoc.CreateElement('halfclose-timeout')
+               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').AppendChild($XTimeout)
+            }
+
+            $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').InnerText = $Set
+         }      
+         elseif(-not $Set) {
+            $XTimeout = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout')
+            $XTimeout.ParentNode.RemoveChild($XTimeout)
+         }
+         
+         # If timeout, halfclose-timeout, timewait-timeout are no longer present, change to <override><no>
+         if([String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').InnerText) -and
+            [String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').InnerText) -and
+            [String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').InnerText) ) {
+               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')
+               $NewElement = $this.XDoc.CreateElement('no')
+               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
+         }
+      } -Force
+
+      # TimeWaitTimeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.yes.timewait-timeout.InnerText
+      'PanService' | Update-TypeData -MemberName TimeWaitTimeout -MemberType ScriptProperty -Value {
+         # Getter
+         return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').InnerText
+      } -SecondValue {
+         # Setter
+         param($Set)
+         # If <override> doesn't exist, create
+         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Count) {
+            $XOverride = $this.XDoc.CreateElement('override')
+            $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XOverride)
+         }
+         if($Set) {
+            # If <override><no>, replace with <yes>
+            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').Count) {
+               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
+               $NewElement = $this.XDoc.CreateElement('yes')
+               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
+            }
+            # If <override><yes> doesn't exist, create
+            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Count) {
+               $XYes = $this.XDoc.CreateElement('yes')
+               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').AppendChild($XYes)
+            }
+
+            # If <override><yes><timewait-timeout> doesn't exist, create
+            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').Count) {
+               $XTimeout = $this.XDoc.CreateElement('timewait-timeout')
+               $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').AppendChild($XTimeout)
+            }
+
+            $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').InnerText = $Set
+         }      
+         elseif(-not $Set) {
+            $XTimeout = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout')
+            $XTimeout.ParentNode.RemoveChild($XTimeout)
+         }
+         
+         # If timeout, halfclose-timeout, timewait-timeout are no longer present, change to <override><no>
+         if([String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').InnerText) -and
+            [String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').InnerText) -and
+            [String]::IsNullOrEmpty($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').InnerText) ) {
+               $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')
+               $NewElement = $this.XDoc.CreateElement('no')
+               $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
+         }
+      } -Force
    } # End static constructor
 
    # Clone() method as part of ICloneable interface

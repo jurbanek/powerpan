@@ -207,20 +207,20 @@ Syntactic sugar for fetching an object recently set with less typing.
       # Each object type gets it's own set of suffixes, but the same set of suffixes are used whether Panorama or NGFW (which is nice) 
       switch ($MyInvocation.InvocationName) {
          'Get-PanAddress' {
-            # NoFilter (no search filter). "Double slash"
+            # NoFilter (no search filter)
             $XPathSuffixBase = "/address/entry"
-            # Filter (search filter). "Double slash"
+            # Filter (search filter)
             $XPathSuffixFilter = "/address/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
-            # Name (exact). "Double slash"
+            # Name (exact)
             $XPathSuffixName = "/address/entry[@name='{0}']"
             continue
          }
          'Get-PanService' {
-            # NoFilter (no search filter). "Double slash"
+            # NoFilter (no search filter)
             $XPathSuffixBase = "/service/entry"
-            # Filter (search filter). "Double slash"
-            $XPathSuffixFilter = "/service/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-netmask, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-range, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(fqdn, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(ip-wildcard, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
-            # Name (exact). "Double slash"
+            # Filter (search filter)
+            $XPathSuffixFilter = "/service/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(protocol/tcp/source-port, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(protocol/tcp/port, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(protocol/udp/source-port, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(protocol/udp/port, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(protocol/sctp/source-port, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(protocol/sctp/port, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
+            # Name (exact)
             $XPathSuffixName = "/service/entry[@name='{0}']"
             continue
          }
@@ -237,8 +237,6 @@ Syntactic sugar for fetching an object recently set with less typing.
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
             Write-Debug ('{0} (as {1}): InputObject Device: {2} XPath: {3}' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
-            # Ensure Location map is up to date for current device
-            Update-PanDeviceLocation -Device $InputObjectCur.Device
             $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
             # Check PanResponse
             if($R.Status -eq 'success') {
@@ -256,8 +254,8 @@ Syntactic sugar for fetching an object recently set with less typing.
                [System.Xml.XmlDocument]$XDoc = $Entry.OuterXml
                $XPath = $InputObjectCur.XPath
                switch ($MyInvocation.InvocationName) {
-                  'Get-PanAddress' { $ObjAgg.Add([PanAddress]::new($XDoc, $XPath, $InputObjectCur.Device)); continue }
-                  'Get-PanService' { $ObjAgg.Add([PanService]::new($XDoc, $XPath, $InputObjectCur.Device)); continue }
+                  'Get-PanAddress' { $ObjAgg.Add([PanAddress]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
+                  'Get-PanService' { $ObjAgg.Add([PanService]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
                   'Get-PanAddressGroup' { continue } # Future 
                } # switch
             } 
@@ -272,8 +270,6 @@ Syntactic sugar for fetching an object recently set with less typing.
       else {
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name)
-            # Ensure Location map is up to date for current device
-            Update-PanDeviceLocation -Device $DeviceCur
             
             # Time to build two sets of hashtables based on suffixes defined above and ParameterSet
             # Hashtable Key is the location (vys1,shared,MyDG), Hashtable Value is the usable XPath
@@ -354,8 +350,8 @@ Syntactic sugar for fetching an object recently set with less typing.
                      # to avoid the contains() and translate() substrings
                      $XPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
                      switch ($MyInvocation.InvocationName) {
-                        'Get-PanAddress' { $ObjAgg.Add([PanAddress]::new($XDoc, $XPath, $DeviceCur)); continue }
-                        'Get-PanService' { $ObjAgg.Add([PanService]::new($XDoc, $XPath, $DeviceCur)); continue }
+                        'Get-PanAddress' { $ObjAgg.Add([PanAddress]::new($DeviceCur, $XPath, $XDoc)); continue }
+                        'Get-PanService' { $ObjAgg.Add([PanService]::new($DeviceCur, $XPath, $XDoc)); continue }
                         'Get-PanAddressGroup' { continue } # Future
                      }
                   } # foreach entry
