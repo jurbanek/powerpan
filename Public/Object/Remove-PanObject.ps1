@@ -9,14 +9,16 @@ Remove-PanObject provides feature coverage for many object types. It should NOT 
 Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Remove-PanObject' }
 
 Two modes: -InputObject mode and -Device mode.
-
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
 PanAddress[]
    You can pipe a PanAddress to this cmdlet
+PanService[]
+   You can pipe a PanService to this cmdlet
 .OUTPUTS
 PanAddress
+PanService
 .EXAMPLE
 $D = Get-PanDevice "fw.lab.local"
 Remove-PanAddress -Device $D -Location "vsys1" -Name "MyHostA"
@@ -36,7 +38,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of object')]
       [String] $Name,
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to target')]
-      [PanAddress[]] $InputObject
+      [PanObject[]] $InputObject
    )
 
    Begin {
@@ -79,6 +81,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
             # Given -Device ParameterSet, fetch the object for its XPath
             switch ($MyInvocation.InvocationName) {
                'Remove-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue}
+               'Remove-PanService' { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue}
                'Remove-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
             }
 

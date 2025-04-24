@@ -6,6 +6,7 @@ Refresh the PanDevice device-group or vsys (and shared) layout in the PanDevice 
 Refresh the PanDevice device-group (Panorama) or vsys (NGFW) layout (and shared) in the PanDevice Location property. Not saved to disk. Refreshed at runtime.
 .NOTES
 Update-PanDeviceLocation doe *not* add new device-groups or vsys's. It simply refreshes what already exists on-device into the PanDevice Location property.
+Update runs at most every 900 seconds. Can force a manual update with -Force.
 Refresh- is not an approved verb. Update- it is.
 .INPUTS
 PanDevice[]
@@ -16,11 +17,10 @@ None
 #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
-      [parameter(
-         Mandatory=$true,
-         ValueFromPipeline=$true,
-         HelpMessage='PanDevice(s) on which location layout (vsys, device-group) will be determined')]
-      [PanDevice[]] $Device
+      [parameter(Mandatory=$true,ValueFromPipeline=$true,HelpMessage='PanDevice(s) on which location layout (vsys, device-group) will be determined')]
+      [PanDevice[]] $Device,
+      [parameter(HelpMessage='Force location layout update, regardless of elapsed time since last update')]
+      [Switch] $Force
    )
 
    Begin {
@@ -29,14 +29,19 @@ None
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      
+      # For comparison
+      $Now = Get-Date
+      $UpdateInterval = New-TimeSpan -Seconds 900
    } # Begin block
 
    Process {
       foreach($DeviceCur in $PSBoundParameters.Device) {
          Write-Debug ('{0}: Device: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
-         if($DeviceCur.LocationUpdated) {
-            # If PanDevice has been updated this PowerShell session, no need to update again
-            Write-Debug ('{0}: Device location updated already' -f $MyInvocation.MyCommand.Name)
+         if( (-not $PSBoundParameters.Force.IsPresent) -and $DeviceCur.LocationUpdated.AddSeconds($UpdateInterval.TotalSeconds) -gt $Now ) {
+            # If PanDevice has been updated and interval has not passed, no need to update again
+            Write-Debug ('{0}: Device: {1} locations updated already. Next update after {2}' -f
+               $MyInvocation.MyCommand.Name,$DeviceCur.Name,$DeviceCur.LocationUpdated.AddSeconds($UpdateInterval.TotalSeconds))
             # Next iteration of foreach (next PanDevice)
             continue
          }
@@ -52,11 +57,11 @@ None
          # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
          if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/device-group"
-            Write-Debug ('{0}: Panorama XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPath)
+            Write-Debug ('{0}: Device: {1} Panorama XPath: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$XPath)
          }
          else {
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys"
-            Write-Debug ('{0}: NGFW XPath: {1}' -f $MyInvocation.MyCommand.Name,$XPath)
+            Write-Debug ('{0}: Device: {1} NGFW XPath: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$XPath)
          }
          
          # Fetch the valid device-group (Panorama) or vsys (NGFW) using config action=complete
@@ -70,8 +75,7 @@ None
             #     <completion value="Parent" vxpath="/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Parent']"/>
             #     <completion value="Grandparent" vxpath="/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='Grandparent']"/>
             #  </completions></response>
-            $CustomResponse = [System.Xml.XmlDocument]$R.WRContent
-            foreach($CompletionCur in $CustomResponse.response.completions.completion) {
+            foreach($CompletionCur in $R.Response.completions.completion) {
                # Add each entry's name to an aggregate
                $DeviceCurLocation.Add($CompletionCur.value, $CompletionCur.vxpath)
             }
@@ -80,7 +84,7 @@ None
             if($PSCmdlet.ShouldProcess('PanDeviceDb','Update ' + $DeviceCur.Name + ' vsys/device-group layout')) {
                $DeviceCur.Location = $DeviceCurLocation
                Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($DeviceCurLocation.keys -join ','))
-               $DeviceCur.LocationUpdated = $true
+               $DeviceCur.LocationUpdated = Get-Date
             }
          } # End if PanResponse success
       } # End foreach DeviceCur

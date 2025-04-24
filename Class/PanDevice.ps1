@@ -18,9 +18,9 @@ class PanDevice {
    # For Ngfw, contains the list of vsys's. For Panorama, the list of device-groups. Not persisted to disk. Updated at runtime.
    # Hashtable keys are vsys1, vsys2. Hashtable values are the XPath's
    [System.Collections.Specialized.OrderedDictionary] $Location = [System.Collections.Specialized.OrderedDictionary]::new()
-   # Location layout updated at runtime. Only needs to be done once per session. Track whether it has been done here.
-   $LocationUpdated = $false
-   # Vsys layout for cmdlets that operate on multiple vsys. Not persisted to disk. Updated at runtime.
+   # Location layout is updated at runtime. Only needs to be done infrequently. Track the last time it was done.
+   # DateTime (without timezone) is fine given this will only be used within the same PowerShell session
+   [DateTime] $LocationUpdated
 
    # Default Constructor
    PanDevice() {

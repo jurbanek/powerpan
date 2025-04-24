@@ -5,8 +5,10 @@ class PanService : PanObject, System.ICloneable {
    # [System.Xml.XmlDocument] $XDoc
 
    # Constructor accepting XML content with call to base class to do assignment
-   PanService([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base ($Device, $XPath, $XDoc) {
-      # Nothing to do here in derived class
+   PanService([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base() {
+      $this.XPath = $XPath
+      $this.XDoc = $XDoc
+      $this.Device = $Device
    } # End constructor
 
    # Constructor for building a basic shell from non-XML content. Build/assign XML content in this constructor.
@@ -14,14 +16,14 @@ class PanService : PanObject, System.ICloneable {
    PanService([PanDevice] $Device, [String] $Location, [String] $Name) : base() {
       $Suffix = "/service/entry[@name='{0}']" -f $Name
       $XPath =  "{0}{1}" -f $Device.Location.($Location),$Suffix
-      # Build a minimum viable object with obvious non-common values
+      # Build a minimum viable XDoc/Api Element with obvious non-common values
       $Xml = "<entry name='{0}'><protocol><tcp><port>0</port></tcp></protocol></entry>" -f $Name
       $XDoc = [System.Xml.XmlDocument]$Xml
       
       $this.XPath = $XPath
       $this.XDoc = $XDoc
       $this.Device = $Device
-   }
+   } # End constructor
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
    # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor

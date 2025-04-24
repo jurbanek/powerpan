@@ -1,11 +1,11 @@
 function Get-PanObject {
 <#
 .SYNOPSIS
-Retrieve object(s)
+Retrieve object(s) from Device
 .DESCRIPTION
-Get-PanObject can retrieve all object on a Device, specify a list of Location(s), specify a specific Name, or perform remote Filtering
+Retrieve all object(s) on a -Device, scope to a specific -Location(s), scope to a single case-sensitive  -Name, or specify a case-INsensitive search -Filter
 .NOTES
-Get-PanObject provides feature coverage for many object types. It should NOT be called by its name. It is intended to be called by its aliases.
+Provides feature coverage for many object types. Should NOT be called by its name. Intended to be called by its aliases.
 Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Get-PanObject' }
 
 :: At-a-Glance ::
@@ -56,7 +56,7 @@ To perform *server-side* filtering, XPath needs to end in /entry for stuff like 
 
 Returning full lineage is greater data transfer and local processing, but grants visibility into "overrides" without having to compute locally
 
-This cmdlet returns returns full lineage for overrides visibility, then filters locally only returning specified locations
+This cmdlet returns full lineage for overrides visibility, then filters locally only returning specified locations.
 
 :: Panorama Single-Slash and Double-Slash XPath ::
 Grandparent device-group contains a H-1.1.1.1 address object
@@ -100,14 +100,13 @@ Pulling all device-groups using single-slash /address/entry (Get-PanAddress -Dev
 Took on average 4.1 seconds with screen paint
 Took on average 2.4 seconds without screen paint
 Computers are fast. Overrides attribute and code simplicity is worth using single slash.
-
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
 PanAddress[]
    You can pipe a PanAddress to this cmdlet
 PanService[]
-   You can pipe a PanAddress to this cmdlet
+   You can pipe a PanService to this cmdlet
 .OUTPUTS
 PanAddress
 PanService

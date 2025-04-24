@@ -9,12 +9,13 @@ Rename-PanObject provides feature coverage for many object types. It should NOT 
 Find aliases: Get-Alias | Where-Object { $_.ResolvedCommandName -eq 'Rename-PanObject' }
 
 Two modes: -InputObject mode and -Device mode.
-
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
 PanAddress[]
    You can pipe a PanAddress to this cmdlet
+PanService[]
+   You can pipe a PanService to this cmdlet
 .OUTPUTS
 PanAddress
 .EXAMPLE
@@ -32,7 +33,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of object')]
       [String] $Name,
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to target')]
-      [PanAddress[]] $InputObject,
+      [PanObject[]] $InputObject,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive NEW name of object')]
       [parameter(Mandatory=$true,ParameterSetName='InputObject',HelpMessage='Case-sensitive NEW name of object')]
       [String] $NewName
@@ -64,6 +65,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                # Return newly renamed object to pipeline
                switch ($MyInvocation.InvocationName) {
                   'Rename-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue}
+                  'Rename-PanService' { Get-PanService -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue}
                   'Rename-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
                }
             }
@@ -82,6 +84,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
             # Given Device ParameterSet, fetch object for its XPath
             switch ($MyInvocation.InvocationName) {
                'Rename-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Rename-PanService' { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Rename-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
             }
 
@@ -92,6 +95,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                   # Return newly renamed object to pipeline
                   switch ($MyInvocation.InvocationName) {
                      'Rename-PanAddress' { Get-PanAddress -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
+                     'Rename-PanService' { Get-PanService -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
                      'Rename-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
                   }
                }

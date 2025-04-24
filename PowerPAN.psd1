@@ -84,7 +84,8 @@ FunctionsToExport = 'Invoke-PanHaState', 'Get-PanJob', 'Add-PanDeviceLabel',
                'Remove-PanRegisteredIp', 'Resolve-PanTagColor', 
                'Construct-PanObject', 'Copy-PanObject', 'Get-PanObject', 
                'Move-PanObject', 'Remove-PanObject', 'Rename-PanObject', 
-               'Resolve-PanUrlCategory', 'Set-PanAddress', 'Invoke-PanXApi'
+               'Resolve-PanUrlCategory', 'Set-PanAddress', 'Set-PanService', 
+               'Invoke-PanXApi'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

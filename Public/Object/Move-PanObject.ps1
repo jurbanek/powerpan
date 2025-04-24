@@ -17,8 +17,11 @@ PanDevice[]
    You can pipe a PanDevice to this cmdlet
 PanAddress[]
    You can pipe a PanAddress to this cmdlet
+PanService[]
+   You can pipe a PanService to this cmdlet
 .OUTPUTS
 PanAddress
+PanService
 .EXAMPLE
 .EXAMPLE
 #>
@@ -31,7 +34,7 @@ PanAddress
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of object')]
       [String] $Name,
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to target')]
-      [PanAddress[]] $InputObject,
+      [PanObject[]] $InputObject,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive destination location for object (vsys1, shared, MyDG, etc.)')]
       [parameter(Mandatory=$true,ParameterSetName='InputObject',HelpMessage='Case-sensitive destination location for object (vsys1, shared, MyDG, etc.)')]
       [String] $DstLocation
@@ -52,6 +55,7 @@ PanAddress
 
       $Suffix = switch($MyInvocation.InvocationName) {
          'Move-PanAddress' {'/address'}
+         'Move-PanService' {'/service'}
          'Move-PanAddressGroup' {'/address-group'}
       }
    } # Begin Block
@@ -81,6 +85,7 @@ PanAddress
                # Return newly moved object to pipeline
                switch ($MyInvocation.InvocationName) {
                   'Move-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
+                  'Move-PanService' { Get-PanService -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
                   'Move-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
                }
             }
@@ -101,6 +106,7 @@ PanAddress
             # Given -Device ParameterSet, fetch the object for its XPath
             switch ($MyInvocation.InvocationName) {
                'Move-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Move-PanService' { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Move-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
             }
 
@@ -114,6 +120,7 @@ PanAddress
                   # Return newly moved object to pipeline
                   switch ($MyInvocation.InvocationName) {
                      'Move-PanAddress' { Get-PanAddress -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
+                     'Move-PanService' { Get-PanService -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
                      'Move-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
                   }
                }

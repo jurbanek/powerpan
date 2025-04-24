@@ -177,9 +177,7 @@ Matches -Name AND -Label parameters, both parameters must result in match.
    # Ensure Location map is up to date for PanDevice's being returned
    if(-not $PSBoundParameters.NoLocation.IsPresent) {
       foreach($DeviceCur in $DeviceAgg) {
-         if(-not $DeviceCur.LocationUpdated) {
-            Update-PanDeviceLocation -Device $DeviceCur
-         }
+         Update-PanDeviceLocation -Device $DeviceCur
       }
    }
 
