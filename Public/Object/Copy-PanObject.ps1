@@ -17,9 +17,12 @@ PanAddress[]
    You can pipe a PanAddress to this cmdlet
 PanService[]
    You can pipe a PanService to this cmdlet
+PanAddressGroup[]
+   You can pipe a PanAddressGroup to this cmdlet
 .OUTPUTS
 PanAddress
 PanService
+PanAddressGroup
 .EXAMPLE
 .EXAMPLE
 #>
@@ -55,9 +58,9 @@ PanService
       }
 
       $Suffix = switch($MyInvocation.InvocationName) {
-         'Copy-PanAddress' {'/address'}
-         'Copy-PanService' {'/service'}
-         'Copy-PanAddressGroup' {'/address-group'}
+         'Copy-PanAddress'       {'/address'}
+         'Copy-PanService'       {'/service'}
+         'Copy-PanAddressGroup'  {'/address-group'}
       }
    } # Begin Block
 
@@ -125,9 +128,9 @@ PanService
                   $RenamedObj = $null
                   switch ($MyInvocation.InvocationName) {
                      # Process the rename and return renamed object to to pipeline
-                     'Copy-PanAddress' { $RenamedObj = Rename-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
-                     'Copy-PanService' { $RenamedObj = Rename-PanService -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
-                     'Copy-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }   
+                     'Copy-PanAddress'       { $RenamedObj = Rename-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
+                     'Copy-PanService'       { $RenamedObj = Rename-PanService -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
+                     'Copy-PanAddressGroup'  { $RenamedObj = Rename-PanAddressGroup -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }   
                   }
                   if($RenamedObj) {
                      # Return renamed object to pipeline
@@ -141,9 +144,9 @@ PanService
                # No rename required. Object has different name in same location. Return object to pipeline
                elseif($PSBoundParameters.NewName) {
                   switch ($MyInvocation.InvocationName) {
-                     'Copy-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
-                     'Copy-PanService' { Get-PanService -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
-                     'Copy-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                     'Copy-PanAddress'       { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
+                     'Copy-PanService'       { Get-PanService -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
+                     'Copy-PanAddressGroup'  { Get-PanAddressGroup -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
                   }
                }
             }
@@ -220,9 +223,9 @@ PanService
                   $RenamedObj = $null
                   switch ($MyInvocation.InvocationName) {
                      # Process the rename and return renamed object to to pipeline
-                     'Copy-PanAddress' { $RenamedObj = Rename-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
-                     'Copy-PanService' { $RenamedObj = Rename-PanService -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
-                     'Copy-PanAddressGroup' { <# Future Rename-PanAddressGroup #> continue }   
+                     'Copy-PanAddress'       { $RenamedObj = Rename-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
+                     'Copy-PanService'       { $RenamedObj = Rename-PanService -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }
+                     'Copy-PanAddressGroup'  { $RenamedObj = Rename-PanAddressGroup -Device $PSBoundParameters.Device -Location $PSBoundParameters.DstLocation -Name $FromName -NewName $ToName; continue }   
                   }
                   if($RenamedObj) {
                      # Return renamed object to pipeline
@@ -236,9 +239,9 @@ PanService
                # No rename required. Object has different name in same location. Return object to pipeline
                elseif($PSBoundParameters.NewName) {
                   switch ($MyInvocation.InvocationName) {
-                     'Copy-PanAddress' { Get-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.Location -Name $PSBoundParameters.NewName; continue }
-                     'Copy-PanService' { Get-PanService -Device $PSBoundParameters.Device -Location $PSBoundParameters.Location -Name $PSBoundParameters.NewName; continue }
-                     'Copy-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                     'Copy-PanAddress'       { Get-PanAddress -Device $PSBoundParameters.Device -Location $PSBoundParameters.Location -Name $PSBoundParameters.NewName; continue }
+                     'Copy-PanService'       { Get-PanService -Device $PSBoundParameters.Device -Location $PSBoundParameters.Location -Name $PSBoundParameters.NewName; continue }
+                     'Copy-PanAddressGroup'  { Get-PanAddressGroup -Device $PSBoundParameters.Device -Location $PSBoundParameters.Location -Name $PSBoundParameters.NewName; continue }
                   }
                }
             }

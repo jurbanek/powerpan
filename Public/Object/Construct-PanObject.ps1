@@ -38,6 +38,7 @@ None
 .OUTPUTS
 PanAddress
 PanService
+PanAddressGoup
 .EXAMPLE
 $D = Get-PanDevice -Name "fw.lab.local"
 $A = Construct-PanAddress "MyAddress" -Device $D -Location "vsys1"
@@ -89,9 +90,9 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
                 $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $PSBoundParameters.Device.Name, $PSBoundParameters.Location, $PSBoundParameters.Name)
             switch($MyInvocation.InvocationName) {
                 # Call constructors *not requiring* XML content
-                'Construct-PanAddress' { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
-                'Construct-PanService' { [PanService]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
-                'Construct-PanAddressGroup' { continue } # Future 
+                'Construct-PanAddress'      { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
+                'Construct-PanService'      { [PanService]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
+                'Construct-PanAddressGroup' { [PanAddressGroup]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
             }
         }
         elseif($PSCmdlet.ParameterSetName -eq 'XML') {
@@ -99,9 +100,9 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
                 $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $PSBoundParameters.Device.Name, $PSBoundParameters.XPath, $PSBoundParameters.XDoc.OuterXml)
             switch($MyInvocation.InvocationName) {
                 # Call constructors *requiring* XML content
-                'Construct-PanAddress' { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue }
-                'Construct-PanService' { [PanService]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue }
-                'Construct-PanAddressGroup' { continue } # Future 
+                'Construct-PanAddress'      { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue }
+                'Construct-PanService'      { [PanService]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue }
+                'Construct-PanAddressGroup' { [PanAddressGroup]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue } 
             }
         }
     } # Process block

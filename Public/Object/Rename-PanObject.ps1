@@ -16,6 +16,8 @@ PanAddress[]
    You can pipe a PanAddress to this cmdlet
 PanService[]
    You can pipe a PanService to this cmdlet
+PanAddressGroup[]
+   You can pipe a PanAddressGroup to this cmdlet
 .OUTPUTS
 PanAddress
 .EXAMPLE
@@ -64,9 +66,9 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
             if($R.Status -eq 'success') {
                # Return newly renamed object to pipeline
                switch ($MyInvocation.InvocationName) {
-                  'Rename-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue}
-                  'Rename-PanService' { Get-PanService -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue}
-                  'Rename-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                  'Rename-PanAddress'        { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
+                  'Rename-PanService'        { Get-PanService -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
+                  'Rename-PanAddressGroup'   { Get-PanAddressGroup -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
                }
             }
             else {
@@ -83,9 +85,9 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name, $PSBoundParameters.NewName)
             # Given Device ParameterSet, fetch object for its XPath
             switch ($MyInvocation.InvocationName) {
-               'Rename-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
-               'Rename-PanService' { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
-               'Rename-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
+               'Rename-PanAddress'        { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Rename-PanService'        { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Rename-PanAddressGroup'   { $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
             }
 
             # Call API
@@ -94,9 +96,9 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                if($R.Status -eq 'success') {
                   # Return newly renamed object to pipeline
                   switch ($MyInvocation.InvocationName) {
-                     'Rename-PanAddress' { Get-PanAddress -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
-                     'Rename-PanService' { Get-PanService -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
-                     'Rename-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                     'Rename-PanAddress'        { Get-PanAddress -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
+                     'Rename-PanService'        { Get-PanService -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
+                     'Rename-PanAddressGroup'   { Get-PanAddressGroup -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
                   }
                }
                # Failure on Invoke-PanXApi

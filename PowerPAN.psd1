@@ -63,10 +63,10 @@ PowerShellVersion = '5.1'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-FormatsToProcess = 'Format/PanAddress.Format', 'Format/PanDevice.Format', 
-               'Format/PanJob.Format', 'Format/PanResponse.Format', 
-               'Format/PanService.Format', 'Format/PanSoftware.Format', 
-               'Format/PanUrlResponse.Format'
+FormatsToProcess = 'Format/PanAddress.Format', 'Format/PanAddressGroup.Format', 
+               'Format/PanDevice.Format', 'Format/PanJob.Format', 
+               'Format/PanResponse.Format', 'Format/PanService.Format', 
+               'Format/PanSoftware.Format', 'Format/PanUrlResponse.Format'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 # NestedModules = @()
@@ -84,8 +84,8 @@ FunctionsToExport = 'Invoke-PanHaState', 'Get-PanJob', 'Add-PanDeviceLabel',
                'Remove-PanRegisteredIp', 'Resolve-PanTagColor', 
                'Construct-PanObject', 'Copy-PanObject', 'Get-PanObject', 
                'Move-PanObject', 'Remove-PanObject', 'Rename-PanObject', 
-               'Resolve-PanUrlCategory', 'Set-PanAddress', 'Set-PanService', 
-               'Invoke-PanXApi'
+               'Resolve-PanUrlCategory', 'Set-PanAddress', 'Set-PanAddressGroup', 
+               'Set-PanService', 'Invoke-PanXApi'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

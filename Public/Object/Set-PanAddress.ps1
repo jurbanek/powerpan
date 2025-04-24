@@ -114,11 +114,11 @@ On large devices with many objects with the "review" tag, might take a while.
       [String] $Location,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of address object')]
       [String] $Name,
-      [parameter(ParameterSetName='Device',HelpMessage='Value of the address object')]
-      [String] $Value,
       [parameter(ParameterSetName='Device',HelpMessage='Type of the address object: ip-netmask, fqdn, ip-range, ip-wildcard')]
       [ValidateSet('ip-netmask','fqdn','ip-range','ip-wildcard')]
       [String] $Type,
+      [parameter(ParameterSetName='Device',HelpMessage='Value of the address object')]
+      [String] $Value,
       [parameter(ParameterSetName='Device',HelpMessage='Description')]
       [String] $Description,
       [parameter(ParameterSetName='Device',HelpMessage='One or more tags. Tags must exist already. Will not create tags')]
@@ -177,8 +177,8 @@ On large devices with many objects with the "review" tag, might take a while.
                
             # Modify properties directly letting Getter/Setter do heavy XML lifting
             # Device, Location, and Name do not apply
-            if($PSBoundParameters.ContainsKey('Value'))           { $Obj.Value = $PSBoundParameters.Value }
             if($PSBoundParameters.ContainsKey('Type'))            { $Obj.Type = $PSBoundParameters.Type }
+            if($PSBoundParameters.ContainsKey('Value'))           { $Obj.Value = $PSBoundParameters.Value }
             if($PSBoundParameters.ContainsKey('Description'))     { $Obj.Description = $PSBoundParameters.Description }
             if($PSBoundParameters.ContainsKey('Tag'))             { $Obj.Tag = $PSBoundParameters.Tag }
             if($PSBoundParameters.ContainsKey('DisableOverride')) { $Obj.DisableOverride = $PSBoundParameters.DisableOverride }

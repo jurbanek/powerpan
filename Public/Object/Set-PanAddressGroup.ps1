@@ -1,10 +1,10 @@
-function Set-PanService {
+function Set-PanAddressGroup {
 <#
 .SYNOPSIS
-Create or update service objects in the device candidate configuration.
+Create or update address group in the device candidate configuration.
 .DESCRIPTION
-Create a service object in the device candidate configuration if the name does *not* exist.
-Update a service object in the device candidate configuration if the name already exists.
+Create an address group object in the device candidate configuration if the name does *not* exist.
+Update an address group object in the device candidate configuration if the name already exists.
 .NOTES
 Two modes: -InputObject mode and -Device mode.
 
@@ -29,50 +29,33 @@ Set- cannot be used to move object locations. Use Move- cmdlet.
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
-PanService[]
-   You can pipe a PanService to this cmdlet
+PanAddressGroup[]
+   You can pipe a PanAddressGroup to this cmdlet
 .OUTPUTS
-PanService
+PanAddressGroup
 .EXAMPLE
 Create new on NGFW
 
 $D = Get-PanDevice "fw.lab.local"
-Set-PanService -Device $D -Location "vsys1" -Name "tcp-110" -Port "110" -Protocol "tcp"
+Set-PanAddressGroup -Device $D -Location "vsys1" -Name "MyAddressGroup" -Member @('H-1.1.1.1','H-2.2.2.2') -Type "static"
 
-If tcp-110 already exists in vsys1, a merge will occur.
+If MyAddressGroup already exists in vsys1, a merge will occur.
+With groups, merge is defined as adding members. To overwrite, use -Replace.
 .EXAMPLE
 Create new on Panorama
 
 $D = Get-PanDevice "panorama.lab.local"
-Set-PanService -Device $D -Location "MyDeviceGroup" -Name "tcp-110" -Port "110" -Protocol "tcp"
+Set-PanAddressGroup -Device $D -Location "MyDeviceGroup" -Name "MyAddressGroup" -Value @('H-1.1.1.1','H-2.2.2.2') -Type "static"
 
-If tcp-110 already exists in MyDeviceGroup, a merge will occur.
+If MyAddressGroup already exists in MyDeviceGroup, a merge will occur.
+With groups, merge is defined as adding members. To overwrite, use -Replace
 .EXAMPLE
 Add a description to an object that already exists.
 
 $D = Get-PanDevice "fw.lab.local"
-Set-PanService -Device $D -Location "vsys1" -Name "tcp-110" -Description "Updated Description!"
+Set-PanAddressGroup -Device $D -Location "vsys1" -Name "MyAddressGroup" -Description "Updated Description!"
 
-If the object did NOT exist already, the command would error remotely by the API (with details) as -Port and -Protocol are required for new objects to be created.
-.EXAMPLE
-Update the object Description and Tag properties in the PowerShell session (tags must already exist in PAN-OS) and pipe.
-Piping to Set-PanService (-InputObject) replaces the full object on the PanDevice (replace, not merge).
-
-$D = Get-PanDevice "fw.lab.local"
-$A = Get-PanService -Device $D -Location "vsys1" -Name "tcp-110"
-$A.Description = "Updated Description!"
-$A.Tag = @('risky','review')
-$A | Set-PanService
-.EXAMPLE
-Removing a description and removing tags
-Assume tcp-110 has a description to be removed and tags to be removed
-Piping to Set-PanService replaces the full object on the PanDevice (replace, not merge).
-
-$D = Get-PanDevice "fw.lab.local"
-$A = Get-PanService -Device $D -Location "vsys1" -Name "tcp-110"
-$A.Description = ""
-$A.Tag = @()
-$A | Set-PanService
+If the object did NOT exist already, the command would error remotely by the API (with details) as additional parameters are required for new objects to be created.
 #>
    [CmdletBinding()]
    param(
@@ -82,22 +65,13 @@ $A | Set-PanService
       [String] $Location,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of address object')]
       [String] $Name,
-      [parameter(ParameterSetName='Device',HelpMessage='Service protocol: tcp, udp')]
-      [ValidateSet('tcp','udp')]
-      [String] $Protocol,
-      [parameter(ParameterSetName='Device',HelpMessage='Port. Ex. 110 or 110,111 or 110-119')]
-      [String] $Port,
-      [parameter(ParameterSetName='Device',HelpMessage='Source port. Ex. 110 or 110,111 or 110-119')]
-      [String] $SourcePort,
-      [parameter(ParameterSetName='Device',HelpMessage='Session timeout in seconds range 1 - 604800, 0 to default ')]
-      [ValidateRange(0,604800)]
-      [Int] $Timeout,
-      [parameter(ParameterSetName='Device',HelpMessage='Session half-close timeout in seconds range 1 - 604800, 0 to default ')]
-      [ValidateRange(0,604800)]
-      [Int] $HalfCloseTimeout,
-      [parameter(ParameterSetName='Device',HelpMessage='Session time-wait timeout in seconds range 1 - 600, 0 to default ')]
-      [ValidateRange(0,600)]
-      [Int] $TimeWaitTimeout,
+      [parameter(ParameterSetName='Device',HelpMessage='Type of the address group: static, dynamic')]
+      [ValidateSet('static','dynamic')]
+      [String] $Type,
+      [parameter(ParameterSetName='Device',HelpMessage='Array of string member names for static group ONLY')]
+      [String[]] $Member,
+      [parameter(ParameterSetName='Device',HelpMessage='Match filter for dynamic group ONLY')]
+      [String] $Filter,
       [parameter(ParameterSetName='Device',HelpMessage='Description')]
       [String] $Description,
       [parameter(ParameterSetName='Device',HelpMessage='One or more tags. Tags must exist already. Will not create tags')]
@@ -107,7 +81,7 @@ $A | Set-PanService
       [parameter(ParameterSetName='Device',HelpMessage='Disable ability to override (Panorama device-group objects only)')]
       [Bool] $DisableOverride,
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be created/updated as is')]
-      [PanService[]] $InputObject
+      [PanAddressGroup[]] $InputObject
    )
 
    Begin {
@@ -129,7 +103,7 @@ $A | Set-PanService
             # Check PanResponse
             if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
-               Get-PanService -InputObject $InputObjectCur
+               Get-PanAddressGroup -InputObject $InputObjectCur
             }
             else {
                Write-Error ('Error applying InputObject {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
@@ -144,24 +118,21 @@ $A | Set-PanService
             Write-Debug ('{0}: Device: {1} Location: {2} Name: {3} ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Location,$PSBoundParameters.Name)
             # If object already exists, use it. If object does not exist, create a minimimum viable object with a call to ::new($Device,$Location,$Name)
             $Obj = $null
-            $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
+            $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             if($Obj) {
                Write-Debug ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Obj.XPath)
             }
             # Object does not exist, build it
             else {
                Write-Debug ('{0}: Cannot find {1} on Device: {2}/{3}. Building' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location)
-               $Obj = [PanService]::new($DeviceCur,$PSBoundParameters.Location,$PSBoundParameters.Name)
+               $Obj = [PanAddressGroup]::new($DeviceCur,$PSBoundParameters.Location,$PSBoundParameters.Name)
             }
                
             # Modify properties directly letting Getter/Setter do heavy XML lifting
             # Device, Location, and Name do not apply
-            if($PSBoundParameters.ContainsKey('Protocol'))        { $Obj.Protocol = $PSBoundParameters.Protocol }
-            if($PSBoundParameters.ContainsKey('Port'))            { $Obj.Port = $PSBoundParameters.Port }
-            if($PSBoundParameters.ContainsKey('SourcePort'))      { $Obj.SourcePort = $PSBoundParameters.SourcePort }
-            if($PSBoundParameters.ContainsKey('Timeout'))         { $Obj.Timeout = $PSBoundParameters.Timeout }
-            if($PSBoundParameters.ContainsKey('HalfCloseTimeout')){ $Obj.HalfCloseTimeout = $PSBoundParameters.HalfCloseTimeout }
-            if($PSBoundParameters.ContainsKey('TimeWaitTimeout')) { $Obj.TimeWaitTimeout = $PSBoundParameters.TimeWaitTimeout }
+            if($PSBoundParameters.ContainsKey('Type'))            { $Obj.Type = $PSBoundParameters.Type }
+            if($PSBoundParameters.ContainsKey('Member'))          { $Obj.Member = $PSBoundParameters.Member }
+            if($PSBoundParameters.ContainsKey('Filter'))          { $Obj.Filter = $PSBoundParameters.Filter }
             if($PSBoundParameters.ContainsKey('Description'))     { $Obj.Description = $PSBoundParameters.Description }
             if($PSBoundParameters.ContainsKey('Tag'))             { $Obj.Tag = $PSBoundParameters.Tag }
             if($PSBoundParameters.ContainsKey('DisableOverride')) { $Obj.DisableOverride = $PSBoundParameters.DisableOverride }
@@ -181,7 +152,7 @@ $A | Set-PanService
             # Check PanResponse
             if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
-               Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
+               Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             }
             else {
                Write-Error ('Error applying {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f

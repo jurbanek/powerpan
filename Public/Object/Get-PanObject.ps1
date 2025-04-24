@@ -107,9 +107,12 @@ PanAddress[]
    You can pipe a PanAddress to this cmdlet
 PanService[]
    You can pipe a PanService to this cmdlet
+PanAddressGroup[]
+   You can pipe a PanAddressGroup to this cmdlet
 .OUTPUTS
 PanAddress
 PanService
+PanAddressGroup
 .EXAMPLE
 Get-PanDevice "10.0.0.1" | Get-PanAddress
 
@@ -197,9 +200,9 @@ Syntactic sugar for fetching an object recently set with less typing.
 
       # Aggregate to hold objects until End {} block. See note at end
       switch ($MyInvocation.InvocationName) {
-         'Get-PanAddress' { $ObjAgg = [System.Collections.Generic.List[PanAddress]]@(); continue }
-         'Get-PanService' { $ObjAgg = [System.Collections.Generic.List[PanService]]@(); continue }
-         'Get-PanAddressGroup' { <# Future $ObjAgg = [System.Collections.Generic.List[PanAddressGroup]]@() #> continue }
+         'Get-PanAddress'        { $ObjAgg = [System.Collections.Generic.List[PanAddress]]@(); continue }
+         'Get-PanService'        { $ObjAgg = [System.Collections.Generic.List[PanService]]@(); continue }
+         'Get-PanAddressGroup'   { $ObjAgg = [System.Collections.Generic.List[PanAddressGroup]]@(); continue }
       }
 
       # Define XPath suffixes to be appended to PanDevice.Location(s), based on object type
@@ -224,7 +227,12 @@ Syntactic sugar for fetching an object recently set with less typing.
             continue
          }
          'Get-PanAddressGroup' {
-            # Future
+            # NoFilter (no search filter)
+            $XPathSuffixBase = "/address-group/entry"
+            # Filter (search filter)
+            $XPathSuffixFilter = "/address-group/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(static, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
+            # Name (exact)
+            $XPathSuffixName = "/address-group/entry[@name='{0}']"
             continue
          }
       }
@@ -253,9 +261,9 @@ Syntactic sugar for fetching an object recently set with less typing.
                [System.Xml.XmlDocument]$XDoc = $Entry.OuterXml
                $XPath = $InputObjectCur.XPath
                switch ($MyInvocation.InvocationName) {
-                  'Get-PanAddress' { $ObjAgg.Add([PanAddress]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
-                  'Get-PanService' { $ObjAgg.Add([PanService]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
-                  'Get-PanAddressGroup' { continue } # Future 
+                  'Get-PanAddress'        { $ObjAgg.Add([PanAddress]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
+                  'Get-PanService'        { $ObjAgg.Add([PanService]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
+                  'Get-PanAddressGroup'   { $ObjAgg.Add([PanAddressGroup]::new($InputObjectCur.Device, $XPath, $XDoc)); continue } 
                } # switch
             } 
             else {
@@ -349,9 +357,9 @@ Syntactic sugar for fetching an object recently set with less typing.
                      # to avoid the contains() and translate() substrings
                      $XPath = "{0}[@name='{1}']" -f $Search.($SearchCur.Key),$EntryCur.name
                      switch ($MyInvocation.InvocationName) {
-                        'Get-PanAddress' { $ObjAgg.Add([PanAddress]::new($DeviceCur, $XPath, $XDoc)); continue }
-                        'Get-PanService' { $ObjAgg.Add([PanService]::new($DeviceCur, $XPath, $XDoc)); continue }
-                        'Get-PanAddressGroup' { continue } # Future
+                        'Get-PanAddress'        { $ObjAgg.Add([PanAddress]::new($DeviceCur, $XPath, $XDoc)); continue }
+                        'Get-PanService'        { $ObjAgg.Add([PanService]::new($DeviceCur, $XPath, $XDoc)); continue }
+                        'Get-PanAddressGroup'   { $ObjAgg.Add([PanAddressGroup]::new($DeviceCur, $XPath, $XDoc)); continue }
                      }
                   } # foreach entry
                } # if Reponse success

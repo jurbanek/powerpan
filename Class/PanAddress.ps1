@@ -41,23 +41,13 @@ class PanAddress : PanObject, ICloneable {
       
       # Define what is unique to derived class only
 
-      # Value ScriptProperty linked to $XDoc.entry.Item(*type*).InnerText
-      'PanAddress' | Update-TypeData -MemberName Value -MemberType ScriptProperty -Value {
-         # Getter
-         return $this.XDoc.Item('entry').Item($this.Type).InnerText
-      } -SecondValue {
-         # Setter
-         param($Set)
-         $this.XDoc.Item('entry').Item($this.Type).InnerText = $Set
-      } -Force
-      
       # Type ScriptProperty linked to $XDoc.entry.ip-netmask or $XDoc.entry.fqdn, etc.
       'PanAddress' | Update-TypeData -MemberName Type -MemberType ScriptProperty -Value {
          # Getter
-         if($this.XDoc.Item('entry').GetElementsByTagName('ip-netmask').Count) { return 'ip-netmask' }
-         elseif($this.XDoc.Item('entry').GetElementsByTagName('fqdn').Count) { return 'fqdn' }
-         elseif($this.XDoc.Item('entry').GetElementsByTagName('ip-range').Count) { return 'ip-range' }
-         elseif($this.XDoc.Item('entry').GetElementsByTagName('ip-wildcard').Count) { return 'ip-wildcard' }
+         if($this.XDoc.Item('entry').Item('ip-netmask').Count) { return 'ip-netmask' }
+         elseif($this.XDoc.Item('entry').Item('fqdn').Count) { return 'fqdn' }
+         elseif($this.XDoc.Item('entry').Item('ip-range').Count) { return 'ip-range' }
+         elseif($this.XDoc.Item('entry').Item('ip-wildcard').Count) { return 'ip-wildcard' }
       } -SecondValue {
          # Setter
          param($Set)
@@ -78,8 +68,17 @@ class PanAddress : PanObject, ICloneable {
          # Replace/relink the new tree
          $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
       } -Force
-
       
+      # Value ScriptProperty linked to $XDoc.entry.Item(*type*).InnerText
+      'PanAddress' | Update-TypeData -MemberName Value -MemberType ScriptProperty -Value {
+         # Getter
+         return $this.XDoc.Item('entry').Item($this.Type).InnerText
+      } -SecondValue {
+         # Setter
+         param($Set)
+         $this.XDoc.Item('entry').Item($this.Type).InnerText = $Set
+      } -Force
+            
    } # End static constructor
 
    # Clone() method as part of ICloneable interface

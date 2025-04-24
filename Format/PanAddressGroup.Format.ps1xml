@@ -4,24 +4,27 @@
       <View>
          <Name>DefaultTable</Name>
          <ViewSelectedBy>
-            <TypeName>PanService</TypeName>
+            <TypeName>PanAddressGroup</TypeName>
          </ViewSelectedBy>
          <TableControl>
             <TableHeaders>
                <TableColumnHeader><Label>Name</Label></TableColumnHeader>
-               <TableColumnHeader><Label>Protocol</Label></TableColumnHeader>
-               <TableColumnHeader><Label>Port</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Type</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Member</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Filter</Label></TableColumnHeader>
                <TableColumnHeader><Label>Tag</Label></TableColumnHeader>
                <TableColumnHeader><Label>Device</Label></TableColumnHeader>
                <TableColumnHeader><Label>Location</Label></TableColumnHeader>
                <TableColumnHeader><Label>Overrides</Label></TableColumnHeader>
+
             </TableHeaders>
             <TableRowEntries>
                <TableRowEntry>
                   <TableColumnItems>
                         <TableColumnItem><PropertyName>Name</PropertyName></TableColumnItem>
-                        <TableColumnItem><PropertyName>Protocol</PropertyName></TableColumnItem>
-                        <TableColumnItem><PropertyName>Port</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Type</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Member</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Filter</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Tag</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>
                         <TableColumnItem><PropertyName>Location</PropertyName></TableColumnItem>
@@ -34,19 +37,16 @@
       <View>
          <Name>DefaultList</Name>
          <ViewSelectedBy>
-            <TypeName>PanService</TypeName>
+            <TypeName>PanAddressGroup</TypeName>
          </ViewSelectedBy>
          <ListControl>
             <ListEntries>
                <ListEntry>
                   <ListItems>
                      <ListItem><PropertyName>Name</PropertyName></ListItem>
-                     <ListItem><PropertyName>Protocol</PropertyName></ListItem>
-                     <ListItem><PropertyName>Port</PropertyName></ListItem>
-                     <ListItem><PropertyName>SourcePort</PropertyName></ListItem>
-                     <ListItem><PropertyName>Timeout</PropertyName></ListItem>
-                     <ListItem><PropertyName>HalfCloseTimeout</PropertyName></ListItem>
-                     <ListItem><PropertyName>TimeWaitTimeout</PropertyName></ListItem>
+                     <ListItem><PropertyName>Type</PropertyName></ListItem>
+                     <ListItem><PropertyName>Member</PropertyName></ListItem>
+                     <ListItem><PropertyName>Filter</PropertyName></ListItem>
                      <ListItem><PropertyName>Tag</PropertyName></ListItem>
                      <ListItem><PropertyName>Device</PropertyName></ListItem>
                      <ListItem><PropertyName>Location</PropertyName></ListItem>

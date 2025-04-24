@@ -19,9 +19,12 @@ PanAddress[]
    You can pipe a PanAddress to this cmdlet
 PanService[]
    You can pipe a PanService to this cmdlet
+PanAddressGroup[]
+   You can pipe a PanAddressGroup to this cmdlet
 .OUTPUTS
 PanAddress
 PanService
+PanAddressGroup
 .EXAMPLE
 .EXAMPLE
 #>
@@ -54,9 +57,9 @@ PanService
       }
 
       $Suffix = switch($MyInvocation.InvocationName) {
-         'Move-PanAddress' {'/address'}
-         'Move-PanService' {'/service'}
-         'Move-PanAddressGroup' {'/address-group'}
+         'Move-PanAddress'       {'/address'}
+         'Move-PanService'       {'/service'}
+         'Move-PanAddressGroup'  {'/address-group'}
       }
    } # Begin Block
 
@@ -84,9 +87,9 @@ PanService
             if($R.Status -eq 'success') {
                # Return newly moved object to pipeline
                switch ($MyInvocation.InvocationName) {
-                  'Move-PanAddress' { Get-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
-                  'Move-PanService' { Get-PanService -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
-                  'Move-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                  'Move-PanAddress'       { Get-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
+                  'Move-PanService'       { Get-PanService -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
+                  'Move-PanAddressGroup'  { Get-PanAddressGroup -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
                }
             }
             else {
@@ -105,9 +108,9 @@ PanService
                $PSBoundParameters.Name, $PSBoundParameters.DstLocation)
             # Given -Device ParameterSet, fetch the object for its XPath
             switch ($MyInvocation.InvocationName) {
-               'Move-PanAddress' { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
-               'Move-PanService' { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
-               'Move-PanAddressGroup' { <# Future $Obj = Get-PanAddressGroup #> continue }
+               'Move-PanAddress'       { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Move-PanService'       { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Move-PanAddressGroup'  { $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
             }
 
             # Call API
@@ -119,9 +122,9 @@ PanService
                if($R.Status -eq 'success') {
                   # Return newly moved object to pipeline
                   switch ($MyInvocation.InvocationName) {
-                     'Move-PanAddress' { Get-PanAddress -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
-                     'Move-PanService' { Get-PanService -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
-                     'Move-PanAddressGroup' { <# Future Get-PanAddressGroup #> continue }
+                     'Move-PanAddress'       { Get-PanAddress -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
+                     'Move-PanService'       { Get-PanService -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
+                     'Move-PanAddressGroup'  { Get-PanAddressGroup -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
                   }
                }
                # Failure on Invoke-PanXApi
