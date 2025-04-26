@@ -226,9 +226,9 @@ function Remove-PanRegisteredIp {
             if($PSCmdlet.ShouldProcess($DeviceCur.Name,'Unregister IP:TAG registrations ')) {
                Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
                Write-Debug ($MyInvocation.MyCommand.Name + ': Prepared uid-message: ' + $CmdCur)
-               $PanResponse = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
-               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+               $R = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
+               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
             }
          } # else Convert $RegisteredIpAgg blueprint to XML uid-message and send API request to unregister
       } # foreach Device

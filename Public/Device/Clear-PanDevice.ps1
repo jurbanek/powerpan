@@ -1,20 +1,19 @@
 function Clear-PanDevice {
-   <#
-   .SYNOPSIS
-   Clear (remove) all PanDevice(s) from the PanDeviceDb, removes persistence across PowerShell sessions.
-   .DESCRIPTION
-   Clear (remove) all PanDevice(s) from the PanDeviceDb, removes persistence across PowerShell sessions.
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   None
-   .EXAMPLE
-   #>
+<#
+.SYNOPSIS
+Clear (remove) all PanDevice(s) from the PanDeviceDb, removes persistence across PowerShell sessions.
+.DESCRIPTION
+Clear (remove) all PanDevice(s) from the PanDeviceDb, removes persistence across PowerShell sessions.
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+None
+.EXAMPLE
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
-      [parameter(
-         HelpMessage='Specify -Force to bypass confirmation.')]
+      [parameter(HelpMessage='Specify -Force to bypass confirmation.')]
       [Switch] $Force
    )
 
@@ -25,6 +24,6 @@ function Clear-PanDevice {
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    if($Force -or $PSCmdlet.ShouldProcess('PanDeviceDb', 'Clear (remove) all PanDevice')) {
-      Get-PanDevice -All | Remove-PanDevice
+      Get-PanDevice -All -NoLocation | Remove-PanDevice
    } # if Force -or ShouldProcess
 } # Function

@@ -3,7 +3,7 @@ function Invoke-PanXApi {
 .SYNOPSIS
 Abstracts PAN-OS XML API core modes (actions)
 .DESCRIPTION
--Keygen is for generating API key (don't use for normal operations, use New-PanDevice)
+-Keygen is for generating API key (don't use for normal operations, use New-PanDevice instead)
 
 -Version is an easy way to verify API access is functioning
 
@@ -32,25 +32,27 @@ You can pipe a PanDevice to this cmdlet
 .OUTPUTS
 PanResponse
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Keygen
+Invoke-PanXApi -Device $Device -Keygen
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Version
+Invoke-PanXApi -Device $Device -Version
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
+Invoke-PanXApi -Device $Device -Op -Cmd "<show><system><info></info></system></show>"
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Commit
+Invoke-PanXApi -Device $Device -Commit
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
+Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/xpath"
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
+Invoke-PanXApi -Device $Device -Config -Set -XPath "/config/xpath" -Element "<outer><inner>value</inner></outer>"
 .EXAMPLE
-PS> Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
+Invoke-PanXApi -Device $Device -Uid -Cmd "<uid-message>...</uid-message>"
 .EXAMPLE
 Import and process the certificate and private key within, note the -Category keypair
-PS> Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+
+Invoke-PanXApi -Device $Device -Import -Category keypair -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
 
 Import and process just the certificate, ignoring the private key, note the -Category certificate. The -CertPassphrase is ignored by API and is not required.
-PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
+
+Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\cert.p12" -CertName "gp-portal-acme-com" -CertPassphrase "acme1234"
 #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='None')]
    param(
@@ -78,35 +80,71 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Uid',HelpMessage='XML formatted user-id payload')]
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Commit',HelpMessage='XML formatted commit command')]
       [String] $Cmd,
-      # Begin Config-Set and Config-Get parameter sets
+      # Begin Config-* parameter sets
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Get',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Show',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Set',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Edit',HelpMessage='Type: config ')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Delete',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Rename',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Move',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-MultiMove',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Clone',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-MultiClone',HelpMessage='Type: config ')]
+      [parameter(Mandatory=$true,Position=1,ParameterSetName='Config-Complete',HelpMessage='Type: config ')]
       [Switch] $Config,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Get',HelpMessage='Retrieve candidate configuration')]
       [Switch] $Get,
       [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Show',HelpMessage='Retrieve active configuration')]
       [Switch] $Show,
-      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Set',HelpMessage='Add or create a new object')]
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Set',HelpMessage='Add or create (merge)')]
       [Switch] $Set,
-      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Edit',HelpMessage='Replace existing object (or hierarchy)')]
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Edit',HelpMessage='Replace existing configuration')]
       [Switch] $Edit,
-      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Delete',HelpMessage='Delete an object')]
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Delete',HelpMessage='Delete')]
       [Switch] $Delete,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Rename',HelpMessage='Rename')]
+      [Switch] $Rename,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Move',HelpMessage='Move')]
+      [Switch] $Move,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-MultiMove',HelpMessage='MultiMove')]
+      [Switch] $MultiMove,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Clone',HelpMessage='Clone')]
+      [Switch] $Clone,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-MultiClone',HelpMessage='MultiClone')]
+      [Switch] $MultiClone,
+      [parameter(Mandatory=$true,Position=2,ParameterSetName='Config-Complete',HelpMessage='Retrieve auto-complete options')]
+      [Switch] $Complete,
       [parameter(Mandatory=$true,ParameterSetName='Config-Get',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Show',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Set',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Edit',HelpMessage='Config XPath')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Delete',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-MultiMove',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-MultiClone',HelpMessage='Config XPath')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Complete',HelpMessage='Config XPath')]
       [String] $XPath,
       [parameter(ParameterSetName='Config-Get',HelpMessage='Config Element')]
       [parameter(ParameterSetName='Config-Show',HelpMessage='Config Element')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Set',HelpMessage='Config Element')]
       [parameter(Mandatory=$true,ParameterSetName='Config-Edit',HelpMessage='Config Element')]
       [parameter(ParameterSetName='Config-Delete',HelpMessage='Config Element')]
+      [parameter(ParameterSetName='Config-MultiMove',HelpMessage='Config Element')]
+      [parameter(ParameterSetName='Config-MultiClone',HelpMessage='Config Element')]
       [String] $Element,
+      [parameter(Mandatory=$true,ParameterSetName='Config-Rename',HelpMessage='Config NewName')]
+      [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config NewName')]
+      [String] $NewName,
+      [parameter(Mandatory=$true,ParameterSetName='Config-Move',HelpMessage='Config Where: after, before, top, bottom')]
+      [ValidateSet('after','before','top','bottom')]
+      [String] $Where,
+      [parameter(ParameterSetName='Config-Move',HelpMessage='Config Dst (required with -Where after or -Where before)')]
+      [String] $Dst,
+      [parameter(Mandatory=$true,ParameterSetName='Config-Clone',HelpMessage='Config From')]
+      [String] $From,
       # Begin Import parameter set
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Import-Default',HelpMessage='Type: import')]
       [parameter(Mandatory=$true,Position=1,ParameterSetName='Import-Cert-Key',HelpMessage='Type: import')]
@@ -162,14 +200,14 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
          if ($PSCmdlet.ParameterSetName -eq 'Keygen') {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=keygen')
             $PanApiType = 'keygen'
-            $InvokeParams = @{
+            $InvokeParams = [ordered]@{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
                   $DeviceCur.Name,
                   $DeviceCur.Port
                ) # Uri sub-expression
-               'Body' = @{
+               'Body' = [ordered]@{
                   'type' = $PanApiType;
                   'user' = $DeviceCur.Credential.UserName;
                   'password' = $DeviceCur.Credential.GetNetworkCredential().Password
@@ -181,14 +219,14 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
          elseif ($PSCmdlet.ParameterSetName -eq 'Version') {
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=version')
             $PanApiType = 'version'
-            $InvokeParams = @{
+            $InvokeParams = [ordered]@{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
                   $DeviceCur.Name,
                   $DeviceCur.Port
                ) # Uri sub-expression
-               'Body' = @{
+               'Body' = [ordered]@{
                   'type' = $PanApiType;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
                } # Body hash table
@@ -200,14 +238,14 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=op')
             $PanApiType = 'op'
             $PanApiCmd = $PSBoundParameters.Cmd
-            $InvokeParams = @{
+            $InvokeParams = [ordered]@{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
                   $DeviceCur.Name,
                   $DeviceCur.Port
                ) # Uri sub-expression
-               'Body' = @{
+               'Body' = [ordered]@{
                   'type' = $PanApiType;
                   'cmd' = $PanApiCmd;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
@@ -220,14 +258,14 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=user-id')
             $PanApiType = 'user-id'
             $PanApiCmd = $PSBoundParameters.Cmd
-            $InvokeParams = @{
+            $InvokeParams = [ordered]@{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
                   $DeviceCur.Name,
                   $DeviceCur.Port
                ); # Uri sub-expression
-               'Body' = @{
+               'Body' = [ordered]@{
                   'type' = $PanApiType;
                   'cmd' = $PanApiCmd;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
@@ -240,14 +278,14 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             Write-Debug ($MyInvocation.MyCommand.Name + ': type=commit')
             $PanApiType = 'commit'
             $PanApiCmd = $PSBoundParameters.Cmd
-            $InvokeParams = @{
+            $InvokeParams = [ordered]@{
                'Method' = 'Post';
                'Uri' = $('{0}://{1}:{2}/api' -f `
                   $DeviceCur.Protocol,
                   $DeviceCur.Name,
                   $DeviceCur.Port
                ) # Uri sub-expression
-               'Body' = @{
+               'Body' = [ordered]@{
                   'type' = $PanApiType;
                   'cmd' = $PanApiCmd;
                   'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
@@ -261,63 +299,48 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
 
          # API type=config
          elseif ($PSCmdlet.ParameterSetName -like 'Config-*') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=config')
             $PanApiType = 'config'
-            if ($PSBoundParameters.Get.IsPresent) {
-               $PanApiAction = 'get'
-            }
-            elseif ($PSBoundParameters.Show.IsPresent) {
-               $PanApiAction = 'show'
-            }
-            elseif ($PSBoundParameters.Set.IsPresent) {
-               $PanApiAction = 'set'
-            }
-            elseif ($PSBoundParameters.Edit.IsPresent) {
-               $PanApiAction = 'edit'
-            }
-            elseif ($PSBoundParameters.Delete.IsPresent) {
-               $PanApiAction = 'delete'
-            }
-            Write-Debug ($MyInvocation.MyCommand.Name + ": action=$PanApiAction")
+            if ($PSBoundParameters.Get.IsPresent) { $PanApiAction = 'get' }
+            elseif ($PSBoundParameters.Show.IsPresent) { $PanApiAction = 'show' }
+            elseif ($PSBoundParameters.Set.IsPresent) { $PanApiAction = 'set' }
+            elseif ($PSBoundParameters.Edit.IsPresent) { $PanApiAction = 'edit' }
+            elseif ($PSBoundParameters.Delete.IsPresent) { $PanApiAction = 'delete' }
+            elseif ($PSBoundParameters.Rename.IsPresent) { $PanApiAction = 'rename' }
+            elseif ($PSBoundParameters.Move.IsPresent) { $PanApiAction = 'move' }
+            elseif ($PSBoundParameters.MultiMove.IsPresent) { $PanApiAction = 'multi-move' }
+            elseif ($PSBoundParameters.Clone.IsPresent) { $PanApiAction = 'clone' }
+            elseif ($PSBoundParameters.MultiClone.IsPresent) { $PanApiAction = 'multi-clone' }
+            elseif ($PSBoundParameters.Complete.IsPresent) { $PanApiAction = 'complete' }
+            Write-Debug ("{0}: type=config action={1}" -f $MyInvocation.MyCommand.Name,$PanApiAction)
 
             $PanApiXPath = $PSBoundParameters.XPath
             $PanApiElement = $PSBoundParameters.Element
+            $PanApiFrom = $PSBoundParameters.From
+            $PanApiNewName = $PSBoundParameters.NewName
+            $PanApiWhere = $PSBoundParameters.Where
+            $PanApiDst = $PSBoundParameters.Dst
 
-            # Element is optional for several actions. If present, include in the Uri.
-            if (-not [String]::IsNullOrEmpty($PanApiElement)) {
-               $InvokeParams = @{
-                  'Method' = 'Post';
+            $InvokeParams = [ordered]@{
+               'Method' = 'Post'
                   'Uri' = $('{0}://{1}:{2}/api' -f `
                      $DeviceCur.Protocol,
                      $DeviceCur.Name,
                      $DeviceCur.Port
-                  ) # Uri sub-expression
-                  'Body' = @{
-                     'type' = $PanApiType;
-                     'action' = $PanApiAction;
-                     'xpath' = $PanApiXPath;
-                     'element' = $PanApiElement;
-                     'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
-                  } # Body hash table
-               } # InvokeParams hash table
+                  )
             }
-            # Else, do not include element in the Uri
-            else {
-               $InvokeParams = @{
-                  'Method' = 'Post';
-                  'Uri' = $('{0}://{1}:{2}/api' -f `
-                     $DeviceCur.Protocol,
-                     $DeviceCur.Name,
-                     $DeviceCur.Port
-                  ) # Uri sub-expression
-                  'Body' = @{
-                     'type' = $PanApiType;
-                     'action' = $PanApiAction;
-                     'xpath' = $PanApiXPath;
-                     'key' = $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password
-                  } # Body hash table
-               } # InvokeParams hash table
+            $Body = [ordered]@{
+               'type' = $PanApiType
+               'action' = $PanApiAction
+               'xpath' = $PanApiXPath
             }
+            if($PanApiElement) { $Body.Add('element', $PanApiElement) }
+            if($PanApiFrom) { $Body.Add('from', $PanApiFrom) }
+            if($PanApiNewName) { $Body.Add('newname', $PanApiNewName) }
+            if($PanApiWhere) { $Body.Add('where', $PanApiWhere) }
+            if($PanApiDst) { $Body.Add('dst', $PanApiDst) }
+            $Body.Add('key', $(New-Object -TypeName PSCredential -ArgumentList 'user',$DeviceCur.Key).GetNetworkCredential().Password)
+            # Add the completed Body
+            $InvokeParams.Add('body', $Body)
          } # End API type=config
 
          # API type=import
@@ -328,7 +351,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
 
             if($PSCmdlet.ParameterSetName -eq 'Import-Default') {
                Write-Debug ($MyInvocation.MyCommand.Name + ": type=Import (Default)")
-               $InvokeParams = @{
+               $InvokeParams = [ordered]@{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api?key={3}&type={4}&category={5}' -f `
                      $DeviceCur.Protocol,
@@ -351,7 +374,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
 
             elseif($PSCmdlet.ParameterSetName -eq 'Import-Cert-Key') {
                Write-Debug ($MyInvocation.MyCommand.Name + ": type=Import (Cert-Key)")
-               $InvokeParams = @{
+               $InvokeParams = [ordered]@{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api?key={3}&type={4}&category={5}&certificate-name={6}&format={7}' -f `
                      $DeviceCur.Protocol,
@@ -389,7 +412,7 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
             # PowerShell 7+ x.509 Validation Policy can be set directly on Invoke-WebRequest
             if($PSVersionTable.PSVersion.Major -ge 7) {
                # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
-               $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck:(-not $DeviceCur.ValidateCertificate)) -Device $DeviceCur
+               $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck:(-not $DeviceCur.ValidateCertificate)), $DeviceCur )
             }
             # PowerShell 5 x.509 Validation Policy set using specific helper cmdlet
             else {
@@ -399,10 +422,10 @@ PS> Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\
                else {
                   SetX509CertificateValidation -NoValidate
                }
-               $Response = NewPanResponse -WebResponse (Invoke-WebRequest @InvokeParams -UseBasicParsing) -Device $DeviceCur
+               $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing), $DeviceCur)
             }
-            Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1}' -f $Response.Status, $Response.Code))
-            return $Response
+            Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message))
+            return $R
          }
       } # Process block outermost foreach
    } # Process block

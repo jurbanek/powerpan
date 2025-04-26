@@ -10,6 +10,7 @@ Describe -Name "New-PanDevice Unit Tests" -Tag "Unit" {
 
    Context "Parameter Sets" {
       $DevName = "10.1.1.1"
+      # This is not a real key
       $DevKey = "LUFRPT1aNTZhR0IrcmxBOEtKa3FnbzVIa2xQOE93U3c9UlRRMEhDeEJDUEVocHhCTnExU0J4YW5hM01hcVRzT0doNUR3NWdvYWVJWT0="
       $TestDevice = New-PanDevice -Name $DevName -Key $DevKey
       It "-Key :: Should be stored as a [SecureString]" {

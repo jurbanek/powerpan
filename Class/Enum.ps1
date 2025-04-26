@@ -5,10 +5,17 @@
 
 Add-Type @'
 public enum PanAddressType {
-   IpNetmask = 0,
-   IpRange = 1,
-   IpWildcardMask = 2,
-   Fqdn = 3
+   IpNetmask = 1,
+   IpRange = 2,
+   IpWildcardMask = 3,
+   Fqdn = 4
+}
+'@
+
+Add-Type @'
+public enum PanDeviceType {
+   Ngfw = 1,
+   Panorama = 2
 }
 '@
 

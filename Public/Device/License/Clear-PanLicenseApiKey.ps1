@@ -38,13 +38,13 @@ function Clear-PanLicenseApiKey {
          $Cmd = '<request><license><api-key><delete></delete></api-key></license></request>'
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
          Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+         $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
 
-         # Output $PanResponse for feedback
-         $PanResponse
+         # Output $R for feedback
+         $R
       } # foreach Device
    } # Process block
    End {

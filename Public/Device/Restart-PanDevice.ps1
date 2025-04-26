@@ -19,14 +19,11 @@ No prompt for confirmation
 #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
-      [parameter(
-         Mandatory=$true,
-         Position=0,
-         ValueFromPipeline=$true,
-         HelpMessage='PanDevice(s) to be restarted.')]
+      [parameter(Mandatory=$true,ParameterSetName='Device',Position=0,ValueFromPipeline=$true,HelpMessage='PanDevice(s) to be restarted.')]
       [PanDevice[]] $Device,
-      [parameter(
-         HelpMessage='Specify -Force to bypass confirmation.')]
+      [parameter(Mandatory=$true,ParameterSetName='Filter',Position=0,HelpMessage='Name of PanDevice(s) to be restarted.')]
+      [String[]] $Name,
+      [parameter(HelpMessage='Specify -Force to bypass confirmation.')]
       [Switch] $Force
    )
 
@@ -42,21 +39,43 @@ No prompt for confirmation
    } # Begin block
 
    Process {
-      foreach($DeviceCur in $Device) {
-         if($Force -or $PSCmdlet.ShouldProcess($DeviceCur.Name, 'request restart system')) {
-            Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Cmd: {1}' -f $DeviceCur.Name, $Cmd))
-            $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-            if($Response.Status -eq 'success') {
-               # No need for Write-Host since there is no error. Keep in Verbose stream.
-               Write-Verbose ('Restart system success')
+      if($PSCmdlet.ParameterSetName -eq 'Device') {
+         foreach($DeviceCur in $PSBoundParameters.Device) {
+            if($Force -or $PSCmdlet.ShouldProcess($DeviceCur.Name, 'request restart system')) {
+               Write-Debug ('{0}: Device: {1} Cmd: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name, $Cmd)
+               $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+               if($R.Status -eq 'success') {
+                  Write-Debug ('{0}: Device: {1} Restart system success' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+               }
+               else {
+                  Write-Error ('Device: {0} Restart system failed. Status: {1} Code: {2} Message: {3}' -f $DeviceCur.Name,$R.Status,$R.Code,$R.Message)
+               }
+               # Send response to pipeline
+               $R
+            } # if Force -or ShouldProcess
+         } # foreach
+      } # end ParameterSetName
+
+      elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
+         foreach($NameCur in $PSBoundParameters.Name) {
+            $TargetDevice = Get-PanDevice -Name $NameCur
+            if(-not $TargetDevice) {
+               Write-Error ('{0}: Device Name: {1} Not Found' -f $MyInvocation.MyCommand.Name,$NameCur)
             }
-            else {
-               Write-Error ('Restart system failed. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
-            }
-            # Send response to pipeline
-            $Response
-         } # if Force -or ShouldProcess
-      } # foreach
+            elseif($Force -or $PSCmdlet.ShouldProcess($TargetDevice.Name, 'request restart system')) {
+               Write-Debug ('{0}: Device: {1} Cmd: {2}' -f $MyInvocation.MyCommand.Name,$TargetDevice.Name,$Cmd)
+               $R = Invoke-PanXApi -Device $TargetDevice -Op -Cmd $Cmd
+               if($R.Status -eq 'success') {
+                  Write-Debug ('{0}: Device: {1} Restart system success' -f $MyInvocation.MyCommand.Name,$TargetDevice.Name)
+               }
+               else {
+                  Write-Error ('Device: {0} Restart system failed. Status: {1} Code: {2} Message: {3}' -f $TargetDevice.Name,$R.Status,$R.Code,$R.Message)
+               }
+               # Send response to pipeline
+               $R
+            } # if Force -or ShouldProcess
+         } # foreach
+      }
    } # Process block
 
    End {

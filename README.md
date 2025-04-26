@@ -1,15 +1,19 @@
 # PowerPAN - PowerShell Module for Palo Alto Networks NGFW
 
-PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
+PowerPAN is a PowerShell module for the Palo Alto Networks NGFW & Panorama
 
 ## Features
 
-- Object model of PAN-OS XML-API and XML configuration as PowerShell cmdlets and objects
-  - The objects modeled are few, but those modeled function well
+- Object model of PAN-OS XML-API and XML configuration as PowerShell native cmdlets and objects
+  - PAN-OS objects are modeled as native PowerShell objects (with more being added). Those modeled function well.
 - Persistent secure key/password storage of NGFW (called `PanDevice`) device credentials for use across PowerShell sessions (called `PanDeviceDb` internally, think of it as a simple device inventory).
-  - Enables launching PowerShell and immediately "getting to work" *in the shell* without having to write scripts or deal with authentication
-- "Anything imaginable" is doable with `Invoke-PanXApi`. The *more specific* cmdlets are mostly targeted at runtime operations and non-policy administrative use case cases.
-- Mature models
+  - Enables launching PowerShell and immediately "getting to work" *in the shell* without having to write scripts or deal with authentication every time
+- "Anything imaginable" is doable with `Invoke-PanXApi`. The *more specific* cmdlets are mostly targeted at runtime operations and limited policy administrative use case cases.
+
+### Mature models
+  
+  - `Get-`,`Set-`,`Copy-`,`Move-`,`Remove-`,`Rename-` of `[PanAddress]`, `[PanService]`, `[PanAddressGroup]`, and `[PanServiceGroup]`
+    - To retrieve a PanAddress object, use `Get-PanAddress`. A PanAddressGroup would be `Get-PanAddressGroup`.
   - `Invoke-PanXApi` provide low-level abstraction the PAN-OS XML-API. Nearly all other cmdlets call `Invoke-PanXApi` to interact with the XML-API
     - The capabilities of all future planned cmdlets can already be done with `Invoke-PanXApi` and logic, the future cmdlets will just make it easier.
   - `Invoke-PanCommit` to commit, validation, and seeing if pending changes exist.
@@ -17,26 +21,38 @@ PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
   - `Invoke-PanHaState` to view and change high-availability *operational/runtime* state.
   - `Job` cmdlet to retrieve and view jobs (tasks)
   - `RegisteredIp` cmdlets to add registered-ip's and tag those IP's for use with Dynamic Address Groups (DAG)
-  - `AddressObject` cmdlets to interact with PAN-OS address objects
   - `PanDeviceDb` and `PanDevice` cmdlets for managing the persistent secure storage of device credentials between PowerShell sessions
-- Panorama Support
-  - `Invoke-PanXApi` supports Panorama just fine. Mind Panorama's unique `XPath`'s when using it.
-  - Many other cmdlets do not have or have limited Panorama support.
-- PowerShell Support
+
+### Multi-vsys and Panorama Support
+  - Each `[PanDevice]` has a `Location` property mapping out `shared`, `vsys1`, `vsys2`, `MyDeviceGroup`.
+  - The `Get-`, `Set-`, `Copy-`, etc. Address/AddressGroup/etc. cmdlets can be scoped with a `-Location` parameter
+  - For "custom" work not yet implemented with specific object focused cmdlets, `Invoke-PanXApi` supports Panorama just fine. The `PanDevice.Location` property is of great help.
+
+### PowerShell Support
+  - PowerShell 7.4 LTS (works on Windows, MacOS, and Linux).
+  - PowerShell 7.2 LTS (works on Windows and MacOS). PowerShell 7.2 LTS is end of support, upgrade to PowerShell 7.4 LTS.
   - Windows PowerShell 5.1
-  - PowerShell 7.2 LTS (works on Windows and MacOS, as of 2024-09-18 have not tested Linux yet). PowerShell 7.2 LTS is end of support.
-  - PowerShell 7.4 LTS (works on Windows and MacOS, as of 2025-02-21 have not tested Linux yet).
   - Other PowerShell versions will likely work, but will not be tested explicitly
 
 ## Status
 
-PowerPAN is broadly considered experimental and incomplete, but certain parts of it do function well for production use cases.
+PowerPAN is broadly considered experimental and incomplete, but parts of it function well for production use cases.
 
 ## Install
 
 Available from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerPAN)
 
-`Install-Module PowerPAN`
+```powershell
+Install-Module PowerPAN
+```
+
+## Help
+
+Inline help is available for all cmdlets
+
+```powershell
+Get-Help Set-PanAddress`
+```
 
 ## Examples
 
@@ -63,18 +79,154 @@ New-PanDevice -Name "10.0.0.250" -Username "admin" -Password "admin123" -Keygen
 New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen -ValidateCertificate
 ```
 
-### Retrieve address objects
+### PAN-OS Object Operations
+
+| Prefix       | Operation                                                        |
+|--------------|------------------------------------------------------------------|
+| `Get-`       | Retrieve                                                         |
+| `Set-`       | Create or update                                                 |
+| `Copy-`      | Copy                                                             |
+| `Move-`      | Move                                                             |
+| `Remove-`    | Remove                                                           |
+| `Rename-`    | Rename                                                           |
+| `Construct-` | Create in local PS session only, does not apply change to device |
+
+| Type         | Suffix              |
+|--------------|---------------------|
+| Address      | `*-PanAddress`      |
+| Service      | `*-PanService`      |
+| AddressGroup | `*-PanAddressGroup` |
+| ServiceGroup | `*-PanServiceGroup` |
+
+- To retrieve an address object, `Get-PanAddress`
+- To rename a service object, `Rename-PanService`
+
+#### `Get-`
+```powershell
+# Retrieve all addresses on all locations (shared, vsys1, etc.)
+Get-PanDevice fw.lab.local | Get-PanAddress
+# Retrieve all addresses in vsys1 only
+Get-PanDevice fw.lab.local | Get-PanAddress -Location vsys1
+# Retrieve specific address
+Get-PanDevice fw.lab.local | Get-PanAddress -Location vsys1 -Name "H-1.1.1.1"
+# For every PanDevice (stored), get address objects in all locations
+Get-PanDevice -All | Get-PanAddress
+```
+
+#### `Set-`
 
 ```powershell
-Get-PanDevice fw.lab.local | Get-PanAddress
+$D =  Get-PanDevice fw.lab.local
+# Create (or update if already exists)
+Set-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1' -Type 'ip-netmask' -Value '1.1.1.1'
+# Come back later (already exists) and add risky and review tags (tags must already be created)
+Set-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1' -Tag @('risky','review')
+# Remove all tags
+Set-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1' -Tag @()
 
-# For every PanDevice (stored), retrieve their address objects
-Get-PanDevice -All | Get-PanAddress
+# Modify object locally and then pipe it to apply it
+$A = Get-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1'
+$A.Description = 'Updated description'
+$A.Tag = @('risky','review')
+$A | Set-PanAddress
+
+# Build object separately from scratch and then pipe it to apply it
+$A = Construct-PanAddress
+$A.Device = $D
+$A.Location = 'vsys1'
+$A.Name = 'H-1.1.1.1'
+$A.Type = 'ip-netmask'
+$A.Value = '1.1.1.1'
+$A.Tag = @('risky','review')
+$A.Description = 'Some Description'
+$A | Set-PanAddress
+```
+
+Note: Updating the PowerShell object's properties using assignment like `$A.Description = 'Updated Description'` updates the data internal structure of the object in the PowerShell session. It does *not* update the device candidate configuration *until* applied with `Set-`.
+
+#### `Copy-`
+```powershell
+$D = Get-PanDevice 'fw.lab.local'
+# Same location, new name
+Copy-PanAddress -Device $D -Location vsys1 -Name 'MyAddress' -NewName 'MyAddress2'
+# New location, same name
+Copy-PanAddress -Device $D -Location vsys1 -Name 'MyAddress' -DstLocation 'shared'
+# New location, new name
+Copy-PanAddress -Device $D -Location vsys1 -Name 'MyAddress' -DstLocation 'shared' -NewName 'MyAddress2'
+```
+ #### `Move-`
+ ```powershell
+$D = Get-PanDevice 'fw.lab.local'
+Move-PanAddress -Device $D -Location vsys1 -Name 'MyAddress' -DstLocation 'shared'
+
+# Panorama
+$P = Get-PanDevice 'panorama.lab.local'
+# The Location and DstLocation are always case-sensitive to account for Panorama's
+# case-sensitive device group names
+Move-PanAddress -Device $P -Location 'Parent' -Name 'MyAddress' -DstLocation 'Child'
+ ```
+
+#### `Remove-`
+```powershell
+$D = Get-PanDevice 'fw.lab.local'
+Remove-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1'
+
+# Or pipe to remove
+$A = Get-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1'
+$A | Remove-PanAddress
+
+# Remove all address objects in vsys1 t have 'test' tag... in a one-liner
+Get-PanDevice 'fw.lab.local' |
+  Get-PanAddress -Location vsys1 |
+    Where-Object {'test' -in $_.Tag} |
+      Remove-PanAddress
+```
+
+#### `Rename-`
+```powershell
+$D = Get-PanDevice 'fw.lab.local'
+Rename-PanAddress -Device $D -Location vsys1 -Name 'MyAddress' -NewName 'UpdatedName'
+
+# Or with pipe
+Get-PanDevice 'fw.lab.local' |
+  Get-PanAddress -Location vsys1 -Name 'MyAddress' |
+    Rename-PanAddress -NewName 'UpdatedName'
+```
+
+#### `Construct-`
+
+- Create a local object in the PowerShell session only. Used *instead* of calling class `::new()` constructors.
+- Class `::new()` constructors are not available outside of the PowerPAN module since the PowerMan module is considered a ScriptModule. PowerShell limitation.
+- The `Construct-` cmdlets use an *unapproved* verb (Construct), by design.
+- The approved verb would be `New-` but the behavioral semantics of the `Contstruct-` cmdlets do *not* match other object cmdlets (which apply changes to candidate configuration). `Construct-` it is.
+
+```powershell
+$D = Get-PanDevice 'fw.lab.local'
+# Despite specifying Device and Location, the object is still only created in the local PowerShell session
+# Device and Location are needed to get the correct internal XmlDocument and XPath in the object
+$A = Construct-PanAddress -Device $D -Location vsys1 -Name 'H-1.1.1.1'
+$A.Type = 'ip-netmask'
+$A.Value = '1.1.1.1'
+$A | Set-PanAddress
+
+$AG = Construct-PanAddressGroup -Device $D -Location vsys1 -Name 'MyAddressGroup'
+$AG.Member = @('H-1.1.1.1','H-2.2.2.2','MyAddress')
+$AG | Set-PanAddressGroup
+
+$S = Construct-PanAddress -Device $D -Location vsys1 -Name 'tcp-49152-65535'
+$S.Protocol = 'tcp'
+$S.Port = '49152-65535'
+$S.Tag = @('range')
+$S | Set-PanService
+
+$SG = Construct-PanServiceGroup -Device $D -Location vsys1 -Name 'MyServiceGroup'
+$SG.Member = @('tcp-443','tcp-49152-65535')
+$SG | Set-PanServiceGroup
 ```
 
 ### Registered-IP Tagging (to populate Dynamic Address Groups)
 
-- registered-ip's are **not** address objects
+- registered-ip's are *not* address objects
 - They are not visible in the CANDIDATE or ACTIVE config; they are commitless. They persist across reboots (yep).
 - registered-ip tags are frequently used in dyanmic address group (DAG) match criteria
 
@@ -184,7 +336,6 @@ Get-PanDevice fw.lab.local | Invoke-PanHaState -Functional
 - Returns a `PanResponse` object which includes the raw API responses
 - Supports nearly all XML-API operations supported by PAN-OS, including all Config *(Get, Show, Set, Edit, Delete)* and Operational. Read the source or `help Invoke-PanXApi` in-line help for details.
 - All `PowerPAN` cmdlets use `Invoke-PanXApi` under the hood to interact with the PAN-OS XML-API
-- While Panorama is not supported or limited support by the *more-specific* abstracted cmdlets, Panorama is well-supported by `Invoke-PanXApi`
 - To find `XPath`'s
   - Authenticate to standard GUI `https://<fwip>` (or Panorama)
   - New tab to `https://<fwip>/api` (or Panorama) and browse away
@@ -207,6 +358,8 @@ Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/devices/entry[@name=
 
 #### Type
 
+[PAN-OS XML API Request Types](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-panorama-api/pan-os-xml-api-request-types)
+
 | Type          | PowerPAN | Note |
 | ------------- | -------- | ---- |
 | Config Show   | `Invoke-PanXApi <...> -Config -Show -XPath '/config/xpath...'` | Retrieves ACTIVE configuration |
@@ -214,6 +367,12 @@ Invoke-PanXApi -Device $Device -Config -Get -XPath "/config/devices/entry[@name=
 | Config Set    | `Invoke-PanXApi <...> -Config -Set -XPath '/config/xpath...' -Element '<example>value</example>'`   | Add, update, merge. Non-destructive, only additive |
 | Config Edit   | `Invoke-PanXApi <...> -Config -Edit -XPath '/config/xpath...' -Element '<example>value</example>'`   | Replace configuration node. Can be destructive |
 | Config Delete | `Invoke-PanXApi <...> -Config -Delete -XPath '/config/xpath...'`   | Delete configuration. Destructive |
+| Config Rename | `Invoke-PanXApi <...> -Config -Rename -XPath '/config/xpath...' -NewName 'UpdatedName'`   | Rename |
+| Config Move   | `Invoke-PanXApi <...> -Config -Move -XPath '/config/xpath...' -Where ... [-Dst ...]`   | Move |
+| Config MultiMove   | `Invoke-PanXApi <...> -Config -MultiMove -XPath '/config/xpath...' -Element ...`   | MultiMove |
+| Config Clone   | `Invoke-PanXApi <...> -Config -Clone -XPath '/config/xpath...' -From ... -NewName ...`   | Cone |
+| Config MultiClone   | `Invoke-PanXApi <...> -Config -MultiClone -XPath '/config/xpath...' -Element ...`   | MultiClone |
+| Config Complete   | `Invoke-PanXApi <...> -Config -Complete -XPath '/config/xpath...'  | Complete |
 | Version       | `Invoke-PanXApi <...> -Version`   | Easy way to test API,, but consider `Test-PanDevice` |
 | Commit        | `Invoke-PanXApi <...> -Commit`   | Commit, but consider `Invoke-PanCommit` |
 | Operational   | `Invoke-PanXApi <...> -Op -Cmd '<show><system><info></info></system></show>'` | Operational (exec CLI commands). Not all are valid |
@@ -289,21 +448,22 @@ $LECert = Get-PACertificate
 # Add -Debug and -Verbose if you want to see more detail
 # -Category 'keypair' is for certificate including private key. -Category 'certificate' is for certificate only
 # Consider appending an ISO8601 date suffix representing issue date on the end, especially when renewing every 30/60 days
-$Response = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
-if($Response.Status -eq 'success') {
+$R = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
+if($R.Status -eq 'success') {
   Write-Host ('Upload successful')
 }
 else {
-  Write-Error ('Upload not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message) -ErrorAction Stop
+  Write-Error ('Upload not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message) -ErrorAction Stop
 }
 
 # Optionally, update a SSL/TLS Service Profile to use the certificate
 $XPath = "/config/shared/ssl-tls-service-profile/entry[@name='{0}']" -f 'GP-Portal-Gateway-Profile'
 $Element = "<certificate>{0}</certificate>" -f 'gp.acme.io-20250221'
-$Response = Invoke-PanXApi -Device $D -Config -Set -XPath $XPath -Element $Element
-if($Response.Status -eq 'success') {
+$R = Invoke-PanXApi -Device $D -Config -Set -XPath $XPath -Element $Element
+if($R.Status -eq 'success') {
   Write-Host ('Update successful')
 }
 else {
-  Write-Error ('Update not successful Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message) -ErrorAction Stop
+  Write-Error ('Update not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message) -ErrorAction Stop
 }
+```

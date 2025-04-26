@@ -21,7 +21,7 @@ Assumes:
 # Exclude Pester .Tests.ps1 files to avoid a "Modules can only be nested to 10 levels" import / dot-sourcing loop during Pester tests
 # See note above on $ClassDotSourceOrder and using it to resolve PowerShell class dot-source order dependency issues
 $Class = @()
-$ClassDotSourceOrder = @('Enum.ps1','PanDevice.ps1','PanResponse.ps1')
+$ClassDotSourceOrder = @('Enum.ps1','PanDevice.ps1','PanResponse.ps1','PanObject.ps1')
 foreach($ClassDotSourceOrderCur in $ClassDotSourceOrder) {
    $Class += Get-ChildItem -Path "$PSScriptRoot/Class" -Recurse -Include $ClassDotSourceOrderCur -ErrorAction SilentlyContinue
 }
@@ -41,5 +41,5 @@ foreach($f in @($Class + $Public + $Private) ) {
     }
 }
 
-# As of 0.2.1 using Manifest FunctionsToExport() to to aid module auto-load
+# As of 0.2.1 using Manifest FunctionsToExport() instead of Export-ModuleMember to aid module auto-load
 # Export-ModuleMember -Function $Public.BaseName

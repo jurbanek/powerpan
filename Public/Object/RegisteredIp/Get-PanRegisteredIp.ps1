@@ -68,16 +68,16 @@ function Get-PanRegisteredIp {
       foreach($DeviceCur in $Device) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
          Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+         $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
 
          # Define here, track an individual device number of registered-ip's.
          $DeviceCurEntryCount = 0
 
-         if($PanResponse.Status -eq 'success') {
-            foreach($EntryCur in $PanResponse.Result.entry) {
+         if($R.Status -eq 'success') {
+            foreach($EntryCur in $R.Response.result.entry) {
                # Increment individual device count of registered-ip's.
                $DeviceCurEntryCount += 1
                # Placeholder to aggregate multiple tag values should a single registered-ip have multiple tags.

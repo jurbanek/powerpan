@@ -45,14 +45,14 @@ function Get-PanLicenseApiKey {
          $Cmd = '<request><license><api-key><show></show></api-key></license></request>'
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
          Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
-         $PanResponse = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+         $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $PanResponse.Status)
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $PanResponse.Message)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+         Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
 
          # Output custom object with PanDevice Name and LicenseApiKey
-         if($PanResponse.Status -eq 'success') {
-            $PanResponse.Result -Match "API key: (?<key>\S*)" | Out-Null
+         if($R.Status -eq 'success') {
+            $R.Response.result -Match "API key: (?<key>\S*)" | Out-Null
             $LicenseApiKey = $Matches['key']
             $LicenseApiKeySecure = ConvertTo-SecureString -String $LicenseApiKey -AsPlainText -Force
 

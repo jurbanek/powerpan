@@ -50,13 +50,13 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
             if($PSCmdlet.ParameterSetName -eq 'Info' -or $PSCmdlet.ParameterSetName -eq 'Empty') {
                 $Cmd = '<show><high-availability><all></all></high-availability></show>'
                 Write-Debug ($MyInvocation.MyCommand.Name + (': -Info Cmd: {0}' -f $Cmd))
-                $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-                if($Response.Status -eq 'success') {
+                $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+                if($R.Status -eq 'success') {
                     # Send PanHaState object down pipeline
-                    NewPanHaState -Device $DeviceCur -Response $Response
+                    NewPanHaState -Device $DeviceCur -Response $R
                 }
                 else {
-                    Write-Error ('Error retrieving PAN HA state. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+                    Write-Error ('Error retrieving PAN HA state. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 }
             } # End ParameterSetName
 
@@ -64,12 +64,12 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
             if($PSCmdlet.ParameterSetName -eq 'Suspend') {
                 $Cmd = '<request><high-availability><state><suspend></suspend></state></high-availability></request>'
                 Write-Debug ($MyInvocation.MyCommand.Name + (': -Suspend Cmd: {0}' -f $Cmd))
-                $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-                if($Response.Status -eq 'success') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': {0}' -f $Response.result))
+                $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+                if($R.Status -eq 'success') {
+                    Write-Debug ($MyInvocation.MyCommand.Name + (': {0}' -f $R.Response.result))
                 }
                 else {
-                    Write-Error ('Error applying PAN HA suspend operation. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+                    Write-Error ('Error applying PAN HA suspend operation. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 }
             } # End ParameterSetName
 
@@ -77,12 +77,12 @@ Unsuspend (make functional) PAN high-availability. Device goes through HA startu
             if($PSCmdlet.ParameterSetName -eq 'Functional') {
                 $Cmd = '<request><high-availability><state><functional></functional></state></high-availability></request>'
                 Write-Debug ($MyInvocation.MyCommand.Name + (': -Functional Cmd: {0}' -f $Cmd))
-                $Response = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-                if($Response.Status -eq 'success') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': {0}' -f $Response.result))
+                $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
+                if($R.Status -eq 'success') {
+                    Write-Debug ($MyInvocation.MyCommand.Name + (': {0}' -f $R.Response.result))
                 }
                 else {
-                    Write-Error ('Error applying PAN HA functional operation. Status: {0} Code: {1} Message: {2}' -f $Response.Status,$Response.Code,$Response.Message)
+                    Write-Error ('Error applying PAN HA functional operation. Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 }
             } # End ParameterSetname
         } # foreach Device
