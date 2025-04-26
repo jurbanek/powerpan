@@ -36,7 +36,7 @@ Update-ModuleManifest -Path "$($Cfg.Root)/$($Cfg.ModuleName).psd1" -FunctionsToE
 *************************************#>
 # Get all Formats within Format/*, one per file, update the manifest to include relative path "Format/File.Format.ps1xml"
 foreach($File in Get-ChildItem -Path "$($Cfg.Root)/Format/*.ps1xml" -Recurse -ErrorAction SilentlyContinue) {
-   $Cfg.FormatsToProcess += "Format/$($File.BaseName)"
+   $Cfg.FormatsToProcess += "Format/$($File.Name)"
 }
 Update-ModuleManifest -Path "$($Cfg.Root)/$($Cfg.ModuleName).psd1" -FormatsToProcess $Cfg.FormatsToProcess
 
