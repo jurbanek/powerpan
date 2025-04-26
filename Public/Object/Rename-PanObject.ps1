@@ -18,8 +18,13 @@ PanService[]
    You can pipe a PanService to this cmdlet
 PanAddressGroup[]
    You can pipe a PanAddressGroup to this cmdlet
+PanServiceGroup[]
+   You can pipe a PanServiceGroup to this cmdlet
 .OUTPUTS
 PanAddress
+PanService
+PanAddressGroup
+PanServiceGroup
 .EXAMPLE
 $D = Get-PanDevice "fw.lab.local"
 Rename-PanAddress -Device $D -Location "vsys1" -Name "MyHostA" -NewName "H-1.1.1.1"
@@ -61,6 +66,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
             Write-Debug ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} NewName: {6} ' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,$InputObjectCur.GetType().Name,$InputObjectCur.Name,$PSBoundParameters.NewName)
+            # Call API
             $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Rename -XPath $InputObjectCur.XPath -NewName $PSBoundParameters.NewName
             # Check PanResponse
             if($R.Status -eq 'success') {
@@ -69,6 +75,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                   'Rename-PanAddress'        { Get-PanAddress -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
                   'Rename-PanService'        { Get-PanService -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
                   'Rename-PanAddressGroup'   { Get-PanAddressGroup -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
+                  'Rename-PanServiceGroup'   { Get-PanServiceGroup -Device $InputObjectCur.Device -Location $InputObjectCur.Location -Name $PSBoundParameters.NewName; continue }
                }
             }
             else {
@@ -88,6 +95,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                'Rename-PanAddress'        { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Rename-PanService'        { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Rename-PanAddressGroup'   { $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Rename-PanServiceGroup'   { $Obj = Get-PanServiceGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
             }
 
             # Call API
@@ -99,6 +107,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
                      'Rename-PanAddress'        { Get-PanAddress -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
                      'Rename-PanService'        { Get-PanService -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
                      'Rename-PanAddressGroup'   { Get-PanAddressGroup -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
+                     'Rename-PanServiceGroup'   { Get-PanServiceGroup -Device $Obj.Device -Location $Obj.Location -Name $PSBoundParameters.NewName; continue }
                   }
                }
                # Failure on Invoke-PanXApi

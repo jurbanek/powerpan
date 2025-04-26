@@ -1,10 +1,10 @@
-function Set-PanAddressGroup {
+function Set-PanServiceGroup {
 <#
 .SYNOPSIS
-Create or update address group in the device candidate configuration.
+Create or update service group in the device candidate configuration.
 .DESCRIPTION
-Create an address group object in the device candidate configuration if the name does *not* exist.
-Update an address group object in the device candidate configuration if the name already exists.
+Create a service group object in the device candidate configuration if the name does *not* exist.
+Update a service group object in the device candidate configuration if the name already exists.
 .NOTES
 Two modes: -InputObject mode and -Device mode.
 
@@ -25,31 +25,24 @@ Set- cannot be used to move object locations. Use Move- cmdlet.
 .INPUTS
 PanDevice[]
    You can pipe a PanDevice to this cmdlet
-PanAddressGroup[]
-   You can pipe a PanAddressGroup to this cmdlet
+PanServiceGroup[]
+   You can pipe a PanServiceGroup to this cmdlet
 .OUTPUTS
-PanAddressGroup
+PanServiceGroup
 .EXAMPLE
 Create new on NGFW
 
 $D = Get-PanDevice "fw.lab.local"
-Set-PanAddressGroup -Device $D -Location "vsys1" -Name "MyAddressGroup" -Member @('H-1.1.1.1','H-2.2.2.2') -Type "static"
+Set-PanServiceGroup -Device $D -Location "vsys1" -Name "MyServiceGroup" -Member @('tcp-80','tcp-443')
 
-If MyAddressGroup already exists in vsys1, the specified PowerShell parameters will replace their corresponding elements/attributes.
+If MyServiceGroup already exists in vsys1, the specified PowerShell parameters will replace the corresponding elements/attributes.
 .EXAMPLE
 Create new on Panorama
 
 $D = Get-PanDevice "panorama.lab.local"
-Set-PanAddressGroup -Device $D -Location "MyDeviceGroup" -Name "MyAddressGroup" -Member @('H-1.1.1.1','H-2.2.2.2') -Type "static"
+Set-PanServiceGroup -Device $D -Location "MyDeviceGroup" -Name "MyServiceGroup" -Member @('tcp-80','tcp-443')
 
-If MyAddressGroup already exists in MyDeviceGroup, the specified PowerShell parameters will replace their corresponding elements/attributes.
-.EXAMPLE
-Add a description to an object that already exists.
-
-$D = Get-PanDevice "fw.lab.local"
-Set-PanAddressGroup -Device $D -Location "vsys1" -Name "MyAddressGroup" -Description "Updated Description!"
-
-If the object did NOT exist already, the command would error remotely by the API (with details) as additional parameters are required for new objects to be created.
+If MyServiceGroup already exists in MyDeviceGroup, the specified PowerShell parameters will replace the corresponding elements/attributes.
 #>
    [CmdletBinding()]
    param(
@@ -59,21 +52,14 @@ If the object did NOT exist already, the command would error remotely by the API
       [String] $Location,
       [parameter(Mandatory=$true,ParameterSetName='Device',HelpMessage='Case-sensitive name of address object')]
       [String] $Name,
-      [parameter(ParameterSetName='Device',HelpMessage='Type of the address group: static, dynamic')]
-      [ValidateSet('static','dynamic')]
-      [String] $Type,
       [parameter(ParameterSetName='Device',HelpMessage='Array of string member names for static group ONLY')]
       [String[]] $Member,
-      [parameter(ParameterSetName='Device',HelpMessage='Match filter for dynamic group ONLY')]
-      [String] $Filter,
-      [parameter(ParameterSetName='Device',HelpMessage='Description')]
-      [String] $Description,
       [parameter(ParameterSetName='Device',HelpMessage='One or more tags. Tags must exist already. Will not create tags')]
       [String[]] $Tag,
       [parameter(ParameterSetName='Device',HelpMessage='Disable ability to override (Panorama device-group objects only)')]
       [Bool] $DisableOverride,
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be created/updated as is')]
-      [PanAddressGroup[]] $InputObject
+      [PanServiceGroup[]] $InputObject
    )
 
    Begin {
@@ -95,7 +81,7 @@ If the object did NOT exist already, the command would error remotely by the API
             # Check PanResponse
             if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
-               Get-PanAddressGroup -InputObject $InputObjectCur
+               Get-PanServiceGroup -InputObject $InputObjectCur
             }
             else {
                Write-Error ('Error applying InputObject {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f
@@ -110,22 +96,19 @@ If the object did NOT exist already, the command would error remotely by the API
             Write-Debug ('{0}: Device: {1} Location: {2} Name: {3} ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Location,$PSBoundParameters.Name)
             # If object already exists, use it. If object does not exist, create a minimimum viable object with a call to ::new($Device,$Location,$Name)
             $Obj = $null
-            $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
+            $Obj = Get-PanServiceGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             if($Obj) {
                Write-Debug ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Obj.XPath)
             }
             # Object does not exist, build it
             else {
                Write-Debug ('{0}: Cannot find {1} on Device: {2}/{3}. Building' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location)
-               $Obj = [PanAddressGroup]::new($DeviceCur,$PSBoundParameters.Location,$PSBoundParameters.Name)
+               $Obj = [PanServiceGroup]::new($DeviceCur,$PSBoundParameters.Location,$PSBoundParameters.Name)
             }
                
             # Modify properties directly letting Getter/Setter do heavy XML lifting
             # Device, Location, and Name do not apply
-            if($PSBoundParameters.ContainsKey('Type'))            { $Obj.Type = $PSBoundParameters.Type }
             if($PSBoundParameters.ContainsKey('Member'))          { $Obj.Member = $PSBoundParameters.Member }
-            if($PSBoundParameters.ContainsKey('Filter'))          { $Obj.Filter = $PSBoundParameters.Filter }
-            if($PSBoundParameters.ContainsKey('Description'))     { $Obj.Description = $PSBoundParameters.Description }
             if($PSBoundParameters.ContainsKey('Tag'))             { $Obj.Tag = $PSBoundParameters.Tag }
             if($PSBoundParameters.ContainsKey('DisableOverride')) { $Obj.DisableOverride = $PSBoundParameters.DisableOverride }
 
@@ -137,7 +120,7 @@ If the object did NOT exist already, the command would error remotely by the API
             # Check PanResponse
             if($R.Status -eq 'success') {
                # Send the updated object back to the pipeline for further use or to display
-               Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
+               Get-PanServiceGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             }
             else {
                Write-Error ('Error applying {0} on {1}/{2} . Status: {3} Code: {4} Message: {5}' -f

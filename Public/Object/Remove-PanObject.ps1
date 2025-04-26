@@ -18,10 +18,13 @@ PanService[]
    You can pipe a PanService to this cmdlet
 PanAddressGroup[]
    You can pipe a PanAddressGroup to this cmdlet
+PanServiceGroup[]
+   You can pipe a PanServiceGroup to this cmdlet
 .OUTPUTS
 PanAddress
 PanService
 PanAddressGroup
+PanServiceGroup
 .EXAMPLE
 $D = Get-PanDevice "fw.lab.local"
 Remove-PanAddress -Device $D -Location "vsys1" -Name "MyHostA"
@@ -86,6 +89,7 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress | Where-Object {"test" -in $_.Tag}
                'Remove-PanAddress'        { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Remove-PanService'        { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Remove-PanAddressGroup'   { $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Remove-PanServiceGroup'   { $Obj = Get-PanServiceGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
             }
 
             # Call API

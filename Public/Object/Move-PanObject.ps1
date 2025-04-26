@@ -21,10 +21,13 @@ PanService[]
    You can pipe a PanService to this cmdlet
 PanAddressGroup[]
    You can pipe a PanAddressGroup to this cmdlet
+PanServiceGroup[]
+   You can pipe a PanServiceGroup to this cmdlet
 .OUTPUTS
 PanAddress
 PanService
 PanAddressGroup
+PanServiceGroup
 .EXAMPLE
 .EXAMPLE
 #>
@@ -60,6 +63,7 @@ PanAddressGroup
          'Move-PanAddress'       {'/address'}
          'Move-PanService'       {'/service'}
          'Move-PanAddressGroup'  {'/address-group'}
+         'Move-PanServiceGroup'  {'/service-group'}
       }
    } # Begin Block
 
@@ -90,6 +94,7 @@ PanAddressGroup
                   'Move-PanAddress'       { Get-PanAddress -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
                   'Move-PanService'       { Get-PanService -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
                   'Move-PanAddressGroup'  { Get-PanAddressGroup -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
+                  'Move-PanServiceGroup'  { Get-PanServiceGroup -Device $InputObjectCur.Device -Location $PSBoundParameters.DstLocation -Name $InputObjectCur.Name; continue }
                }
             }
             else {
@@ -111,6 +116,7 @@ PanAddressGroup
                'Move-PanAddress'       { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Move-PanService'       { $Obj = Get-PanService -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
                'Move-PanAddressGroup'  { $Obj = Get-PanAddressGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
+               'Move-PanServiceGroup'  { $Obj = Get-PanServiceGroup -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
             }
 
             # Call API
@@ -125,6 +131,7 @@ PanAddressGroup
                      'Move-PanAddress'       { Get-PanAddress -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
                      'Move-PanService'       { Get-PanService -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
                      'Move-PanAddressGroup'  { Get-PanAddressGroup -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
+                     'Move-PanServiceGroup'  { Get-PanServiceGroup -Device $Obj.Device -Location $PSBoundParameters.DstLocation -Name $Obj.Name; continue }
                   }
                }
                # Failure on Invoke-PanXApi

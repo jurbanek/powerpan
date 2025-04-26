@@ -39,6 +39,7 @@ None
 PanAddress
 PanService
 PanAddressGoup
+PanServiceGroup
 .EXAMPLE
 $D = Get-PanDevice -Name "fw.lab.local"
 $A = Construct-PanAddress "MyAddress" -Device $D -Location "vsys1"
@@ -93,6 +94,7 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
                 'Construct-PanAddress'      { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
                 'Construct-PanService'      { [PanService]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
                 'Construct-PanAddressGroup' { [PanAddressGroup]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
+                'Construct-PanServiceGroup' { [PanServiceGroup]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }
             }
         }
         elseif($PSCmdlet.ParameterSetName -eq 'XML') {
@@ -103,6 +105,7 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
                 'Construct-PanAddress'      { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue }
                 'Construct-PanService'      { [PanService]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue }
                 'Construct-PanAddressGroup' { [PanAddressGroup]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue } 
+                'Construct-PanServiceGroup' { [PanServiceGroup]::new($PSBoundParameters.Device,$PSBoundParameters.XPath,$PSBoundParameters.XDoc); continue } 
             }
         }
     } # Process block

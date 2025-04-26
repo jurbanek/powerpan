@@ -1,19 +1,21 @@
-$ModuleName = "PowerPAN"
-$Here = Split-Path -Parent $MyInvocation.MyCommand.Path
+BeforeAll {
+   $ModuleName = "PowerPAN"
+   $Here = Split-Path -Path $PSCommandPath -Parent   
+}
 
-Describe -Tag ('Unit','Acceptance') "$ModuleName Module Tests" {
+Describe -Tag ('Unit','Acceptance') $("$ModuleName Module Tests") {
    Context 'Module Setup' {
       It "Has root module $ModuleName.psm1" {
-         "$Here\$ModuleName.psm1" | Should -Exist
+         Join-Path -Path $Here -ChildPath "$ModuleName.psm1" | Should -Exist
       }
 
       It "Has manifest file $ModuleName.psd1" {
-         "$Here\$ModuleName.psd1" | Should -Exist
-         "$Here\$ModuleName.psd1" | Should -FileContentMatch "$ModuleName.psm1"
+         Join-Path -Path $Here -ChildPath "$ModuleName.psd1" | Should -Exist
+         Join-Path -Path $Here -ChildPath "$ModuleName.psd1" | Should -FileContentMatch "$ModuleName.psm1"
       }
 
       It "$ModuleName class files exist in Class directory" {
-         "$Here\Class\*.ps1" | Should -Exist
+         Join-Path -Path $Here -ChildPath "Class/*.ps1" | Should -Exist
       }
 
       It "$ModuleName Format.ps1xml files exist in Format directory" {

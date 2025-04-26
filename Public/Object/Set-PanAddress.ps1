@@ -19,10 +19,6 @@ Device mode does not take an InputObject. Required parameters are -Device, -Loca
 Remaining parameters are not required by the cmdlet, but may be required by the XML API depending on if the object already exists or not.
 This flexibility offers interactive power as not all values have to be specified all the time.
 
-:: Device Mode Replace (-Device -Replace) ::
-By default, uses "merge" API action=set (Invoke-PanXApi -Config -Set).
-To use "replace" API action=edit (Invoke-PanXApi -Config -Edit), include the -Replace switch.
-
 :: Rename & Move ::
 Set- cannot be used to rename objects. Use Rename- cmdlet.
 Set- cannot be used to move object locations. Use Move- cmdlet.
@@ -39,14 +35,14 @@ Create new on NGFW
 $D = Get-PanDevice "fw.lab.local"
 Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Value "1.1.1.1" -Type "ip-netmask"
 
-If H-1.1.1.1 already exists in vsys1, a merge will occur.
+If H-1.1.1.1 already exists in MyDeviceGroup, the specified PowerShell parameters will replace their corresponding elements/attributes.
 .EXAMPLE
 Create new on Panorama
 
 $D = Get-PanDevice "panorama.lab.local"
 Set-PanAddress -Device $D -Location "MyDeviceGroup" -Name "H-1.1.1.1" -Value "1.1.1.1" -Type "ip-netmask"
 
-If H-1.1.1.1 already exists in MyDeviceGroup, a merge will occur.
+If H-1.1.1.1 already exists in MyDeviceGroup, the specified PowerShell parameters will replace their corresponding elements/attributes.
 .EXAMPLE
 Add a description to an object that already exists.
 
@@ -56,7 +52,6 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1" -Description "Upda
 If the object did NOT exist already, the command would error remotely by the API (with details) as a -Type and -Value are required for new objects to be created.
 .EXAMPLE
 Update the object Description and Tag properties in the PowerShell session (tags must already exist in PAN-OS) and pipe.
-Piping to Set-PanAddress (-InputObject) replaces the full object on the PanDevice (replace, not merge).
 
 $D = Get-PanDevice "fw.lab.local"
 $A = Get-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1"
@@ -66,7 +61,6 @@ $A | Set-PanAddress
 .EXAMPLE
 Removing a description and removing tags
 Assume H-1.1.1.1 has a description to be removed and tags to be removed
-Piping to Set-PanAddress replaces the full object on the PanDevice (replace, not merge).
 
 $D = Get-PanDevice "fw.lab.local"
 $A = Get-PanAddress -Device $D -Location "vsys1" -Name "H-1.1.1.1"
@@ -81,8 +75,7 @@ If address object with specified name already exists and the value is incompatib
 Get-PanDevice "fw.lab.local" | Set-PanAddress -Location "vsys1" -Type 'fqdn' -Name "FQDN-raw.githubusercontent.com" -Value "raw.githubusercontent.com"
 .EXAMPLE
 Adding a "DC-A" tag to all ip-netmask type objects starting with 10.16 on fw.lab.local
-Note: Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
-Note: Newline after pipe character
+Note: Newline after pipe character for ease of reading
 
 Get-PanDevice "fw.lab.local" |
    Get-PanAddress -Filter "10.16" |
@@ -91,8 +84,7 @@ Get-PanDevice "fw.lab.local" |
    Set-PanAddress 
 .EXAMPLE
 Remove the "review" tag from every address object on fw1.lab.local and fw2.lab.local
-Note: Set-PanAddress does not require use of -Replace given piping of PanAddress (-InputObject)
-Note: Newline after pipe character
+Note: Newline after pipe character for ease of reading
 
 Get-PanDevice "fw1.lab.local","fw2.lab.local" |
    Get-PanAddress |
@@ -123,8 +115,6 @@ On large devices with many objects with the "review" tag, might take a while.
       [String] $Description,
       [parameter(ParameterSetName='Device',HelpMessage='One or more tags. Tags must exist already. Will not create tags')]
       [String[]] $Tag,
-      [parameter(ParameterSetName='Device',HelpMessage='Replace (action=edit) instead of merge (action=set)')]
-      [Switch] $Replace,
       [parameter(ParameterSetName='Device',HelpMessage='Disable ability to override (Panorama device-group objects only)')]
       [Bool] $DisableOverride,
       [parameter(Mandatory=$true,Position=0,ParameterSetName='InputObject',ValueFromPipeline=$true,HelpMessage='Input object(s) to be created/updated as is')]
@@ -184,16 +174,9 @@ On large devices with many objects with the "review" tag, might take a while.
             if($PSBoundParameters.ContainsKey('DisableOverride')) { $Obj.DisableOverride = $PSBoundParameters.DisableOverride }
 
             # Call API
-            if(-not $PSBoundParameters.Replace.IsPresent) {
-               # (No -Replace) action=set, requires non-overlap between XPath and Element (entry.InnerXml)
-               Write-Debug ('{0}: Device (-Set)XML: {1}' -f $MyInvocation.MyCommand.Name,$Obj.XDoc.entry.InnerXml)
-               $R = Invoke-PanXApi -Device $DeviceCur -Config -Set -XPath $Obj.XPath -Element $Obj.XDoc.entry.InnerXml
-            }
-            else {
-               # -Replace action=edit, requires overlap between XPath and Element (entry.OuterXml)
-               Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Obj.XDoc.entry.OuterXml)
-               $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Obj.XPath -Element $Obj.XDoc.entry.OuterXml
-            }
+            # -Replace action=edit, requires overlap between XPath and Element (entry.OuterXml)
+            Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Obj.XDoc.entry.OuterXml)
+            $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Obj.XPath -Element $Obj.XDoc.entry.OuterXml
             
             # Check PanResponse
             if($R.Status -eq 'success') {

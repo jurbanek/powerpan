@@ -109,10 +109,13 @@ PanService[]
    You can pipe a PanService to this cmdlet
 PanAddressGroup[]
    You can pipe a PanAddressGroup to this cmdlet
+PanServiceGroup[]
+   You can pipe a PanServiceGroup to this cmdlet
 .OUTPUTS
 PanAddress
 PanService
 PanAddressGroup
+PanServiceGroup
 .EXAMPLE
 Get-PanDevice "10.0.0.1" | Get-PanAddress
 
@@ -203,6 +206,7 @@ Syntactic sugar for fetching an object recently set with less typing.
          'Get-PanAddress'        { $ObjAgg = [System.Collections.Generic.List[PanAddress]]@(); continue }
          'Get-PanService'        { $ObjAgg = [System.Collections.Generic.List[PanService]]@(); continue }
          'Get-PanAddressGroup'   { $ObjAgg = [System.Collections.Generic.List[PanAddressGroup]]@(); continue }
+         'Get-PanServiceGroup'   { $ObjAgg = [System.Collections.Generic.List[PanServiceGroup]]@(); continue }
       }
 
       # Define XPath suffixes to be appended to PanDevice.Location(s), based on object type
@@ -235,6 +239,15 @@ Syntactic sugar for fetching an object recently set with less typing.
             $XPathSuffixName = "/address-group/entry[@name='{0}']"
             continue
          }
+         'Get-PanServiceGroup' {
+            # NoFilter (no search filter)
+            $XPathSuffixBase = "/service-group/entry"
+            # Filter (search filter)
+            $XPathSuffixFilter = "/service-group/entry[(contains(translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(tag, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' )) or (contains(translate(members, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'{0}' ))]"
+            # Name (exact)
+            $XPathSuffixName = "/service-group/entry[@name='{0}']"
+            continue
+         }
       }
    } # Begin Block
 
@@ -263,7 +276,8 @@ Syntactic sugar for fetching an object recently set with less typing.
                switch ($MyInvocation.InvocationName) {
                   'Get-PanAddress'        { $ObjAgg.Add([PanAddress]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
                   'Get-PanService'        { $ObjAgg.Add([PanService]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
-                  'Get-PanAddressGroup'   { $ObjAgg.Add([PanAddressGroup]::new($InputObjectCur.Device, $XPath, $XDoc)); continue } 
+                  'Get-PanAddressGroup'   { $ObjAgg.Add([PanAddressGroup]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
+                  'Get-PanServiceGroup'   { $ObjAgg.Add([PanServiceGroup]::new($InputObjectCur.Device, $XPath, $XDoc)); continue }
                } # switch
             } 
             else {
@@ -360,6 +374,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                         'Get-PanAddress'        { $ObjAgg.Add([PanAddress]::new($DeviceCur, $XPath, $XDoc)); continue }
                         'Get-PanService'        { $ObjAgg.Add([PanService]::new($DeviceCur, $XPath, $XDoc)); continue }
                         'Get-PanAddressGroup'   { $ObjAgg.Add([PanAddressGroup]::new($DeviceCur, $XPath, $XDoc)); continue }
+                        'Get-PanServiceGroup'   { $ObjAgg.Add([PanServiceGroup]::new($DeviceCur, $XPath, $XDoc)); continue }
                      }
                   } # foreach entry
                } # if Reponse success
