@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## 0.5.0 ???
 
-Primary focus of `0.5.0` is a re-imagining of the PowerPAN internal data model to store PAN-OS objects (addresses, address-objects, etc.). The changes are non-breaking, but enable *significantly* simpler and faster development while enabling more features by letting `[System.Xml.***]` types/classes "do more of the work".
+Primary focus of `0.5.0` is a re-imagining of the PowerPAN internal data model to store PAN-OS objects (addresses, address groups, service, service groups, and more to come). The changes are non-breaking, but enable *significantly* simpler and faster development while enabling more features by letting `[System.Xml.***]` types/classes "do more of the work".
 
 - Each PowerPAN object representing a PAN-OS address, etc. now includes native XML components. Principally a `[System.Xml.XmlDocument] $XDoc` property represents the object's configuration in XML and a `[String] $XPath` property represents the location of the object within PAN-OS.
 - Expected properties like `Name` and `Value` are also available, of course, but have been changed to be `ScriptProperty` that get/set content within the `$XDoc` or `$XPath`. Manipulate the `$XDoc` or `$XPath` and `$Name` and `$Value` update automatically, or visa-versa. They are "linked" together because of the latter being a `ScriptProperty`.
@@ -15,8 +15,12 @@ This model was **not** adopted originally because I didn't know much about `[Sys
 Alas, here we are. New data model available to make additional cmdlet development quicker and easier.
 
 ### Added
+- `[PanAddress]`, `[PanService]`, `[PanAddressGroup]`, and `[PanServiceGroup]` classes and object types with internal XML driven data structure mirroring the PAN-OS configuration. These inherit from a base `[PanObject]` class.
+- `Get-PanObject`, `Set-` specific cmdlets, `Copy-PanObject`, `Move-PanObject`, `Remove-PanObject`, `Rename-PanObject`, `Construct-Pan-Object` and the suite of aliases required for `[PanAddress]`, `[PanService]`, `[PanAddressGroup]`, and `[PanServiceGroup]` object types.
 - Improved Panorama support given downstream effects of new data model.
 - `[PanDevice]` `Type` property is either `[PanDeviceType]::Panorama` or `[PanDeviceType]::Ngfw`
+- []
+- `Invoke-PanXApi` support for `-Config -Rename`, `-Config -Move`, `-Config -MultiMove`, `-Config -Clone`, `-Config -MultiClone`
 - `Invoke-PanXApi` support for `-Config -Complete` action, a relatively obscure "config action" with little documentation but useful for *simulating* the `?` keyboard press when interactive on the CLI. If curious, see `Update-PanDeviceLocation` how it is used to get the list of device-groups or vsys's without having to download and parse many MiB of configuration.
 
 ### Changed
