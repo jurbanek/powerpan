@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.5.0 ???
+## 0.5.0 2025-04-26
 
 Primary focus of `0.5.0` is a re-imagining of the PowerPAN internal data model to store PAN-OS objects (addresses, address groups, service, service groups, and more to come). The changes are non-breaking, but enable *significantly* simpler and faster development while enabling more features by letting `[System.Xml.***]` types/classes "do more of the work".
 
