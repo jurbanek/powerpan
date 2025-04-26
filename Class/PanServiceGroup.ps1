@@ -50,7 +50,7 @@ class PanServiceGroup : PanObject, ICloneable {
       # Setter
          param($Set)
          # If <members> is already present
-         if($this.XDoc.Item('entry').Item('members').Count) {
+         if($this.XDoc.Item('entry').Item('members')) {
             # Clear all <member> (and rebuild later)
             $this.XDoc.Item('entry').Item('members').RemoveAll()
          }

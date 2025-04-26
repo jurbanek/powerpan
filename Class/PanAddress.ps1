@@ -44,10 +44,10 @@ class PanAddress : PanObject, ICloneable {
       # Type ScriptProperty linked to $XDoc.entry.ip-netmask or $XDoc.entry.fqdn, etc.
       'PanAddress' | Update-TypeData -MemberName Type -MemberType ScriptProperty -Value {
          # Getter
-         if($this.XDoc.Item('entry').Item('ip-netmask').Count) { return 'ip-netmask' }
-         elseif($this.XDoc.Item('entry').Item('fqdn').Count) { return 'fqdn' }
-         elseif($this.XDoc.Item('entry').Item('ip-range').Count) { return 'ip-range' }
-         elseif($this.XDoc.Item('entry').Item('ip-wildcard').Count) { return 'ip-wildcard' }
+         if($this.XDoc.Item('entry').Item('ip-netmask')) { return 'ip-netmask' }
+         elseif($this.XDoc.Item('entry').Item('fqdn')) { return 'fqdn' }
+         elseif($this.XDoc.Item('entry').Item('ip-range')) { return 'ip-range' }
+         elseif($this.XDoc.Item('entry').Item('ip-wildcard')) { return 'ip-wildcard' }
       } -SecondValue {
          # Setter
          param($Set)

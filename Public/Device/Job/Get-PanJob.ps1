@@ -10,12 +10,12 @@ PanDevice[]
 .OUTPUTS
 PanJob
 .EXAMPLE
-PS> Get-PanDevice "192.168.250.250" | Get-PanJob
-PS> Get-PanDevice "192.168.250.250" | Get-PanJob -All
+Get-PanDevice "192.168.250.250" | Get-PanJob
+Get-PanDevice "192.168.250.250" | Get-PanJob -All
 
 Returns a list of all jobs present on the firewall
 .EXAMPLE
-PS> Get-PanDevice "192.168.250.250" | Get-PanJob -Id 837
+Get-PanDevice "192.168.250.250" | Get-PanJob -Id 837
 
 Returns the details for job ID 837.
 #>

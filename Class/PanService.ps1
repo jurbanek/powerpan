@@ -44,8 +44,8 @@ class PanService : PanObject, System.ICloneable {
       # Protocol ScriptProperty linked to $XDoc.entry.protocol.tcp or udp
       'PanService' | Update-TypeData -MemberName Protocol -MemberType ScriptProperty -Value {
          # Getter
-         if($this.XDoc.Item('entry').Item('protocol').Item('tcp').Count) { return 'tcp' }
-         elseif($this.XDoc.Item('entry').Item('protocol').Item('udp').Count) { return 'udp' }
+         if($this.XDoc.Item('entry').Item('protocol').Item('tcp')) { return 'tcp' }
+         elseif($this.XDoc.Item('entry').Item('protocol').Item('udp')) { return 'udp' }
       } -SecondValue {
          # Setter
          param($Set)
@@ -85,7 +85,7 @@ class PanService : PanObject, System.ICloneable {
          # Setter
          param($Set)
          # If <source-port> element exists
-         if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('source-port').Count) {
+         if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('source-port')) {
             if([String]::IsNullOrEmpty($Set)) {
                # Remove the <source-port> element entirely
                $XSourcePort = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('source-port')
@@ -112,25 +112,25 @@ class PanService : PanObject, System.ICloneable {
          # Setter
          param($Set)
          # If <override> doesn't exist, create
-         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Count) {
+         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override')) {
             $XOverride = $this.XDoc.CreateElement('override')
             $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XOverride)
          }
          if($Set) {
             # If <override><no>, replace with <yes>
-            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').Count) {
+            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')) {
                $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
                $NewElement = $this.XDoc.CreateElement('yes')
                $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
             }
             # If <override><yes> doesn't exist, create
-            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Count) {
+            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')) {
                $XYes = $this.XDoc.CreateElement('yes')
                $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').AppendChild($XYes)
             }
 
             # If <override><yes><timeout> doesn't exist, create
-            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').Count) {
+            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout')) {
                $XTimeout = $this.XDoc.CreateElement('timeout')
                $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').AppendChild($XTimeout)
             }
@@ -160,25 +160,25 @@ class PanService : PanObject, System.ICloneable {
          # Setter
          param($Set)
          # If <override> doesn't exist, create
-         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Count) {
+         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override')) {
             $XOverride = $this.XDoc.CreateElement('override')
             $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XOverride)
          }
          if($Set) {
             # If <override><no>, replace with <yes>
-            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').Count) {
+            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')) {
                $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
                $NewElement = $this.XDoc.CreateElement('yes')
                $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
             }
             # If <override><yes> doesn't exist, create
-            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Count) {
+            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')) {
                $XYes = $this.XDoc.CreateElement('yes')
                $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').AppendChild($XYes)
             }
 
             # If <override><yes><halfclose-timeout> doesn't exist, create
-            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').Count) {
+            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout')) {
                $XTimeout = $this.XDoc.CreateElement('halfclose-timeout')
                $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').AppendChild($XTimeout)
             }
@@ -208,25 +208,25 @@ class PanService : PanObject, System.ICloneable {
          # Setter
          param($Set)
          # If <override> doesn't exist, create
-         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Count) {
+         if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override')) {
             $XOverride = $this.XDoc.CreateElement('override')
             $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).AppendChild($XOverride)
          }
          if($Set) {
             # If <override><no>, replace with <yes>
-            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no').Count) {
+            if($this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')) {
                $OldElement = $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('no')
                $NewElement = $this.XDoc.CreateElement('yes')
                $OldElement.ParentNode.ReplaceChild($NewElement,$OldElement)
             }
             # If <override><yes> doesn't exist, create
-            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Count) {
+            elseif(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes')) {
                $XYes = $this.XDoc.CreateElement('yes')
                $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').AppendChild($XYes)
             }
 
             # If <override><yes><timewait-timeout> doesn't exist, create
-            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').Count) {
+            if(-not $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout')) {
                $XTimeout = $this.XDoc.CreateElement('timewait-timeout')
                $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').AppendChild($XTimeout)
             }

@@ -44,8 +44,8 @@ class PanAddressGroup : PanObject, ICloneable {
       # Type ScriptProperty linked to $XDoc.entry.static or $XDoc.entry.dynamic, etc.
       'PanAddressGroup' | Update-TypeData -MemberName Type -MemberType ScriptProperty -Value {
       # Getter
-         if($this.XDoc.Item('entry').GetElementsByTagName('static').Count) { return 'static' }
-         elseif($this.XDoc.Item('entry').GetElementsByTagName('dynamic').Count) { return 'dynamic' }
+         if($this.XDoc.Item('entry').Item('static')) { return 'static' }
+         elseif($this.XDoc.Item('entry').Item('dynamic')) { return 'dynamic' }
       } -SecondValue {
       # Setter
          param($Set)
@@ -72,7 +72,7 @@ class PanAddressGroup : PanObject, ICloneable {
       # Setter
          param($Set)
          # If <static> is already present
-         if($this.XDoc.Item('entry').Item('static').Count) {
+         if($this.XDoc.Item('entry').Item('static')) {
             # Clear all <member> (and rebuild later)
             $this.XDoc.Item('entry').Item('static').RemoveAll()
          }
@@ -98,13 +98,13 @@ class PanAddressGroup : PanObject, ICloneable {
       # Setter
          param($Set) 
          # If <dynamic> is not already present
-         if(-not $this.XDoc.Item('entry').Item('dynamic').Count) {
+         if(-not $this.XDoc.Item('entry').Item('dynamic')) {
             # Build and add <dynamic>
             $XDynamic = $this.XDoc.CreateElement('dynamic')
             $this.XDoc.Item('entry').AppendChild($XDynamic)         
          }
          # If <filter> element exists
-         if($this.XDoc.Item('entry').Item('dynamic').Item('filter').Count) {
+         if($this.XDoc.Item('entry').Item('dynamic').Item('filter')) {
             if([String]::IsNullOrEmpty($Set)) {
                # Remove the <filter> element entirely
                $XFilter = $this.XDoc.Item('entry').Item('dynamic').Item('filter')

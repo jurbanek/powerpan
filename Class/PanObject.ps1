@@ -39,7 +39,7 @@ class PanObject : System.ICloneable {
         # Setter
             param($Set)
             # If <tag> is already present
-            if($this.XDoc.Item('entry').Item('tag').Count) {
+            if($this.XDoc.Item('entry').Item('tag')) {
                 # Clear all <member> (and rebuild later)
                 $this.XDoc.Item('entry').Item('tag').RemoveAll()
             }
@@ -65,7 +65,7 @@ class PanObject : System.ICloneable {
         # Setter
             param($Set)
             # If <description> element exists
-            if($this.XDoc.Item('entry').Item('description').Count) {
+            if($this.XDoc.Item('entry').Item('description')) {
                 if([String]::IsNullOrEmpty($Set)) {
                 # Remove the <description> element entirely
                 $XDescription = $this.XDoc.Item('entry').Item('description')
@@ -96,7 +96,7 @@ class PanObject : System.ICloneable {
         # Setter
             param($Set)
             # If <disable-override> element exists
-            if($this.XDoc.Item('entry').Item('disable-override').Count) {
+            if($this.XDoc.Item('entry').Item('disable-override')) {
                 if([String]::IsNullOrEmpty($Set)) {
                     # Remove the <disable-override> element entirely
                     $XDisable = $this.XDoc.Item('entry').Item('disable-override')
