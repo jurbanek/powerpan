@@ -1,15 +1,19 @@
 # PowerPAN - PowerShell Module for Palo Alto Networks NGFW
 
-PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
+PowerPAN is a PowerShell module for the Palo Alto Networks NGFW & Panorama
 
 ## Features
 
 - Object model of PAN-OS XML-API and XML configuration as PowerShell native cmdlets and objects
-  - The objects modeled are few, but those modeled function well
+  - PAN-OS objects are modeled as native PowerShell objects (with more being added). Those modeled function well.
 - Persistent secure key/password storage of NGFW (called `PanDevice`) device credentials for use across PowerShell sessions (called `PanDeviceDb` internally, think of it as a simple device inventory).
   - Enables launching PowerShell and immediately "getting to work" *in the shell* without having to write scripts or deal with authentication every time
 - "Anything imaginable" is doable with `Invoke-PanXApi`. The *more specific* cmdlets are mostly targeted at runtime operations and limited policy administrative use case cases.
-- Mature models
+
+### Mature models
+  
+  - `Get-`,`Set-`,`Copy-`,`Move-`,`Remove-`,`Rename-` of `[PanAddress]`, `[PanService]`, `[PanAddressGroup]`, and `[PanServiceGroup]`
+    - To retrieve a PanAddress object, use `Get-PanAddress`. A PanAddressGroup would be `Get-PanAddressGroup`.
   - `Invoke-PanXApi` provide low-level abstraction the PAN-OS XML-API. Nearly all other cmdlets call `Invoke-PanXApi` to interact with the XML-API
     - The capabilities of all future planned cmdlets can already be done with `Invoke-PanXApi` and logic, the future cmdlets will just make it easier.
   - `Invoke-PanCommit` to commit, validation, and seeing if pending changes exist.
@@ -18,27 +22,37 @@ PowerPAN is a PowerShell module for the Palo Alto Networks NGFW
   - `Job` cmdlet to retrieve and view jobs (tasks)
   - `RegisteredIp` cmdlets to add registered-ip's and tag those IP's for use with Dynamic Address Groups (DAG)
   - `PanDeviceDb` and `PanDevice` cmdlets for managing the persistent secure storage of device credentials between PowerShell sessions
-  - `Get-`,`Set-`,`Copy-`,`Move-`,`Remove-`,`Rename-` of `[PanAddress]`, `[PanService]`, `[PanAddressGroup]`, and `[PanServiceGroup]`
-    - To retrieve a PanAddress object, use `Get-PanAddress`. A PanAddressGroup would be `Get-PanAddressGroup`.
-- Multi-vsys and Panorama Support
+
+### Multi-vsys and Panorama Support
   - Each `[PanDevice]` has a `Location` property mapping out `shared`, `vsys1`, `vsys2`, `MyDeviceGroup`.
   - The `Get-`, `Set-`, `Copy-`, etc. Address/AddressGroup/etc. cmdlets can be scoped with a `-Location` parameter
   - For "custom" work not yet implemented with specific object focused cmdlets, `Invoke-PanXApi` supports Panorama just fine. The `PanDevice.Location` property is of great help.
-- PowerShell Support
-  - Windows PowerShell 5.1
-  - PowerShell 7.2 LTS (works on Windows and MacOS, as of 2024-09-18 have not tested Linux yet). PowerShell 7.2 LTS is end of support.
+
+### PowerShell Support
   - PowerShell 7.4 LTS (works on Windows, MacOS, and Linux).
+  - PowerShell 7.2 LTS (works on Windows and MacOS). PowerShell 7.2 LTS is end of support, upgrade to PowerShell 7.4 LTS.
+  - Windows PowerShell 5.1
   - Other PowerShell versions will likely work, but will not be tested explicitly
 
 ## Status
 
-PowerPAN is broadly considered experimental and incomplete, but certain parts of it do function well for production use cases.
+PowerPAN is broadly considered experimental and incomplete, but parts of it function well for production use cases.
 
 ## Install
 
 Available from [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerPAN)
 
-`Install-Module PowerPAN`
+```powershell
+Install-Module PowerPAN
+```
+
+## Help
+
+Inline help is available for all cmdlets
+
+```powershell
+Get-Help Set-PanAddress`
+```
 
 ## Examples
 
@@ -128,7 +142,7 @@ $A.Description = 'Some Description'
 $A | Set-PanAddress
 ```
 
-**Updating the PowerShell object's properties updates the data structure of the object in the PowerShell session. It does not update the device candidate configuration *until* applied with `Set-`.**
+Note: Updating the PowerShell object's properties using assignment like `$A.Description = 'Updated Description'` updates the data internal structure of the object in the PowerShell session. It does *not* update the device candidate configuration *until* applied with `Set-`.
 
 #### `Copy-`
 ```powershell
@@ -212,7 +226,7 @@ $SG | Set-PanServiceGroup
 
 ### Registered-IP Tagging (to populate Dynamic Address Groups)
 
-- registered-ip's are **not** address objects
+- registered-ip's are *not* address objects
 - They are not visible in the CANDIDATE or ACTIVE config; they are commitless. They persist across reboots (yep).
 - registered-ip tags are frequently used in dyanmic address group (DAG) match criteria
 
