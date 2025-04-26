@@ -17,7 +17,7 @@ $Cfg.Add('Root',$PSScriptRoot)
 $Cfg.Add('TmpDirName',$('Publish-' + $(Get-Date -Format yyyyMMdd-HHmmss).ToString()))
 $Cfg.Add('TmpDirPath', (Join-Path $Cfg.Root $Cfg.TmpDirName))
 # Excluding the temporary directory intself, Pester tests, vscode, git, Mac related
-$Cfg.Add('ExcludeRegEx',"$($Cfg.TmpDirName)|\.Tests\.ps1|\.vscode|\.git|\.DS_Store")
+$Cfg.Add('ExcludeRegEx',"$($Cfg.TmpDirName)|TestPowerPAN\.ps1|\.Tests\.ps1|\.vscode|\.git|\.DS_Store")
 # Initialize, to be populated
 $Cfg.Add('FunctionsToExport',@())
 $Cfg.Add('FormatsToProcess',@())
