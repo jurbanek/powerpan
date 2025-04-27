@@ -59,14 +59,17 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
          # System.Web.Script.Serialization.JavaScriptSerializer is available in 5.1 and will handle such keys
          # Not available in PowerShell 7+ which is fine. Only needs to work in 5.1
          $Serializer = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
-         $StoredDevice = $Serializer.DeserializeObject((Get-Content -Path $StoredJsonPath))         
+         $Content = Get-Content -Path $StoredJsonPath
+         if(-not [String]::IsNullOrEmpty($Content)) {
+            $StoredDevice = $Serializer.DeserializeObject($Content)         
+         }
       }
       
-      if($StoredDevice.Count -eq 0) {
+      if(-not ($StoredDevice | Measure-Object).Count) {
          Write-Debug ('{0}: No valid contents found' -f $MyInvocation.MyCommand.Name)
       }
       else {
-         Write-Debug ('{0}: {1} devices found. Creating PanDevice objects' -f $MyInvocation.MyCommand.Name,$StoredDevice.Count)
+         Write-Debug ('{0}: {1} devices found. Creating PanDevice objects' -f $MyInvocation.MyCommand.Name,($StoredDevice | Measure-Object).Count)
 
          # $DeviceAgg to hold unserialized [PanDevices] through iteration
          $DeviceAgg = @()
@@ -134,8 +137,14 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
             $DeviceAgg += $NewDevice
          } # foreach StoredCur
 
-         Write-Debug ('{0}: Imported {1} device(s). Adding to PanDeviceDb' -f $MyInvocation.MyCommand.Name,$DeviceAgg.Count)
-         Add-PanDevice -Device $DeviceAgg -ImportMode
+         if(($DeviceAgg | Measure-Object).Count) {
+            Write-Debug ('{0}: Imported {1} device(s). Adding to PanDeviceDb' -f $MyInvocation.MyCommand.Name,($DeviceAgg | Measure-Object).Count)
+            Add-PanDevice -Device $DeviceAgg -ImportMode
+         }
+         else {
+            Write-Debug ('{0}: Imported 0 device(s). Nothing to add to PanDeviceDb' -f $MyInvocation.MyCommand.Name)
+         }
+         
       } # DeviceAgg else
    }
 } # Function
