@@ -21,6 +21,8 @@ class PanDevice {
    # Location layout is updated at runtime. Only needs to be done infrequently. Track the last time it was done.
    # DateTime (without timezone) is fine given this will only be used within the same PowerShell session
    [DateTime] $LocationUpdated
+   # Whether to persist across PowerShell sessions (save to disk)
+   hidden [Bool] $Persist = $true
 
    # Default Constructor
    PanDevice() {
@@ -37,6 +39,7 @@ class PanDevice {
       $this.Port = $Port
       $this.Type = $Type
       $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
+      $this.Persist = $true
    }
    # Constructor accepting a SecureString (API key only)
    PanDevice([String] $Name, [SecureString] $Key, [System.Collections.Generic.List[String]] $Label = [System.Collections.Generic.List[String]]@(),
@@ -50,6 +53,7 @@ class PanDevice {
       $this.Port = $Port
       $this.Type = $Type
       $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
+      $this.Persist = $true
    }
    # Constructor accepting a PSCredential (username/password) and SecureString (API key)
    PanDevice([String] $Name, [PSCredential] $Credential, [SecureString] $Key, [System.Collections.Generic.List[String]] $Label = [System.Collections.Generic.List[String]]@(),
@@ -64,6 +68,7 @@ class PanDevice {
       $this.Port = $Port
       $this.Type = $Type
       $this.Location = [System.Collections.Specialized.OrderedDictionary]::new()
+      $this.Persist = $true
    }
    
    # ToString() Method

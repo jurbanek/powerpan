@@ -10,28 +10,6 @@ Multiple -Name (via array) is a logical OR match with regular expression support
 
 When -Session, -Label, -Name are used together, specific parameter AND/OR match behavior
 still applies, but each parameter in use must match (AND across all in use parameters)
-
-:: Location Property Update ::
-Each PanDevice has a Location property holding shared, vsys, and device group "Name to XPath"
-mappings for the device. Location property is *not* persisted to disk or preserved across
-PowerShell sessions and is updated dynamically during the PowerShell session.
-
-Get-PanDevice is *also* the principal trigger for updating the PanDevice.Location property.
-
-Performing the update requires XML API calls to the device retrieve its current shared, vsys1,
-vsys2, device group, etc. layout.
-
-Why does this matter? Imagine:
-   - 10 PanDevice's persisting across PowerShell sessions
-   - 8 them are network reachable by Name/IP from your current workstation
-   - 2 of them are NOT network reachable by Name/IP from your current workstation
-   - A call to "Get-PanDevice -All" in a *new* PowerShell session will attempt to refresh all 10
-   - 8 device's Location properties will update very quickly
-   - 2 unreachable devices will hang for many seconds while attempting to reach their API's
-
-Recommendation:
-   - Use "Get-PanDevice -All -NoLocation" to "see" all your PanDevice's without updating Location
-   - When wanting to get a device for actual use, scope Get-PanDevice with -Name or -Label
 .INPUTS
 None
 .OUTPUTS
@@ -83,9 +61,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
       [parameter(Mandatory=$false,ParameterSetName='Filter',HelpMessage='Case-insensitive exact match for Label. Multiple Label is logical AND match')]
       [String[]] $Label,
       [parameter(Mandatory=$true,ParameterSetName='All',HelpMessage='Switch parameter for ALL PanDevice')]
-      [Switch] $All,
-      [parameter(Mandatory=$false,HelpMessage='Do not update PanDevice Location map')]
-      [Switch] $NoLocation
+      [Switch] $All
    )
 
    # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
@@ -105,24 +81,21 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
    # If the PanDeviceDb is NOT populated, no need to continue evaluating ParameterSets, answer is always empty
    if([String]::IsNullOrEmpty($Global:PanDeviceDb)) {
       Write-Debug ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
    }
 
    # ParameterSetName 'Empty'
    # Peference (most to least) is PanDeviceLabelDefault, then session- label.
    elseif($PSCmdlet.ParameterSetName -eq 'Empty') {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Empty ParameterSetName')
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
 
       # If PanDeviceLabelDefault is only the session- label (see function calls above to populate these variables), then there are no PanDeviceLabelDefault(s)
       # Send back only the session- matches. More common scenario and thus evaluated first.
       if($LabelDefault -eq "session-$SessionGuid") {
          Write-Debug ($MyInvocation.MyCommand.Name + ': No PanDeviceLabelDefault(s) found. Using session-' + $SessionGuid )
-
          foreach($DeviceCur in ($Global:PanDeviceDb | Where-Object { $_.Label -contains "session-$SessionGuid"})) {
-            $DeviceAgg.Add($DeviceCur)
+            $DeviceAgg += $DeviceCur
          }
       }
       # PanDeviceLabelDefault has content
@@ -141,7 +114,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
                }
             }
             if($Verdict) {
-               $DeviceAgg.Add($DeviceCur)
+               $DeviceAgg += $DeviceCur
             }
          } # foreach $DeviceCur
       }
@@ -157,8 +130,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
    # Simultaneous use is logical AND (all) for a hit.
    elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Filter ParameterSetName')
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
       # Iterate through each PanDevice in PanDeviceDb
       foreach($DeviceCur in $Global:PanDeviceDb) {
          # Prime the Verdict
@@ -195,7 +167,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
 
          # Process the verdict
          if($Verdict) {
-            $DeviceAgg.Add($DeviceCur)
+            $DeviceAgg += $DeviceCur
          }
       }
    } # ParameterSetName 'Filter'
@@ -205,13 +177,6 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
       Write-Debug ($MyInvocation.MyCommand.Name + ': All ParameterSetName')
       $DeviceAgg = $Global:PanDeviceDb
    } # ParameterSetName 'All'
-
-   # Ensure Location map is up to date for PanDevice's being returned
-   if(-not $PSBoundParameters.NoLocation.IsPresent) {
-      foreach($DeviceCur in $DeviceAgg) {
-         Update-PanDeviceLocation -Device $DeviceCur
-      }
-   }
 
    return $DeviceAgg
 } # Function

@@ -170,6 +170,8 @@ PanServiceGroup
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} DstLocation: {5} NewName: {6} ' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $PSBoundParameters.Device.Name,$PSBoundParameters.Location,
                $PSBoundParameters.Name,$PSBoundParameters.DstLocation,$PSBoundParameters.NewName)
+            # Update Location if past due
+            if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
             
             # For splat to Invoke-PanXApi
             $InvokeParams = [ordered]@{

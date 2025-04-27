@@ -89,6 +89,9 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
         if($PSCmdlet.ParameterSetName -eq 'NonXML') {
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4}' -f 
                 $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $PSBoundParameters.Device.Name, $PSBoundParameters.Location, $PSBoundParameters.Name)
+            # Update Location if past due
+            if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
+            
             switch($MyInvocation.InvocationName) {
                 # Call constructors *not requiring* XML content
                 'Construct-PanAddress'      { [PanAddress]::new($PSBoundParameters.Device,$PSBoundParameters.Location,$PSBoundParameters.Name); continue }

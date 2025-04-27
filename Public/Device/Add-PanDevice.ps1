@@ -1,27 +1,22 @@
 function Add-PanDevice {
-   <#
-   .SYNOPSIS
-   Add a PanDevice to the PanDeviceDb, providing persistence across PowerShell sessions.
-   .DESCRIPTION
-   Add a PanDevice to the PanDeviceDb, providing persistence across PowerShell sessions.
-   .NOTES
-   .INPUTS
-   PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   None
-   .EXAMPLE
-   #>
+<#
+.SYNOPSIS
+Add a PanDevice to the PanDeviceDb, providing persistence across PowerShell sessions.
+.DESCRIPTION
+Add a PanDevice to the PanDeviceDb, providing persistence across PowerShell sessions.
+.NOTES
+.INPUTS
+PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+None
+.EXAMPLE
+#>
    [CmdletBinding()]
    param(
-      [parameter(
-         Mandatory=$true,
-         Position=0,
-         ValueFromPipeline=$true,
-         HelpMessage='PanDevice(s) to be added to PanDeviceDb.')]
+      [parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,HelpMessage='PanDevice(s) to be added to PanDeviceDb.')]
       [PanDevice[]] $Device,
-      [parameter(
-         HelpMessage='Internal module use only. Adds PanDevice(s) to PanDeviceDb, but does not [re]serialize.')]
+      [parameter(HelpMessage='Internal module use only. Adds PanDevice(s) to PanDeviceDb, but does not [re]serialize.')]
       [Switch] $ImportMode
    )
 
@@ -55,7 +50,7 @@ function Add-PanDevice {
          # If no match after full search, no risk of duplicating, so append
          if(-not $Match) {
             Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($DeviceCur.Name) match not found. Appending")
-            $Global:PanDeviceDb.Add($DeviceCur)
+            $Global:PanDeviceDb += $DeviceCur
          }
       }
    } # Process block

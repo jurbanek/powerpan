@@ -6,7 +6,7 @@ Refresh the PanDevice device-group or vsys (and shared) layout in the PanDevice 
 Refresh the PanDevice device-group (Panorama) or vsys (NGFW) layout (and shared) in the PanDevice Location property. Not saved to disk. Refreshed at runtime.
 .NOTES
 Update-PanDeviceLocation doe *not* add new device-groups or vsys's. It simply refreshes what already exists on-device into the PanDevice Location property.
-Update runs at most every 900 seconds. Can force a manual update with -Force.
+Can force a manual update with -Force.
 Refresh- is not an approved verb. Update- it is.
 .INPUTS
 PanDevice[]
@@ -20,7 +20,9 @@ None
       [parameter(Mandatory=$true,ValueFromPipeline=$true,HelpMessage='PanDevice(s) on which location layout (vsys, device-group) will be determined')]
       [PanDevice[]] $Device,
       [parameter(HelpMessage='Force location layout update, regardless of elapsed time since last update')]
-      [Switch] $Force
+      [Switch] $Force,
+      [parameter(HelpMessage='Internal module use only. Performs location layout update, but does not trigger [re]serialize on changes.')]
+      [Switch] $ImportMode
    )
 
    Begin {
@@ -32,7 +34,9 @@ None
       
       # For comparison
       $Now = Get-Date
-      $UpdateInterval = New-TimeSpan -Seconds 900
+      $UpdateInterval = New-TimeSpan -Seconds $Global:PanDeviceLocRefSec
+      # Seed the need to reserialize as $false
+      $Dirty = $false
    } # Begin block
 
    Process {
@@ -47,9 +51,9 @@ None
          }
 
          # Ordered, case sensitive hashtable. Must initialize this way and *not* with [ordered]@{} to maintain case sensitivity
-         $DeviceCurLocation = [System.Collections.Specialized.OrderedDictionary]::new()
+         $NewLocation = [System.Collections.Specialized.OrderedDictionary]::new()
          # Update shared first as it is the same for both Panorama and Ngfw
-         $DeviceCurLocation.Add("shared", "/config/shared")
+         $NewLocation.Add("shared", "/config/shared")
 
          # For broader compatibility between Panorama and NGFW, using the config action=complete capability with the XML-API
          # Originally, used an "@name" ending XPath to determine vsys and device-group list. Not ideal
@@ -77,19 +81,48 @@ None
             #  </completions></response>
             foreach($CompletionCur in $R.Response.completions.completion) {
                # Add each entry's name to an aggregate
-               $DeviceCurLocation.Add($CompletionCur.value, $CompletionCur.vxpath)
+               $NewLocation.Add($CompletionCur.value, $CompletionCur.vxpath)
             }
 
-            # Update the PanDevice
-            if($PSCmdlet.ShouldProcess('PanDeviceDb','Update ' + $DeviceCur.Name + ' vsys/device-group layout')) {
-               $DeviceCur.Location = $DeviceCurLocation
-               Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($DeviceCurLocation.keys -join ','))
-               $DeviceCur.LocationUpdated = Get-Date
+            # Compare New and Existing locations for equivalence to determine if there is a need to reserialize to disk
+            if($DeviceCur.Location.Count -ne $NewLocation.Count) {
+               # Different number of locations, need to reserialize
+               $Dirty = $true
+               # Update the PanDevice in memory
+               $DeviceCur.Location = $NewLocation
+               Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
             }
+            else {
+               $Keys1 = $DeviceCur.Location.Keys
+               $Keys2 = $NewLocation.Keys
+               # Different keys or different values, need to reserialize
+               foreach($Key1 in $Keys1) {
+                  if(-not $Keys2.Contains($Key1)) {
+                     $Dirty = $true
+                  }
+               }
+            }
+
+            if($Dirty) { 
+               Write-Debug ('{0}: Device: {1} Dirty Location(s) (Updating): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
+               # Update the PanDevice in memory
+               $DeviceCur.Location = $NewLocation
+            }
+            else {
+               Write-Debug ('{0}: Device: {1} Location(s) Clean (No Update)' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+            }
+            # Update LocationUpdated regardless to wait for another interval
+            $DeviceCur.LocationUpdated = Get-Date
+
          } # End if PanResponse success
       } # End foreach DeviceCur
    } # Process block
 
    End {
+      # If Dirty and ImportMode is not in play, reserialize to disk
+      if($Dirty -and -not $PSBoundParameters.ImportMode.IsPresent) {
+         Write-Debug ('{0}: Dirty. Serializing Required' -f $MyInvocation.MyCommand.Name)
+         ExportPanDeviceDb
+      }
    } # End block
 } # Function

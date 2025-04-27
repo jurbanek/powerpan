@@ -8,7 +8,7 @@ Creates a new PanDevice object and adds/persists to the PanDeviceDb.
 1) Specify a -Name and optional -Label. Labels are useful for providing more memorable names or groupings for devices.
 2) Choose an authentication input type (recommend -Credential or -KeyCredential)
 3) Specify -Keygen to generate an API key WHEN USING -Credential or -User/-Password
-4) Optionally, specify -NoPersist to prevent saving the PanDevice to PanDeviceDb (inventory file)
+4) Optionally, specify -NoPersist to prevent saving to PanDeviceDb on-disk inventory file (can be desirable with scripting)
 
 AUTHENTICATION
 Regardless of how the PanDevice is created, the in-memory and on-disk secrets (password and API key) are stored encrypted.
@@ -94,7 +94,7 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
       [Int] $Port = 443,
       [parameter(HelpMessage='Ngfw (default) or Panorama')]
       [PanDeviceType] $Type = [PanDeviceType]::Ngfw,
-      [parameter(HelpMessage='Default is to persist created [PanDevice] to PanDeviceDb. Use this switch parameter to not add PanDevice to PanDeviceDb. Commonly enabled with scripts.')]
+      [parameter(HelpMessage='Default is to persist created PanDevice across PowerShell sessions. Switch parameter to NOT persist across sessions. Commonly enabled with scripts.')]
       [Switch] $NoPersist = $false,
       [parameter(HelpMessage='Internal module use only. Use this switch parameter during unserializing to prevent adding session-specific Label.')]
       [Switch] $ImportMode = $false
@@ -130,7 +130,7 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
          $SecureKey = $KeyCredential.Password
       }
       # Create PanDevice
-      $Device = [PanDevice]::New($Name, $SecureKey, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
+      $D = [PanDevice]::New($Name, $SecureKey, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
    }
 
    # UserPass or Credential parameter set, optional -Keygen parameter valid for both parameter sets
@@ -145,27 +145,27 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
          # Build PSCredential from $UserName and $SecurePassword
          $Credential = New-Object -TypeName PSCredential -ArgumentList $Username, $SecurePassword
          # Create base PanDevice object
-         $Device = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
+         $D = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
       }
       # Credential parameter set :: -Credential
       elseif($PSCmdlet.ParameterSetName -eq 'Credential') {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Credential parameter set')
          # Create base PanDevice object
-         $Device = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
+         $D = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
       }
 
       # Optionally generate API key
       if($Keygen.IsPresent) {
          Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: Generating API key')
-         $R = Invoke-PanXApi -Device $Device -Keygen
+         $R = Invoke-PanXApi -Device $D -Keygen
 
          if($R.Status -eq 'success'){
             Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: API key generation successful')
-            $Device.Key = ConvertTo-SecureString -String $R.Response.result.key -AsPlainText -Force
+            $D.Key = ConvertTo-SecureString -String $R.Response.result.key -AsPlainText -Force
 
             # Test API key
             Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: Testing generated API key')
-            $R = Invoke-PanXApi -Device $Device -Op -Cmd '<show><system><info></info></system></show>'
+            $R = Invoke-PanXApi -Device $D -Op -Cmd '<show><system><info></info></system></show>'
             if($R.Status -eq 'success'){
                Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Generated API key tested successfully')
                Write-Debug ("`t DeviceName: {0} Family: {1} Model: {2}" -f $R.Response.result.system.devicename,$R.Response.result.system.family,$R.Response.result.system.model)
@@ -175,11 +175,11 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
                Write-Debug ("`t Serial: {0} Software Version: {1}" -f $R.Response.result.system.serial,$R.Response.result.system.'sw-version')
                if($R.Response.result.system.model -eq 'Panorama') {
                   Write-Debug ("`t PanDeviceType: {0} (Panorama)" -f [PanDeviceType]::Panorama)
-                  $Device.Type = [PanDeviceType]::Panorama
+                  $D.Type = [PanDeviceType]::Panorama
                }
                else {
                   Write-Debug ("`t PanDeviceType: {0} (Ngfw)" -f [PanDeviceType]::Ngfw)
-                  $Device.Type = [PanDeviceType]::Ngfw
+                  $D.Type = [PanDeviceType]::Ngfw
                }
             }
             else { 
@@ -194,21 +194,11 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
       } # End optional generate API key
    } # End UserPass / Credential parameter set
 
-   # Completed building PanDevice for all parameter set. Determine whether to add to PanDeviceDb.
-   if($NoPersist.IsPresent) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': NoPersist: Not adding to PanDeviceDb')
-      return $Device
-   }
-   else {
-      # Determine whether to add to PanDeviceDb with -ImportMode
-      if($ImportMode.IsPresent) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': ImportMode: Adding to PanDeviceDb')
-         Add-PanDevice -Device $Device -ImportMode
-      }
-      else {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Adding to PanDeviceDb')
-         Add-PanDevice -Device $Device
-      }
-      return $Device
-   }
+   # Specify Persist(ence)
+   $D.Persist = -not $PSBoundParameters.NoPersist.IsPresent
+   # Update Location
+   Update-PanDeviceLocation -Device $D
+   Add-PanDevice -Device $D -ImportMode:$PSBoundParameters.ImportMode.IsPresent
+   # Send to pipeline
+   return $D
 } # End New-PanDevice

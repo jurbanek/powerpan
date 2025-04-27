@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.1 2025-04-27
+
+### Changed
+
+- `[PanDevice]` `Location` property refresh logic has been updated to be more user friendly.
+  - Location mappings (vsys to XPath, device-group to XPath, etc.) now persist to disk when new devices are created and anytime there is a change/diff/update to the Location property.
+  - Default update interval is no more than once every 15 minutes. Leave your PowerShell session open for a long time and come back later, the next call that requires a `-Location` parameter will under-the-hood refresh the Location map (in case you've created a new `vsys` or `device-group`).
+  - `Get-PanDevice` does *not* exclusively *gate* the logic to `Update-PanDeviceLocation` anymore in an effort to speed up `Get-PanDevice` calls when entering a new PowerShell session.
+  - Any cmdlet using `[PanDevice]` `Location` property (anything accepting a `-Location` parameter) first ensures the property has been updated.
+  - Create a bunch of device-groups in Panorama and don't want to wait for Location map to be updated? Can force a manual check at any time using `Update-PanDeviceLocation -Device $P -Force`.
+- Ran into some odd issues with Windows PowerShell 5.1 during testing when storing the in-memory PanDeviceDb in a `[System.Collections.Generic.List[PanDevice]]` List. Fundamental behavior that's been working for years (and would work, sometimes... during troubleshooting and testing) no longer reliable.
+  - Sometimes Windows PowerShell 5.1 and the use of custom classes just gets weird. Getting a bit tired of all the workarounds for Windows PowerShell 5.1.
+  - Resolved it by modifying the in-memory PanDeviceDb container to be a standard PowerShell array `@()` instead of a `List`.
+  - During heavy addition and removal of elements an array uses more resources (compared to `List` at high add/remove), but computers are fast, it simplifies the code and works well in all PowerShell versions.
+- Resolved an issue with exporting the inventory file if PanDeviceDb was empty. Required updates to `Remove-PanDevice` and private `ExportPanDeviceDb`.
+- Resolved an issue with on-disk PanDeviceDb Labels not being imported correctly in 0.5.0 by private `ImportPanDeviceDb` -- weren't making it to in-memory PanDeviceDb. Which means there was no Label to serialize on export and on-disk stored Labels *could* have been lost.
+
 ## 0.5.0 2025-04-26
 
 Primary focus of `0.5.0` is a re-imagining of the PowerPAN internal data model to store PAN-OS objects (addresses, address groups, service, service groups, and more to come). The changes are non-breaking, but enable *significantly* simpler and faster development while enabling more features by letting `[System.Xml.***]` types/classes "do more of the work".

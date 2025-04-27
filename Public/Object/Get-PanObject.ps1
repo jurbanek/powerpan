@@ -291,7 +291,17 @@ Syntactic sugar for fetching an object recently set with less typing.
       else {
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name)
-            
+            # Update Location if past due
+            if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
+            # If PanDevice Location(s) are missing, move on. Should not happen under normal circumstances but could by accident if users
+            # are assigning Locations manually. Splash a nice warning and move on.
+            if(-not ($DeviceCur.Location.Count -ge 1)) {
+               Write-Warning ('{0} (as {1}): Device: {2} Location(s) are missing. Manually run Update-PanDeviceLocation' -f
+                  $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name)
+               # Jump to the next DeviceCur as there is nothing we can do for this DeviceCur
+               continue
+            }
+
             # Time to build two sets of hashtables based on suffixes defined above and ParameterSet
             # Hashtable Key is the location (vys1,shared,MyDG), Hashtable Value is the usable XPath
             # Search (base) is used when NO -Filter is specified. Also used to build the XPath when passing to object constructor further down
