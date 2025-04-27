@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.3 2025-04-27
+
+### Changed
+
+- Resolved issue in *some* (not all, which is infuriating) Windows PowerShell 5.1 sessions where Windows PowerShell 5.1 was unable to locate and load the `[System.Web.Script.Serialization.JavaScriptSerializer]` class. Explicitly loading it via `Add-Type` now.
+
 ## 0.5.2 2025-04-27
 
 ### Changed

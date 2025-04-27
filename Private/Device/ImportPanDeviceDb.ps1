@@ -58,6 +58,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
       else {
          # System.Web.Script.Serialization.JavaScriptSerializer is available in 5.1 and will handle such keys
          # Not available in PowerShell 7+ which is fine. Only needs to work in 5.1
+         Add-Type -AssemblyName 'System.Web.Extensions'
          $Serializer = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
          $Content = Get-Content -Path $StoredJsonPath
          if(-not [String]::IsNullOrEmpty($Content)) {
