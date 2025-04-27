@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.1 2025-04-26
+
+### Changed
+
+- `[PanDevice]` `Location` property refresh logic has been updated to be more user friendly.
+  - Location mappings are now persisted to disk when new devices are created and anytime there is a change/diff/update to the Location property.
+  - Default update interval is no more than once every 15 minutes. Leave your PowerShell session open for a long time and come back later, the next call that requires a `-Location` parameter will under-the-hood refresh the Location map (in case you've created a new `vsys` or `device-group`).
+  - `Get-PanDevice` does *not* exclusively gate the logic to `Update-PanDeviceLocation` anymore in an effort to speed up `Get-PanDevice` calls when entering a new PowerShell session.
+  - Any cmdlet that uses `[PanDevice]` `Location` property (anything accepting a `-Location` parameter) first ensures the property has been updated.
+
 ## 0.5.0 2025-04-26
 
 Primary focus of `0.5.0` is a re-imagining of the PowerPAN internal data model to store PAN-OS objects (addresses, address groups, service, service groups, and more to come). The changes are non-breaking, but enable *significantly* simpler and faster development while enabling more features by letting `[System.Xml.***]` types/classes "do more of the work".

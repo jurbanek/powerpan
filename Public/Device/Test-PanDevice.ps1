@@ -41,7 +41,7 @@ PanResponse
       
       elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
          foreach($NameCur in $PSBoundParameters.Name) {
-            $TargetDevice = Get-PanDevice -Name $NameCur -NoLocation
+            $TargetDevice = Get-PanDevice -Name $NameCur
             if($TargetDevice) {
                Invoke-PanXApi -Device $TargetDevice -Version
             }

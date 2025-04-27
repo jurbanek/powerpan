@@ -17,17 +17,18 @@ PowerPAN private helper function to initialize the PanDeviceDb.
    if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Debug ('{0}: ' -f $MyInvocation.MyCommand.Name)
 
    # Initial import of the PanDeviceDb
    if(-not $Global:PanInitImportComplete) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': Performing initial import')
+      Write-Debug ('{0}: Performing initial import' -f $MyInvocation.MyCommand.Name)
       $Global:PanInitImportComplete = $true
       ImportPanDeviceDb
-
+      # Setting the refresh interval for refreshing locations on individual devices
+      $Global:PanDeviceLocRefSec = 900
    }
    if( [String]::IsNullOrEmpty($Global:PanDeviceDb) ) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': Initializing $Global:PanDeviceDb')
+      Write-Debug ('{0}: Initializing $Global:PanDeviceDb' -f $MyInvocation.MyCommand.Name)
       # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
       $Global:PanDeviceDb = [System.Collections.Generic.List[PanDevice]]@()
    }

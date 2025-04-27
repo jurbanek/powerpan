@@ -90,6 +90,9 @@ Get-PanDevice "fw.lab.local" | Get-PanAddress -Location "vsys1" -Name "MyHostA" 
          foreach($DeviceCur in $PSBoundParameters.Device) {
             Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} NewName: {5} ' -f 
                $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location, $PSBoundParameters.Name, $PSBoundParameters.NewName)
+            # Update Location if past due
+            if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
+            
             # Given Device ParameterSet, fetch object for its XPath
             switch ($MyInvocation.InvocationName) {
                'Rename-PanAddress'        { $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name; continue }
