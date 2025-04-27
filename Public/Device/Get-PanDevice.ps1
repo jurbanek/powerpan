@@ -81,24 +81,21 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
    # If the PanDeviceDb is NOT populated, no need to continue evaluating ParameterSets, answer is always empty
    if([String]::IsNullOrEmpty($Global:PanDeviceDb)) {
       Write-Debug ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
    }
 
    # ParameterSetName 'Empty'
    # Peference (most to least) is PanDeviceLabelDefault, then session- label.
    elseif($PSCmdlet.ParameterSetName -eq 'Empty') {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Empty ParameterSetName')
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
 
       # If PanDeviceLabelDefault is only the session- label (see function calls above to populate these variables), then there are no PanDeviceLabelDefault(s)
       # Send back only the session- matches. More common scenario and thus evaluated first.
       if($LabelDefault -eq "session-$SessionGuid") {
          Write-Debug ($MyInvocation.MyCommand.Name + ': No PanDeviceLabelDefault(s) found. Using session-' + $SessionGuid )
-
          foreach($DeviceCur in ($Global:PanDeviceDb | Where-Object { $_.Label -contains "session-$SessionGuid"})) {
-            $DeviceAgg.Add($DeviceCur)
+            $DeviceAgg += $DeviceCur
          }
       }
       # PanDeviceLabelDefault has content
@@ -117,7 +114,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
                }
             }
             if($Verdict) {
-               $DeviceAgg.Add($DeviceCur)
+               $DeviceAgg += $DeviceCur
             }
          } # foreach $DeviceCur
       }
@@ -133,8 +130,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
    # Simultaneous use is logical AND (all) for a hit.
    elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
       Write-Debug ($MyInvocation.MyCommand.Name + ': Filter ParameterSetName')
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
       # Iterate through each PanDevice in PanDeviceDb
       foreach($DeviceCur in $Global:PanDeviceDb) {
          # Prime the Verdict
@@ -171,7 +167,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
 
          # Process the verdict
          if($Verdict) {
-            $DeviceAgg.Add($DeviceCur)
+            $DeviceAgg += $DeviceCur
          }
       }
    } # ParameterSetName 'Filter'

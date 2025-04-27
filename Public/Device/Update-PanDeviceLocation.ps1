@@ -93,17 +93,23 @@ None
                Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
             }
             else {
-               for($i = 0; $i -lt $DeviceCur.Location.Count; $i++) {
-                  $KeyCur = $DeviceCur.Location.Keys[$i]
-                  $KeyNew = $NewLocation.Keys[$i]
-                  # Different keys or different values, need to reserialize
-                  if( $KeyCur -ne $KeyNew -or $DeviceCur.Location.($KeyCur) -ne $NewLocation.($KeyNew) ) {
+               $Keys1 = $DeviceCur.Location.Keys
+               $Keys2 = $NewLocation.Keys
+               # Different keys or different values, need to reserialize
+               foreach($Key1 in $Keys1) {
+                  if(-not $Keys2.Contains($Key1)) {
                      $Dirty = $true
-                     # Update the PanDevice in memory
-                     $DeviceCur.Location = $NewLocation
-                     Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
                   }
                }
+            }
+
+            if($Dirty) { 
+               Write-Debug ('{0}: Device: {1} Dirty Location(s) (Updating): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
+               # Update the PanDevice in memory
+               $DeviceCur.Location = $NewLocation
+            }
+            else {
+               Write-Debug ('{0}: Device: {1} Location(s) Clean (No Update)' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             }
             # Update LocationUpdated regardless to wait for another interval
             $DeviceCur.LocationUpdated = Get-Date
@@ -115,7 +121,7 @@ None
    End {
       # If Dirty and ImportMode is not in play, reserialize to disk
       if($Dirty -and -not $PSBoundParameters.ImportMode.IsPresent) {
-         Write-Debug ('{0}: ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
+         Write-Debug ('{0}: Dirty. Serializing Required' -f $MyInvocation.MyCommand.Name)
          ExportPanDeviceDb
       }
    } # End block

@@ -50,7 +50,7 @@ None
          # If no match after full search, no risk of duplicating, so append
          if(-not $Match) {
             Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($DeviceCur.Name) match not found. Appending")
-            $Global:PanDeviceDb.Add($DeviceCur)
+            $Global:PanDeviceDb += $DeviceCur
          }
       }
    } # Process block

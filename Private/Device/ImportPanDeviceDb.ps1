@@ -69,13 +69,18 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
          Write-Debug ('{0}: {1} devices found. Creating PanDevice objects' -f $MyInvocation.MyCommand.Name,$StoredDevice.Count)
 
          # $DeviceAgg to hold unserialized [PanDevices] through iteration
-         # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-         $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+         $DeviceAgg = @()
 
          foreach($StoredCur in $StoredDevice) {
             Write-Debug ('{0}: Device Name: {1}' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
+            # Label
             # If no stored label, avoid sending $null to the constructor. Causes trouble down the road when calling Label.Add(), Label.Contains() and other methods.
-            $StoredCur.Label = if([String]::IsNullOrEmpty($StoredCur.Label)) { $StoredCur.Label = [System.Collections.Generic.List[String]]@() }
+            if([String]::IsNullOrEmpty($StoredCur.Label)) {
+               $Label = [System.Collections.Generic.List[String]]::new()
+            }
+            else {
+               $Label = $StoredCur.Label
+            }
             # Set the PanDeviceType, if not stored (older versions), default to Ngfw
             $Type = if($StoredCur.Type) { $StoredCur.Type } else { [PanDeviceType]::Ngfw }
             # Location
@@ -93,12 +98,11 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $StoredCur.Key
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential] and [SecureString]
-               $NewDevice = [PanDevice]::New($StoredCur.Name, $Credential, $Key, $StoredCur.Label, $StoredCur.ValidateCertificate, $StoredCur.Protocol, $StoredCur.Port, $Type)
+               $NewDevice = [PanDevice]::New($StoredCur.Name, $Credential, $Key, $Label, $StoredCur.ValidateCertificate, $StoredCur.Protocol, $StoredCur.Port, $Type)
                # Assign Location built from earlier Json content and add to DeviceAgg
                $NewDevice.Location = $Location
                # Since we are importing, naturally, Persist will be enabled
                $NewDevice.Persist = $true
-               $DeviceAgg.Add($NewDevice)
             }
 
             # Only Username and Password defined, build new [PanDevice] with just Username and Password
@@ -107,12 +111,11 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
                # Create [PSCredential] from Username and encrypted string Password
                $Credential = New-Object -TypeName PSCredential -ArgumentList $StoredCur.Username,$(ConvertTo-SecureString -String $StoredCur.Password)
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential]
-               $NewDevice = [PanDevice]::New($StoredCur.Name, $Credential, $StoredCur.Label, $StoredCur.ValidateCertificate, $StoredCur.Protocol, $StoredCur.Port, $Type)
+               $NewDevice = [PanDevice]::New($StoredCur.Name, $Credential, $Label, $StoredCur.ValidateCertificate, $StoredCur.Protocol, $StoredCur.Port, $Type)
                # Assign Location built from earlier Json content and add to DeviceAgg
                $NewDevice.Location = $Location
                # Since we are importing, naturally, Persist will be enabled
                $NewDevice.Persist = $true
-               $DeviceAgg.Add($NewDevice)
             }
 
             # Only Key defined, build new [PanDevice] with just Key
@@ -121,13 +124,14 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $StoredCur.Key
                # Create new [PanDevice] using some original retrieved values and just created [SecureString]
-               $NewDevice = [PanDevice]::New($StoredCur.Name, $Key, $StoredCur.Label, $StoredCur.ValidateCertificate, $StoredCur.Protocol, $StoredCur.Port, $Type)
+               $NewDevice = [PanDevice]::New($StoredCur.Name, $Key, $Label, $StoredCur.ValidateCertificate, $StoredCur.Protocol, $StoredCur.Port, $Type)
                # Assign Location built from earlier Json content and add to DeviceAgg
                $NewDevice.Location = $Location
                # Since we are importing, naturally, Persist will be enabled
                $NewDevice.Persist = $true
-               $DeviceAgg.Add($NewDevice)
             }
+
+            $DeviceAgg += $NewDevice
          } # foreach StoredCur
 
          Write-Debug ('{0}: Imported {1} device(s). Adding to PanDeviceDb' -f $MyInvocation.MyCommand.Name,$DeviceAgg.Count)

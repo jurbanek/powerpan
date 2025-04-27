@@ -24,6 +24,7 @@ None
    Write-Debug ($MyInvocation.MyCommand.Name + ':')
 
    if($Force -or $PSCmdlet.ShouldProcess('PanDeviceDb', 'Clear (remove) all PanDevice')) {
-      Get-PanDevice -All | Remove-PanDevice
+      $Global:PanDeviceDb = @()
+      ExportPanDeviceDb
    } # if Force -or ShouldProcess
 } # Function

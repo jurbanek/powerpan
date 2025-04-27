@@ -34,8 +34,7 @@ None
       InitializePanDeviceDb
       # Fetch PanSessionGuid to be used throughout function. Avoids littering Debug logs with excessive calls to GetPanSessionGuid
       $SessionGuid = GetPanSessionGuid
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $DeviceAgg = [System.Collections.Generic.List[PanDevice]]@()
+      $DeviceAgg = @()
    } # Begin block
 
    Process {
@@ -44,7 +43,7 @@ None
          Write-Debug ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
       }
 
-      # ParameterSetName 'Filter'
+      # ParameterSetName 'Device'
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          Write-Debug ($MyInvocation.MyCommand.Name + ': Device ParameterSetName')
          # Iterate through each PanDevice in $Device argument to confirm the PanDevice is in PanDeviceDb
@@ -52,8 +51,8 @@ None
          # from PanDeviceDb, we will silently ignore it
          # Almost always $DeviceAgg will become identical to $Device, except in the use case defined above
          foreach($DeviceCur in $Device) {
-            if($Global:PanDeviceDb.Contains($DeviceCur)) {
-               $DeviceAgg.Add($DeviceCur)
+            if($DeviceCur.Name -in $Global:PanDeviceDb.Name) {
+               $DeviceAgg += $DeviceCur
                Write-Debug ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' queued for removal')
             }
             else {
@@ -108,7 +107,7 @@ None
 
             # Process the verdict
             if($Verdict) {
-               $DeviceAgg.Add($DeviceCur)
+               $DeviceAgg += $DeviceCur
                Write-Debug ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' queued for removal')
             }
          }
@@ -120,7 +119,8 @@ None
          Write-Debug ($MyInvocation.MyCommand.Name + ': Removing ' + $DeviceAgg.Count + ' from PanDeviceDb' )
          foreach($DeviceCur in $DeviceAgg) {
             if($PSCmdlet.ShouldProcess('PanDeviceDb','Remove ' + $DeviceCur.Name)) {
-               $Global:PanDeviceDb.Remove($DeviceCur) | Out-Null
+               # Return an array without the offender
+               $Global:PanDeviceDb = $Global:PanDeviceDb | Where-Object {$_.Name -ne $DeviceCur.Name}
             }
          }
          Write-Debug ($MyInvocation.MyCommand.Name + ': Serializing')

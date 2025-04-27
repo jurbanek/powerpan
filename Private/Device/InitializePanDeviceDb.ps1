@@ -29,7 +29,6 @@ PowerPAN private helper function to initialize the PanDeviceDb.
    }
    if( [String]::IsNullOrEmpty($Global:PanDeviceDb) ) {
       Write-Debug ('{0}: Initializing $Global:PanDeviceDb' -f $MyInvocation.MyCommand.Name)
-      # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
-      $Global:PanDeviceDb = [System.Collections.Generic.List[PanDevice]]@()
+      $Global:PanDeviceDb = @()
    }
 }

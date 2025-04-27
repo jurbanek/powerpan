@@ -43,7 +43,7 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
       # Aggregate devices through each iteration of Process block (and foreach within Process block itself)
       # .NET Generic List provides under-the-hood efficiency during add/remove compared to PowerShell native arrays or ArrayList.
       # List type is [PSObject] -- objects are changed from [PanDevice] to custom objects on the way out to export.
-      $StoredDeviceAgg = [System.Collections.Generic.List[ordered]]@()
+      $StoredDeviceAgg = [System.Collections.Generic.List[PSObject]]::new()
    } # Begin Block
 
    Process {
@@ -52,7 +52,7 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
          # Build a custom hash table suitable for serializing to JSON in PowerShell End block
          # *Cannot* serialize the raw [PanDevice] object direclty. Needs some massaging to get
          # the Credential.Password [SecureString] and Key [SecureString] to their encrypted serializable/storable form.
-         $CustomObj = [ordered]@{
+         $CustomObj = @{
             'Name' =                $DeviceCur.Name
             'Username' =            $DeviceCur.Credential.UserName
             'ValidateCertificate' = $DeviceCur.ValidateCertificate
@@ -96,9 +96,15 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
 
    End {
       if(-not [String]::IsNullorEmpty($StoredDeviceAgg) ) {
-         Write-Debug ('{0}: Storing {1} device{2} to {3}' -f $MyInvocation.MyCommand.Name,$StoredDeviceAgg.Count,$(if($StoredDeviceAgg.Count -ne 1){'s'}),$StoredJsonPath)
+         Write-Debug ('{0}: Storing {1} device(s) to {2}' -f $MyInvocation.MyCommand.Name,$StoredDeviceAgg.Count,$StoredJsonPath)
          # Serialize and write to storage
          ConvertTo-Json -InputObject $StoredDeviceAgg -Depth 10 | Set-Content -Path $StoredJsonPath -Force | Out-Null
+      }
+      elseif([String]::IsNullOrEmpty($StoredDeviceAgg) -and (($Global:PanDeviceDb | Where-Object {$_.Persist -eq $true} | Measure-Object).Count -eq 0)) {
+         # Despite an empty StoredDeviceAgg, double-check $Global:PanDeviceDb before clearing out on-disk inventory
+         Write-Debug ('{0}: Storing 0 devices. Wiping {1}' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
+         # Serialize and write to storage
+         "`n" | Set-Content -Path $StoredJsonPath -Force | Out-Null
       }
    } # End Block
 } # Function
