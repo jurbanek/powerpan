@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.2 2025-04-27
+
+### Changed
+
+- Eliminated PowerShell console message errors when importing an empty PanDeviceDb on-disk inventory (the import did work fine, empty). Reworked the logic to avoid the console messages.
+  - (Windows PowerShell 5.1 previous workarounds still coming to bite)
+
 ## 0.5.1 2025-04-27
 
 ### Changed

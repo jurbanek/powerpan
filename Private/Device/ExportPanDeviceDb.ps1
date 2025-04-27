@@ -103,8 +103,8 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
       elseif([String]::IsNullOrEmpty($StoredDeviceAgg) -and (($Global:PanDeviceDb | Where-Object {$_.Persist -eq $true} | Measure-Object).Count -eq 0)) {
          # Despite an empty StoredDeviceAgg, double-check $Global:PanDeviceDb before clearing out on-disk inventory
          Write-Debug ('{0}: Storing 0 devices. Wiping {1}' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
-         # Serialize and write to storage
-         "`n" | Set-Content -Path $StoredJsonPath -Force | Out-Null
+         # Serialize and clear out the file
+         Set-Content -Path $StoredJsonPath -Value $null -Force | Out-Null
       }
    } # End Block
 } # Function
