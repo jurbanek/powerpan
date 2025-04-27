@@ -51,7 +51,7 @@ Install-Module PowerPAN
 Inline help is available for all cmdlets
 
 ```powershell
-Get-Help Set-PanAddress`
+Get-Help Set-PanAddress
 ```
 
 ## Examples
