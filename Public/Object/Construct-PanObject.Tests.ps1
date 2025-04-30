@@ -26,7 +26,7 @@ Get-Module $ModuleName | Remove-Module -Force
 Import-Module $ModuleFilePath.Path -Force
 
 Describe "$FunctionName Unit Tests" -Tag "Unit" {
-    InModuleScope $ModuleName {
+    InModuleScope -ModuleName $ModuleName {
         BeforeAll {
             Mock ImportPanDeviceDb {}
             Mock ExportPanDeviceDb {}    
@@ -65,6 +65,20 @@ Describe "$FunctionName Unit Tests" -Tag "Unit" {
                 $O.XDoc.Item('entry').Item('tag').GetElementsByTagName('member').Count | Should -BeExactly 0
                 $O.XDoc.Item('entry').Item('tag').GetElementsByTagName('member').InnerText | Should -BeNullOrEmpty
             }
+            It "Description" {
+                $O = Construct-PanAddress -Device $D -Location 'shared' -Name 'MyAddress'
+                
+                # Add description
+                $O.Description = "My Description!"
+                $O.XDoc.Item('entry').Item('description').InnerText | Should -BeExactly "My Description!"
+
+                # Remove description
+                $O.Description = ""
+                $O.XDoc.Item('entry').Item('description').InnerText | Should -BeNullOrEmpty
+                $O.Description = $null
+                $O.XDoc.Item('entry').Item('description').InnerText | Should -BeNullOrEmpty
+            }
+
         }
     }
 }
