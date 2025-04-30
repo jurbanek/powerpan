@@ -53,11 +53,10 @@ Optionally, store the TimeZoneInfo object as well should ever want to display fr
         [String] $TimeZoneName
     )
  
-    # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-    if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+    # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
     if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
     # Announce
-    Write-Debug ($MyInvocation.MyCommand.Name + ':')
+    Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
     # Determine TimeZoneInfo from the passed TimeZoneName before main processing loop
     # Offset will be determined for each software given daylight savings impact

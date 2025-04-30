@@ -44,11 +44,10 @@ function NewMultipartFormData {
       [Switch] $UnquotedBoundary
    )
 
-   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
    # Structure of the returned object
    $MPFData = [PSCustomObject]@{
@@ -64,7 +63,7 @@ function NewMultipartFormData {
    else {
       $Boundary = [System.Guid]::NewGuid().ToString()
    }
-   Write-Debug ($MyInvocation.MyCommand.Name + ": Using boundary $Boundary")
+   Write-Verbose ($MyInvocation.MyCommand.Name + ": Using boundary $Boundary")
 
    # Newline to be used
    $LF = "`r`n"
@@ -81,11 +80,11 @@ function NewMultipartFormData {
       # https://learn.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-74
       # https://github.com/PowerShell/PowerShell/pull/18219
       $MPFData.Header.ContentType = "multipart/form-data; charset=iso-8859-1; boundary=$Boundary"
-      Write-Debug ($MyInvocation.MyCommand.Name + ": Unquoted boundary: $($MPFData.Header.ContentType)")
+      Write-Verbose ($MyInvocation.MyCommand.Name + ": Unquoted boundary: $($MPFData.Header.ContentType)")
    }
    else {
       $MPFData.Header.ContentType = "multipart/form-data; boundary=`"$Boundary`""
-      Write-Debug ($MyInvocation.MyCommand.Name + ": Quoted boundary: $($MPFData.Header.ContentType)")
+      Write-Verbose ($MyInvocation.MyCommand.Name + ": Quoted boundary: $($MPFData.Header.ContentType)")
    }
 
    # Loop through one or more files

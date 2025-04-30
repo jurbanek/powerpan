@@ -72,11 +72,10 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
     )
 
     Begin {
-        # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-        if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+        # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
         if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
         # Announce
-        Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
+        Write-Verbose ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
 
         # Terminating error if called directly. Use a supported alias.
         if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
@@ -87,7 +86,7 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
 
     Process {
         if($PSCmdlet.ParameterSetName -eq 'NonXML') {
-            Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4}' -f 
+            Write-Verbose ('{0} (as {1}): Device: {2} Location: {3} Name: {4}' -f 
                 $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $PSBoundParameters.Device.Name, $PSBoundParameters.Location, $PSBoundParameters.Name)
             # Update Location if past due
             if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
@@ -101,7 +100,7 @@ Set-PanAddress -Device $D -Location "vsys1" -Name "MyAddress" -Type "ip-netmask"
             }
         }
         elseif($PSCmdlet.ParameterSetName -eq 'XML') {
-            Write-Debug ('{0} (as {1}): Device: {2} XPath: {3} XDoc: {4}' -f 
+            Write-Verbose ('{0} (as {1}): Device: {2} XPath: {3} XDoc: {4}' -f 
                 $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $PSBoundParameters.Device.Name, $PSBoundParameters.XPath, $PSBoundParameters.XDoc.OuterXml)
             switch($MyInvocation.InvocationName) {
                 # Call constructors *requiring* XML content

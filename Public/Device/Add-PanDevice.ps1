@@ -21,11 +21,10 @@ None
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
       # Initialize PanDeviceDb
       InitializePanDeviceDb
@@ -40,7 +39,7 @@ None
          while(($i -lt $Global:PanDeviceDb.Count) -and -not $Match) {
             if($Global:PanDeviceDb[$i].Name -imatch ('^' + $DeviceCur.Name + '$')) {
                # Case-insensitive match based on [PanDevice].Name, replace it in PanDeviceDb
-               Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($DeviceCur.Name) match found at `$Global:PanDeviceDb[$i]. Replacing")
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($DeviceCur.Name) match found at `$Global:PanDeviceDb[$i]. Replacing")
                $Global:PanDeviceDb[$i] = $DeviceCur
                # Given match, call off the search
                $Match = $true
@@ -49,7 +48,7 @@ None
          }
          # If no match after full search, no risk of duplicating, so append
          if(-not $Match) {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($DeviceCur.Name) match not found. Appending")
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': ' + "Device Name: $($DeviceCur.Name) match not found. Appending")
             $Global:PanDeviceDb += $DeviceCur
          }
       }
@@ -58,12 +57,12 @@ None
    End {
       # -ImportMode do not [re]serialize
       if($ImportMode.IsPresent) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': ImportMode: Not [re]serializing')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': ImportMode: Not [re]serializing')
          return
       }
       # Default behavior is to serialize after updates to PanDeviceDb
       else {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Serializing')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Serializing')
          ExportPanDeviceDb
       }
    } # End block

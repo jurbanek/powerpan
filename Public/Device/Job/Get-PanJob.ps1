@@ -34,47 +34,46 @@ Returns the details for job ID 837.
     )
  
     Begin {
-        # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-        if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+        # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
         if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
         # Announce
-        Write-Debug ($MyInvocation.MyCommand.Name + ':')
+        Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
         # Retrieve all jobs
         if($PSCmdlet.ParameterSetName -eq 'Empty' -or $PSCmdlet.ParameterSetName -eq 'All') {
             $Cmd = '<show><jobs><all></all></jobs></show>'
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -All Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -All Cmd: {0}' -f $Cmd))
         }
         # Return specific job ID
         elseif($PSCmdlet.ParameterSetName -eq 'Id') {
             $Cmd = '<show><jobs><id>{0}</id></jobs></show>' -f $PSBoundParameters.Id
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Id {0} Cmd: {1}' -f $PSBoundParameters.Id, $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Id {0} Cmd: {1}' -f $PSBoundParameters.Id, $Cmd))
         }
         # Return pending jobs
         elseif($PSCmdlet.ParameterSetName -eq 'Pending') {
             $Cmd = '<show><jobs><pending></pending></jobs></show>'
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Pending Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Pending Cmd: {0}' -f $Cmd))
         }
         # Return processed jobs
         elseif($PSCmdlet.ParameterSetName -eq 'Processed') {
             $Cmd = '<show><jobs><processed></processed></jobs></show>'
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Processed Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Processed Cmd: {0}' -f $Cmd))
         }
     } # Begin Block
  
     Process {
         foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0}' -f $DeviceCur.Name))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0}' -f $DeviceCur.Name))
             
             # Determine the Device Time Zone name from deviceconfig/system/timezone
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/timezone"
             $R = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
             if($R.Status -eq 'success') {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
+                Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
                 $TimeZoneName = $R.Response.result.timezone
             }
             else {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
+                Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
                 Write-Error ('Retrieving Device Time Zone not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 Write-Warning ('Unable to determine Device Time Zone, using "UTC"')
                 $TimeZoneName = 'UTC'

@@ -1,82 +1,66 @@
 function Remove-PanRegisteredIp {
-   <#
-   .SYNOPSIS
-   Unregister PAN-OS registered-ip(s) and tag(s).
-   .DESCRIPTION
-   Unregister PAN-OS registered-ip(s) and tag(s).
-   Unregister with -Ip and -Tag Strings (simultaneously or exclusively) or using a -PanRegisteredIp object (from NewPanRegisteredIp).
+<#
+.SYNOPSIS
+Unregister PAN-OS registered-ip(s) and tag(s).
+.DESCRIPTION
+Unregister PAN-OS registered-ip(s) and tag(s).
+Unregister with -Ip and -Tag Strings (simultaneously or exclusively) or using a -PanRegisteredIp object (from NewPanRegisteredIp).
 
-   If a single -Ip is passed exclusively, all tags for the IP are unregistered, forcing complete unregistration of the IP.
-   If a single -Tag is passed exclusively, the tag is unregistered from all tagged IP's. If an active registered-ip has multiple tags, the other tags will remain registered.
-   If both -Ip and -Tag are passed simultaneously, the tag is unregistered from the specified IP only.
-   If multiple -Ip and multiple -Tag are passed (via arrays) simultaneously (arrays for both parameters) or exclusively (array for one parameter), the specified tags are removed from the specified IP's.
+If a single -Ip is passed exclusively, all tags for the IP are unregistered, forcing complete unregistration of the IP.
+If a single -Tag is passed exclusively, the tag is unregistered from all tagged IP's. If an active registered-ip has multiple tags, the other tags will remain registered.
+If both -Ip and -Tag are passed simultaneously, the tag is unregistered from the specified IP only.
+If multiple -Ip and multiple -Tag are passed (via arrays) simultaneously (arrays for both parameters) or exclusively (array for one parameter), the specified tags are removed from the specified IP's.
 
-   If a single -RegisteredIp is passed, the tag(s) within the PanRegisteredIp object are removed from the IP within the PanRegisteredIp object.
-   If multiple -RegisteredIp are passed (via array), each PanRegisteredIp object is treated as an individual action (different behavior from passing multiple -Ip and -Tag).
+If a single -RegisteredIp is passed, the tag(s) within the PanRegisteredIp object are removed from the IP within the PanRegisteredIp object.
+If multiple -RegisteredIp are passed (via array), each PanRegisteredIp object is treated as an individual action (different behavior from passing multiple -Ip and -Tag).
 
-   If multiple -Device are passed (via array), the registered-ip and tags unregistration logic is applied to each device individually.
-   .NOTES
-   PAN-OS registered-ip is not added to a Dynamic Address Group (DAG) directly. Instead, a PAN-OS registered-ip is registered with tag(s). Multiple tags can be registered to a single registered-ip.
-   The tag(s) against which a registered-ip can be registered can be defined in Objects > Tags OR arbitrary string values that do not exist in Objects > Tags.
-   DAG match criteria is based on tag(s). After registering a registered-ip with tag(s), PAN-OS then dynamically computes to which DAG(s) the registered-ip is added.
-   .INPUTS
-   .OUTPUTS
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1" -Tag "MyTag"
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2"
-   All tags are unregistered from both 1.1.1.1 and 2.2.2.2 registered-ip's.
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -Tag "HerTag","HisTag"
-   "HerTag" and "HisTag" are unregistered from every registered-ip.
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2" -Tag "HerTag","HisTag"
-   "HerTag" and "HisTag" are both unregistered from both 1.1.1.1 and 2.2.2.2 registered-ip's.
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
-   "HerTag" and "HisTag" are both removed from 1.1.1.1 registered-ip.
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag"),$(NewPanRegisteredIp -Ip "2.2.2.2" -Tag "HerTag")
-   "HerTag" and "HisTag" are both unregistered from 1.1.1.1 registered-ip. "HerTag" is unregistered from 2.2.2.2 registered-ip.
-   .EXAMPLE
-   Remove-PanRegisteredIp -Device $Device -All
-   All tags are unregistered from all registered-ip's.
-   #>
+If multiple -Device are passed (via array), the registered-ip and tags unregistration logic is applied to each device individually.
+.NOTES
+PAN-OS registered-ip is not added to a Dynamic Address Group (DAG) directly. Instead, a PAN-OS registered-ip is registered with tag(s). Multiple tags can be registered to a single registered-ip.
+The tag(s) against which a registered-ip can be registered can be defined in Objects > Tags OR arbitrary string values that do not exist in Objects > Tags.
+DAG match criteria is based on tag(s). After registering a registered-ip with tag(s), PAN-OS then dynamically computes to which DAG(s) the registered-ip is added.
+.INPUTS
+.OUTPUTS
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1" -Tag "MyTag"
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2"
+All tags are unregistered from both 1.1.1.1 and 2.2.2.2 registered-ip's.
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -Tag "HerTag","HisTag"
+"HerTag" and "HisTag" are unregistered from every registered-ip.
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -Ip "1.1.1.1","2.2.2.2" -Tag "HerTag","HisTag"
+"HerTag" and "HisTag" are both unregistered from both 1.1.1.1 and 2.2.2.2 registered-ip's.
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag")
+"HerTag" and "HisTag" are both removed from 1.1.1.1 registered-ip.
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -RegisteredIp $(NewPanRegisteredIp -Ip "1.1.1.1" -Tag "HerTag","HisTag"),$(NewPanRegisteredIp -Ip "2.2.2.2" -Tag "HerTag")
+"HerTag" and "HisTag" are both unregistered from 1.1.1.1 registered-ip. "HerTag" is unregistered from 2.2.2.2 registered-ip.
+.EXAMPLE
+Remove-PanRegisteredIp -Device $Device -All
+All tags are unregistered from all registered-ip's.
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
-      [parameter(
-         Mandatory=$true,
-         ValueFromPipeline=$true,
-         HelpMessage='PanDevice against which IP unregistration and untagging will take place.')]
+      [parameter(Mandatory=$true,ValueFromPipeline=$true,HelpMessage='PanDevice against which IP unregistration and untagging will take place.')]
       [PanDevice[]] $Device,
-      [parameter(
-         Mandatory=$false,
-         ParameterSetName='UnregisterWithStrings',
-         HelpMessage='IP address to unregister.')]
+      [parameter(Mandatory=$false,ParameterSetName='UnregisterWithStrings',HelpMessage='IP address to unregister.')]
       [String[]] $Ip,
-      [parameter(
-         Mandatory=$false,
-         ParameterSetName='UnregisterWithStrings',
-         HelpMessage='Tag(s) to unregister from IP address.')]
+      [parameter(Mandatory=$false,ParameterSetName='UnregisterWithStrings',HelpMessage='Tag(s) to unregister from IP address.')]
       [String[]] $Tag,
-      [parameter(
-         Mandatory=$true,
-         ParameterSetName='UnregisterWithPanRegisteredIp',
-         HelpMessage='PanRegisteredIp object to unregister.')]
+      [parameter(Mandatory=$true,ParameterSetName='UnregisterWithPanRegisteredIp',HelpMessage='PanRegisteredIp object to unregister.')]
       [PanRegisteredIp[]] $RegisteredIp,
-      [parameter(
-         Mandatory=$true,
-         ParameterSetName='UnregisterAll',
-         HelpMessage='Switch parameter to unregister all tags from all IP addresses.')]
+      [parameter(Mandatory=$true,ParameterSetName='UnregisterAll',HelpMessage='Switch parameter to unregister all tags from all IP addresses.')]
       [Switch] $All
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
    }
 
    Process {
@@ -88,36 +72,36 @@ function Remove-PanRegisteredIp {
          # -All switch parameter indicating all registered-ip's are to be unregistered.
          if($PSCmdlet.ParameterSetName -eq 'UnregisterAll') {
             if($PSCmdlet.ShouldProcess($Device.Name,'Unregister ALL IP:TAG registration(s)')) {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Unregister ALL IP:TAG registration(s)')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Unregister ALL IP:TAG registration(s)')
                return Clear-PanRegisteredIp -Device $Device
             }
          }
          # -RegisteredIp providing the exact set of unregistration actions.
          elseif($PSCmdlet.ParameterSetName -eq 'UnregisterWithPanRegisteredIp') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) specified by PanRegisteredIp object(s)')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) specified by PanRegisteredIp object(s)')
             $RegisteredIpAgg.Add($RegisteredIp)
          }
          # With Parameter set UnregisterWithStrings, -Ip and -Tag can be used exclusively or simultaneously to achieve different goals.
          elseif($PSCmdlet.ParameterSetName -eq 'UnregisterWithStrings') {
             # -Ip and -Tag parameters simultaneously
             if(-not [String]::IsNullOrEmpty($Ip) -and -not [String]::IsNullOrEmpty($Tag) ) {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) matching IP && TAG')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) matching IP && TAG')
                # While Remove-PanRegisteredIp will accept array on -Ip parameter,
                # Get-PanRegisteredIp cannot accept array on its -Ip parameter. Must iterate.
                foreach($IpCur in $Ip) {
-                  Write-Debug ($MyInvocation.MyCommand.Name + ": Searching device $($DeviceCur.Name) for registered-ip $IpCur")
+                  Write-Verbose ($MyInvocation.MyCommand.Name + ": Searching device $($DeviceCur.Name) for registered-ip $IpCur")
                   # $RegisteredIpResult will be a single [PanRegisteredIp], but the IP MAY have MULTIPLE tag registrations.
                   $RegisteredIpResult = $null
                   $RegisteredIpResult = Get-PanRegisteredIp -Device $DeviceCur -Ip $IpCur
                   if(-not [String]::IsNullOrEmpty($RegisteredIpResult) ) {
-                     Write-Debug ($MyInvocation.MyCommand.Name + ": registered-ip $IpCur FOUND on device $($DeviceCur.Name)")
+                     Write-Verbose ($MyInvocation.MyCommand.Name + ": registered-ip $IpCur FOUND on device $($DeviceCur.Name)")
                      # Remove-PanRegisteredIp with -Ip and -Tag simultaneously will ONLY unregister tags specified in -Tag parameter, must iterate.
                      # $TagAgg to hold the (sub)set of tags that must be unregistered.
                      $TagAgg = [System.Collections.Generic.List[String]]@()
                      foreach($TagCur in $Tag) {
-                        Write-Debug ($MyInvocation.MyCommand.Name + ": Searching for tag $TagCur on registered-ip $IpCur")
+                        Write-Verbose ($MyInvocation.MyCommand.Name + ": Searching for tag $TagCur on registered-ip $IpCur")
                         if($RegisteredIpResult.Tag -contains $TagCur) {
-                           Write-Debug ($MyInvocation.MyCommand.Name + ": tag $TagCur FOUND on registered-ip $IpCur")
+                           Write-Verbose ($MyInvocation.MyCommand.Name + ": tag $TagCur FOUND on registered-ip $IpCur")
                            $TagAgg.Add($TagCur)
                         }
                      }
@@ -132,16 +116,16 @@ function Remove-PanRegisteredIp {
 
             # -Ip parameter exlusively
             elseif(-not [String]::IsNullOrEmpty($Ip) ) {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) matching IP only')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) matching IP only')
                # While Remove-PanRegisteredIp will accept array on -Ip parameter,
                # Get-PanRegisteredIp cannot accept array on its -Ip parameter. Must iterate.
                foreach($IpCur in $Ip) {
-                  Write-Debug ($MyInvocation.MyCommand.Name + ": Searching device $($DeviceCur.Name) for registered-ip $IpCur")
+                  Write-Verbose ($MyInvocation.MyCommand.Name + ": Searching device $($DeviceCur.Name) for registered-ip $IpCur")
                   # $RegisteredIpResult will be a single [PanRegisteredIp] with all tag registrations.
                   $RegisteredIpResult = $null
                   $RegisteredIpResult = Get-PanRegisteredIp -Device $DeviceCur -Ip $IpCur
                   if(-not [String]::IsNullOrEmpty($RegisteredIpResult) ) {
-                     Write-Debug ($MyInvocation.MyCommand.Name + ": registered-ip $IpCur FOUND on device $($DeviceCur.Name)")
+                     Write-Verbose ($MyInvocation.MyCommand.Name + ": registered-ip $IpCur FOUND on device $($DeviceCur.Name)")
                      # Add the [PanRegisteredIp] to the blueprint to be unregistered later.
                      $RegisteredIpAgg.Add($RegisteredIpResult)
                   } # if $RegisteredIpResult
@@ -150,20 +134,20 @@ function Remove-PanRegisteredIp {
 
             # -Tag parameter exclusively
             elseif(-not [String]::IsNullOrEmpty($Tag) ) {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) matching Tag only')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Unregistering IP:TAG registration(s) matching Tag only')
                # $HashTableAgg placeholder data structure to store @{"10.10.10.10" = @("HisTag","HerTag"); "10.20.20.20" = @("HerTag") }
                # string representations of IP:TAG mappings temporarily. Easy to insert and manipulate.
                $HashTableAgg = @{}
                # While Remove-PanRegisteredIp will accept array on -Tag parameter,
                # Get-PanRegisteredIp cannot accept array on its -Tag parameter. Must iterate.
                foreach($TagCur in $Tag) {
-                  Write-Debug ($MyInvocation.MyCommand.Name + ": Searching device $($DeviceCur.Name) for registered-ip's with tag $TagCur")
+                  Write-Verbose ($MyInvocation.MyCommand.Name + ": Searching device $($DeviceCur.Name) for registered-ip's with tag $TagCur")
                   # $RegisteredIpResult will be ZERO OR MORE [PanRegisteredIp] (array), where each [PanRegisteredIp] IP MAY have MULTIPLE tag registrations.
                   $RegisteredIpResult = $null
                   $RegisteredIpResult = @(Get-PanRegisteredIp -Device $DeviceCur -Tag $TagCur)
                   if(-not [String]::IsNullOrEmpty($RegisteredIpResult) ) {
                      foreach($RegisteredIpResultCur in $RegisteredIpResult) {
-                        Write-Debug ($MyInvocation.MyCommand.Name + ": registered-ip $($RegisteredIpResultCur.Ip) with tag $TagCur FOUND on device $($DeviceCur.Name)")
+                        Write-Verbose ($MyInvocation.MyCommand.Name + ": registered-ip $($RegisteredIpResultCur.Ip) with tag $TagCur FOUND on device $($DeviceCur.Name)")
                         # IP already a key in hash table, add the tag to the existing array of tags.
                         if($HashTableAgg.Contains($RegisteredIpResultCur.Ip) ) {
                            $HashTableAgg[$RegisteredIpResultCur.Ip] = $HashTableAgg[$RegisteredIpResultCur.Ip] + $TagCur
@@ -189,11 +173,11 @@ function Remove-PanRegisteredIp {
          # Convert $RegisteredIpAgg blueprint to XML uid-message and send API request to unregister.
          # For -RegisteredIp, -Ip/-Tag, -Ip, and -Tag Cases, $RegisteredIpAgg is blueprint for unregistrations.
          if([String]::IsNullOrEmpty($RegisteredIpAgg) ) {
-            Write-Debug ($MyInvocation.MyCommand.Name + ": Searches resulted in ZERO unregistrations to process")
+            Write-Verbose ($MyInvocation.MyCommand.Name + ": Searches resulted in ZERO unregistrations to process")
          }
          else {
-            Write-Debug ($MyInvocation.MyCommand.Name + ": Searches resulted in ONE OR MORE unregistrations to process")
-            Write-Debug ($MyInvocation.MyCommand.Name + ": Device: $($DeviceCur.Name)")
+            Write-Verbose ($MyInvocation.MyCommand.Name + ": Searches resulted in ONE OR MORE unregistrations to process")
+            Write-Verbose ($MyInvocation.MyCommand.Name + ": Device: $($DeviceCur.Name)")
             # Seed a herestring with XML-API "uid-message" beginning elements. Rebuild for every new device iteration.
             $CmdCur = @'
 <uid-message>
@@ -204,12 +188,12 @@ function Remove-PanRegisteredIp {
 
 '@
             foreach($RegisteredIpCur in $RegisteredIpAgg) {
-               Write-Debug ($MyInvocation.MyCommand.Name + ":    registered-ip: $($RegisteredIpCur.Ip)")
+               Write-Verbose ($MyInvocation.MyCommand.Name + ":    registered-ip: $($RegisteredIpCur.Ip)")
                $CmdCur += "   <entry ip=`"$($RegisteredIpCur.Ip)`">`n"
                $CmdCur += "    <tag>`n"
 
                foreach($TagCur in $RegisteredIpCur.Tag) {
-                  Write-Debug ($MyInvocation.MyCommand.Name + ":       tag: $($TagCur)")
+                  Write-Verbose ($MyInvocation.MyCommand.Name + ":       tag: $($TagCur)")
                   $CmdCur += "     <member>$TagCur</member>`n"
                }
 
@@ -224,11 +208,11 @@ function Remove-PanRegisteredIp {
 
 '@
             if($PSCmdlet.ShouldProcess($DeviceCur.Name,'Unregister IP:TAG registrations ')) {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Prepared uid-message: ' + $CmdCur)
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Prepared uid-message: ' + $CmdCur)
                $R = Invoke-PanXApi -Device $DeviceCur -Uid -Cmd $CmdCur
-               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
-               Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
             }
          } # else Convert $RegisteredIpAgg blueprint to XML uid-message and send API request to unregister
       } # foreach Device

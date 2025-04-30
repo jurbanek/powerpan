@@ -43,28 +43,27 @@ ConvertFromPanTimeZone -Name 'America/Chicago'
       [String] $Name
    )
 
-   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
    # PowerShell 6+ (PowerPAN supports 7+ LTS releases)
    if($PSVersionTable.PSVersion.Major -ge 7) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': PowerShell 6+')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': PowerShell 6+')
       # Use .NET native FindSystemTimeZoneById to return a TimeZoneInfo object
       return [TimeZoneInfo]::FindSystemTimeZoneById($PSBoundParameters.Name)
    }
    # PowerShell 5.1
    else {
       # If the assemply is already loaded, don't load it again
-      Write-Debug ($MyInvocation.MyCommand.Name + ': < PowerShell 6+ (likely 5.1)')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': < PowerShell 6+ (likely 5.1)')
       if(([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object {$_.FullName -like 'TimeZoneConverter*'}).Count -gt 0) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': TimeZoneConverter assembly already loaded')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': TimeZoneConverter assembly already loaded')
       }
       # TimeZoneConvert assembly NOT loaded, load it
       else {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Loading TimeZoneConverter assembly')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Loading TimeZoneConverter assembly')
          # Assembly included in the module, use ModuleBase to get there
          $AssemblyDllPath = (Get-Module -Name 'PowerPAN').ModuleBase + '/Assembly/timezoneconverter.7.0.0/net462/TimeZoneConverter.dll'
          Add-Type -Path $AssemblyDllPath

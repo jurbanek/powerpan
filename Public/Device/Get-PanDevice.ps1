@@ -64,11 +64,10 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
       [Switch] $All
    )
 
-   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
    # Initialize PanDeviceDb
    InitializePanDeviceDb
@@ -80,27 +79,27 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
 
    # If the PanDeviceDb is NOT populated, no need to continue evaluating ParameterSets, answer is always empty
    if([String]::IsNullOrEmpty($Global:PanDeviceDb)) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
       $DeviceAgg = @()
    }
 
    # ParameterSetName 'Empty'
    # Peference (most to least) is PanDeviceLabelDefault, then session- label.
    elseif($PSCmdlet.ParameterSetName -eq 'Empty') {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': Empty ParameterSetName')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': Empty ParameterSetName')
       $DeviceAgg = @()
 
       # If PanDeviceLabelDefault is only the session- label (see function calls above to populate these variables), then there are no PanDeviceLabelDefault(s)
       # Send back only the session- matches. More common scenario and thus evaluated first.
       if($LabelDefault -eq "session-$SessionGuid") {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': No PanDeviceLabelDefault(s) found. Using session-' + $SessionGuid )
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': No PanDeviceLabelDefault(s) found. Using session-' + $SessionGuid )
          foreach($DeviceCur in ($Global:PanDeviceDb | Where-Object { $_.Label -contains "session-$SessionGuid"})) {
             $DeviceAgg += $DeviceCur
          }
       }
       # PanDeviceLabelDefault has content
       else {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Using PanDeviceLabelDefault(s)')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Using PanDeviceLabelDefault(s)')
 
          # For each PanDevice, prime Verdict as $true. Iterate through PanDeviceLabelDefault(s) and look for matches one at a time.
          # If no match, $Verdict becomes false and the PanDevice will not be added to the aggregate to be returned.
@@ -129,7 +128,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
    # When -Session, -Label, -Name are used together, specific behavior (above) still applies, but each in use must hit.
    # Simultaneous use is logical AND (all) for a hit.
    elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': Filter ParameterSetName')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': Filter ParameterSetName')
       $DeviceAgg = @()
       # Iterate through each PanDevice in PanDeviceDb
       foreach($DeviceCur in $Global:PanDeviceDb) {
@@ -174,7 +173,7 @@ If $Global:PanDeviceLabelDefault is empty, returns PanDevice(s) created in curre
 
    # ParameterSetName 'All'
    elseif($PSCmdlet.ParameterSetName -eq 'All') {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': All ParameterSetName')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': All ParameterSetName')
       $DeviceAgg = $Global:PanDeviceDb
    } # ParameterSetName 'All'
 

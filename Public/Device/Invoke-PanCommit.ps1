@@ -86,28 +86,27 @@ Returns $True is changes are pending in candidate configuration. $False if there
     )
 
     Begin {
-        # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-        if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+        # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
         if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
         # Announce
-        Write-Debug ($MyInvocation.MyCommand.Name + ':')
+        Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
     } # Begin block
 
     Process {
         foreach($DeviceCur in $Device) {
-            Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0}' -f $DeviceCur.Name))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0}' -f $DeviceCur.Name))
             
             # ParameterSet name Pending-Changes
             if($PSCmdlet.ParameterSetName -eq 'Pending-Changes') {
-                Write-Debug ($MyInvocation.MyCommand.Name + ': -PendingChanges')
+                Write-Verbose ($MyInvocation.MyCommand.Name + ': -PendingChanges')
                 $Cmd = '<check><pending-changes></pending-changes></check>'
                 $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
                 if($R.Response.result -eq 'no') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': Device : {0} has NO pending changes to be committed.' -f $DeviceCur.Name))
+                    Write-Verbose ($MyInvocation.MyCommand.Name + (': Device : {0} has NO pending changes to be committed.' -f $DeviceCur.Name))
                     return $False
                 }
                 elseif($R.Response.result -eq 'yes') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': Device : {0} HAS pending changes to be committed.' -f $DeviceCur.Name))
+                    Write-Verbose ($MyInvocation.MyCommand.Name + (': Device : {0} HAS pending changes to be committed.' -f $DeviceCur.Name))
                     return $True
                 }
             }
@@ -119,11 +118,11 @@ Returns $True is changes are pending in candidate configuration. $False if there
                 # Set the Root to <commit> or <validate>
                 # $XmlRoot will contain the final XML to be used in Cmd. Build it slowly.
                 if($PSBoundParameters.Commit.IsPresent) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Commit')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Commit')
                     $XmlRoot = $XmlDoc.CreateElement('commit')
                 } 
                 else {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Validate')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Validate')
                     $XmlRoot = $XmlDoc.CreateElement('validate')
                 }
                 $XmlDoc.AppendChild($XmlRoot) | Out-Null
@@ -131,7 +130,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
                 # -Force
                 # Force is only relevant for Commit operation, not Validate. ParameterSet definitions control where it can be used
                 if($PSBoundParameters.Force.IsPresent) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Force')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Force')
                     $XmlForce = $XmlDoc.CreateElement('force')
                     # Trick to get a closing </force> tag on the valueless <force />
                     # https://stackoverflow.com/questions/45270479/force-xmldocument-to-save-empty-elements-with-an-explicit-closing-tag
@@ -153,7 +152,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
                 # Commit full is <commit>...</commit> (no <full></full>, the odd one out)
                 # Valid full is <validate><full>...</full></validate>
                 if($PSCmdlet.ParameterSetName -like '*-Partial') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Partial')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Partial')
                     $XmlPartial = $XmlDoc.CreateElement('partial')
                     # Trick for closing tag
                     $XmlPartial.AppendChild($XmlDoc.CreateWhitespace('')) | Out-Null
@@ -163,7 +162,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
             
                 }
                 elseif($PSCmdlet.ParameterSetName -eq 'Validate-Full') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': (Validate) -Full')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': (Validate) -Full')
                     $XmlFull = $XmlDoc.CreateElement('full')
                     # Trick for closing tag
                     $XmlFull.AppendChild($XmlDoc.CreateWhitespace('')) | Out-Null
@@ -172,13 +171,13 @@ Returns $True is changes are pending in candidate configuration. $False if there
                     $XmlWork = $XmlFull
                 }
                 elseif($PSCmdlet.ParameterSetName -eq 'Commit-Full') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': (Commit) -Full')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': (Commit) -Full')
                     # Nothing to do for Commit-Full. Go-forward point of working tree does not change
                 }
 
                 # -Description <description>My Description</description>
                 if($PSBoundParameters.Description) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Description')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Description')
                     $XmlDescription = $XmlDoc.CreateElement('description')
                     $XmlDescription.InnerText = $PSBoundParameters.Description
                     $XmlWork.AppendChild($XmlDescription) | Out-Null
@@ -186,7 +185,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # -Admin <admin><member>Admin1</member><member>Admin2</member></admin>
                 if($PSBoundParameters.Admin) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': -Admin (Count:{0})' -f $PSBoundParameters.Admin.Count))
+                    Write-Verbose ($MyInvocation.MyCommand.Name + (': -Admin (Count:{0})' -f $PSBoundParameters.Admin.Count))
                     $XmlAdmin = $XmlDoc.CreateElement('admin')
                     foreach($AdminCur in $PSBoundParameters.Admin) {
                         $XmlMember = $XmlDoc.CreateElement('member')
@@ -200,7 +199,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # -Vsys <vsys><member>vsys1</member><member>vsys2</member></vsys>
                 if($PSBoundParameters.Vsys) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': -Vsys (Count:{0})' -f $PSBoundParameters.Vsys.Count))
+                    Write-Verbose ($MyInvocation.MyCommand.Name + (': -Vsys (Count:{0})' -f $PSBoundParameters.Vsys.Count))
                     $XmlVsys = $XmlDoc.CreateElement('vsys')
                     foreach($VsysCur in $PSBoundParameters.Vsys) {
                         $XmlMember = $XmlDoc.CreateElement('member')
@@ -214,7 +213,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # -NoVsys <novsys></novsys>
                 if($PSBoundParameters.NoVsys.IsPresent) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -NoVsys')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -NoVsys')
                     $XmlNoVsys = $XmlDoc.CreateElement('novsys')
                     # Force a closing tag
                     $XmlNoVsys.AppendChild($XmlDoc.CreateWhitespace('')) | Out-Null
@@ -224,7 +223,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # -ExcludeDeviceAndNetwork <device-and-network>excluded</device-and-network>
                 if($PSBoundParameters.ExcludeDeviceAndNetwork.IsPresent) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -ExcludeDeviceAndNetwork')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -ExcludeDeviceAndNetwork')
                     $XmlDeviceAndNetwork = $XmlDoc.CreateElement('device-and-network')
                     $XmlDeviceAndNetwork.InnerText = 'excluded'
                     $XmlWork.AppendChild($XmlDeviceAndNetwork) | Out-Null
@@ -233,7 +232,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # -ExcludeSharedObject <shared-object>excluded</shared-object>
                 if($PSBoundParameters.ExcludeSharedObject.IsPresent) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -ExcludeSharedObject')
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -ExcludeSharedObject')
                     $XmlSharedObject = $XmlDoc.CreateElement('shared-object')
                     $XmlSharedObject.InnerText = 'excluded'
                     $XmlWork.AppendChild($XmlSharedObject) | Out-Null
@@ -242,7 +241,7 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # -XPath <object-xpaths><member>/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/service</member><member>...</member></object-xpaths>
                 if($PSBoundParameters.XPath) {
-                    Write-Debug ($MyInvocation.MyCommand.Name + (': -XPath (Count:{0})' -f $PSBoundParameters.XPath.Count))
+                    Write-Verbose ($MyInvocation.MyCommand.Name + (': -XPath (Count:{0})' -f $PSBoundParameters.XPath.Count))
                     $XmlObjectXPaths = $XmlDoc.CreateElement('object-xpaths')
                     foreach($XPathCur in $PSBoundParameters.XPath) {
                         $XmlMember = $XmlDoc.CreateElement('member')
@@ -256,15 +255,15 @@ Returns $True is changes are pending in candidate configuration. $False if there
 
                 # Finished building XML. Make the request.
                 if($PSCmdlet.ParameterSetName -like 'Commit-Full') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Commit Cmd: {0}' -f $XmlRoot.OuterXml)
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Commit Cmd: {0}' -f $XmlRoot.OuterXml)
                     $R = Invoke-PanXApi -Device $DeviceCur -Commit -Cmd $XmlRoot.OuterXml
                 }
                 elseif($PSCmdlet.ParameterSetName -like 'Commit-Partial') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Commit -Action "partial" Cmd: {0}' -f $XmlRoot.OuterXml)
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Commit -Action "partial" Cmd: {0}' -f $XmlRoot.OuterXml)
                     $R = Invoke-PanXApi -Device $DeviceCur -Commit -Action 'partial' -Cmd $XmlRoot.OuterXml
                 }
                 elseif($PSCmdlet.ParameterSetName -like 'Validate-*') {
-                    Write-Debug ($MyInvocation.MyCommand.Name + ': -Validate Cmd: {0}' -f $XmlRoot.OuterXml)
+                    Write-Verbose ($MyInvocation.MyCommand.Name + ': -Validate Cmd: {0}' -f $XmlRoot.OuterXml)
                     $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $XmlRoot.OuterXml
                 }
                 # PAN-OS responses are same for commit and validate operations. Can use same logic for both

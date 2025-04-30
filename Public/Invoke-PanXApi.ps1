@@ -187,18 +187,17 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
    } # Begin block
 
    Process {
       foreach($DeviceCur in $PSBoundParameters.Device) {
          # API type=keygen
          if ($PSCmdlet.ParameterSetName -eq 'Keygen') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=keygen')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=keygen')
             $PanApiType = 'keygen'
             $InvokeParams = [ordered]@{
                'Method' = 'Post';
@@ -217,7 +216,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=version
          elseif ($PSCmdlet.ParameterSetName -eq 'Version') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=version')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=version')
             $PanApiType = 'version'
             $InvokeParams = [ordered]@{
                'Method' = 'Post';
@@ -235,7 +234,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=op
          elseif ($PSCmdlet.ParameterSetName -eq 'Op') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=op')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=op')
             $PanApiType = 'op'
             $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = [ordered]@{
@@ -255,7 +254,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=user-id
          elseif ($PSCmdlet.ParameterSetName -eq 'Uid') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=user-id')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=user-id')
             $PanApiType = 'user-id'
             $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = [ordered]@{
@@ -275,7 +274,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=commit
          elseif ($PSCmdlet.ParameterSetName -eq 'Commit') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=commit')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=commit')
             $PanApiType = 'commit'
             $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = [ordered]@{
@@ -311,7 +310,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
             elseif ($PSBoundParameters.Clone.IsPresent) { $PanApiAction = 'clone' }
             elseif ($PSBoundParameters.MultiClone.IsPresent) { $PanApiAction = 'multi-clone' }
             elseif ($PSBoundParameters.Complete.IsPresent) { $PanApiAction = 'complete' }
-            Write-Debug ("{0}: type=config action={1}" -f $MyInvocation.MyCommand.Name,$PanApiAction)
+            Write-Verbose ("{0}: type=config action={1}" -f $MyInvocation.MyCommand.Name,$PanApiAction)
 
             $PanApiXPath = $PSBoundParameters.XPath
             $PanApiElement = $PSBoundParameters.Element
@@ -345,12 +344,12 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=import
          elseif ($PSCmdlet.ParameterSetName -like 'Import-*') {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': type=Import')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=Import')
             $PanApiType = 'import'
-            Write-Debug ($MyInvocation.MyCommand.Name + ': category=' + $Category)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': category=' + $Category)
 
             if($PSCmdlet.ParameterSetName -eq 'Import-Default') {
-               Write-Debug ($MyInvocation.MyCommand.Name + ": type=Import (Default)")
+               Write-Verbose ($MyInvocation.MyCommand.Name + ": type=Import (Default)")
                $InvokeParams = [ordered]@{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api?key={3}&type={4}&category={5}' -f `
@@ -373,7 +372,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
             } # end ParameterSetName Import-Default
 
             elseif($PSCmdlet.ParameterSetName -eq 'Import-Cert-Key') {
-               Write-Debug ($MyInvocation.MyCommand.Name + ": type=Import (Cert-Key)")
+               Write-Verbose ($MyInvocation.MyCommand.Name + ": type=Import (Cert-Key)")
                $InvokeParams = [ordered]@{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api?key={3}&type={4}&category={5}&certificate-name={6}&format={7}' -f `
@@ -424,7 +423,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
                }
                $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing), $DeviceCur)
             }
-            Write-Debug ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message))
             return $R
          }
       } # Process block outermost foreach

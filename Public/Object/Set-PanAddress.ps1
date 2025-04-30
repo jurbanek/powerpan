@@ -122,20 +122,19 @@ On large devices with many objects with the "review" tag, might take a while.
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
    } # Begin Block
 
    Process {
       # ParameterSetName InputObject
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
-            Write-Debug ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
+            Write-Verbose ('{0}: InputObject Device: {1} XPath: {2}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
             # InputObject is always action=edit, requires overlap between XPath and Element (entry.OuterXml)
-            Write-Debug ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
+            Write-Verbose ('{0}: InputObject (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$InputObjectCur.XDoc.entry.OuterXml)
             $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Edit -XPath $InputObjectCur.XPath -Element $InputObjectCur.XDoc.entry.OuterXml
             # Check PanResponse
             if($R.Status -eq 'success') {
@@ -152,7 +151,7 @@ On large devices with many objects with the "review" tag, might take a while.
       # ParameterSetName Device
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug ('{0}: Device: {1} Location: {2} Name: {3} ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Location,$PSBoundParameters.Name)
+            Write-Verbose ('{0}: Device: {1} Location: {2} Name: {3} ' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Location,$PSBoundParameters.Name)
             # Update Location if past due
             if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
             
@@ -160,11 +159,11 @@ On large devices with many objects with the "review" tag, might take a while.
             $Obj = $null
             $Obj = Get-PanAddress -Device $DeviceCur -Location $PSBoundParameters.Location -Name $PSBoundParameters.Name
             if($Obj) {
-               Write-Debug ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Obj.XPath)
+               Write-Verbose ('{0}: Found {1} on Device: {2}/{3} at XPath: {4}' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location,$Obj.XPath)
             }
             # Object does not exist, build it
             else {
-               Write-Debug ('{0}: Cannot find {1} on Device: {2}/{3}. Building' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location)
+               Write-Verbose ('{0}: Cannot find {1} on Device: {2}/{3}. Building' -f $MyInvocation.MyCommand.Name,$PSBoundParameters.Name,$DeviceCur.Name,$PSBoundParameters.Location)
                $Obj = [PanAddress]::new($DeviceCur,$PSBoundParameters.Location,$PSBoundParameters.Name)
             }
                
@@ -178,7 +177,7 @@ On large devices with many objects with the "review" tag, might take a while.
 
             # Call API
             # -Replace action=edit, requires overlap between XPath and Element (entry.OuterXml)
-            Write-Debug ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Obj.XDoc.entry.OuterXml)
+            Write-Verbose ('{0}: Device (-Edit)XML: {1}' -f $MyInvocation.MyCommand.Name,$Obj.XDoc.entry.OuterXml)
             $R = Invoke-PanXApi -Device $DeviceCur -Config -Edit -XPath $Obj.XPath -Element $Obj.XDoc.entry.OuterXml
             
             # Check PanResponse

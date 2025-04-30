@@ -1,50 +1,38 @@
 function Set-PanLicenseApiKey {
-   <#
-   .SYNOPSIS
-   Set current license API key stored on the PanDevice
-   .DESCRIPTION
-   License API key is commonly used on VM-Series to automatically remove VM-Series firewalls from the Customer Support Portal
-   when the VM-Series licenses are revoked on the VM-Series firewall itself.
-   .NOTES
-   .INPUTS
-   PowerPan.PanDevice[]
-      You can pipe a PanDevice to this cmdlet
-   .OUTPUTS
-   PanResponse
-   .EXAMPLE
-   PS> Set-PanLicenseApiKey -Device $Device -LicenseApiKey $SecureKey
-   Where $SecureKey is a SecureString
-   .EXAMPLE
-   PS> Get-PanDevice -All | Set-PanLicenseApiKey -LicenseApiKeyAsPlainText $StringKey
-   Where $StringKey is a standard string
-   #>
+<#
+.SYNOPSIS
+Set current license API key stored on the PanDevice
+.DESCRIPTION
+License API key is commonly used on VM-Series to automatically remove VM-Series firewalls from the Customer Support Portal
+when the VM-Series licenses are revoked on the VM-Series firewall itself.
+.NOTES
+.INPUTS
+PowerPan.PanDevice[]
+   You can pipe a PanDevice to this cmdlet
+.OUTPUTS
+PanResponse
+.EXAMPLE
+PS> Set-PanLicenseApiKey -Device $Device -LicenseApiKey $SecureKey
+Where $SecureKey is a SecureString
+.EXAMPLE
+PS> Get-PanDevice -All | Set-PanLicenseApiKey -LicenseApiKeyAsPlainText $StringKey
+Where $StringKey is a standard string
+#>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
    param(
-      [parameter(
-         Mandatory=$true,
-         ValueFromPipeline=$true,
-         HelpMessage='PanDevice against which stored license API key will be set.')]
+      [parameter(Mandatory=$true,ValueFromPipeline=$true,HelpMessage='PanDevice against which stored license API key will be set.')]
       [PanDevice[]] $Device,
-      [parameter(
-         Mandatory=$true,
-         ValueFromPipeline=$false,
-         ParameterSetName='AsSecureString',
-         HelpMessage='SecureString license API key to apply to PanDevice.')]
+      [parameter(Mandatory=$true,ParameterSetName='AsSecureString',HelpMessage='SecureString license API key to apply to PanDevice.')]
       [SecureString] $LicenseApiKey,
-      [parameter(
-         Mandatory=$true,
-         ValueFromPipeline=$false,
-         ParameterSetName='AsPlainText',
-         HelpMessage='Plaintext string license API key to apply to PanDevice.')]
+      [parameter(Mandatory=$true,ParameterSetName='AsPlainText',HelpMessage='Plaintext string license API key to apply to PanDevice.')]
       [String] $LicenseApiKeyAsPlainText
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
    } # Begin Block
 
    Process {
@@ -61,12 +49,12 @@ function Set-PanLicenseApiKey {
          }
 
          if($PSCmdlet.ShouldProcess($DeviceCur.Name,'Set PAN-OS Licensing API key ')) {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
 
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
             
             # Output $R for feedback
             $R

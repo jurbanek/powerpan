@@ -14,11 +14,10 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ('{0}:' -f $MyInvocation.MyCommand.Name)
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
       
       # Detect PowerShell Core automatic variables for MacOS and Linux
       if($IsMacOS -or $IsLinux) {
@@ -32,11 +31,11 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
       }
       
       if(-not (Test-Path -Path $StoredDirectoryPath -PathType Container)) {
-         Write-Debug ('{0}: {1} directory does not exist. Creating' -f $MyInvocation.MyCommand.Name,$StoredDirectoryPath)
+         Write-Verbose ('{0}: {1} directory does not exist. Creating' -f $MyInvocation.MyCommand.Name,$StoredDirectoryPath)
          New-Item -Path $StoredDirectoryPath -ItemType Directory -Force | Out-Null
       }
       if(-not (Test-Path -Path $StoredJsonPath -PathType Leaf)) {
-         Write-Debug ('{0}: {1} file does not exist. Creating' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
+         Write-Verbose ('{0}: {1} file does not exist. Creating' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
          Set-Content -Path $StoredJsonPath -Value $null -Force | Out-Null
       }
 
@@ -48,7 +47,7 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
 
    Process {
       foreach ($DeviceCur in ($Global:PanDeviceDb | Where-Object {$_.Persist -eq $true} )) {
-         Write-Debug ('{0}: Name: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+         Write-Verbose ('{0}: Name: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
          # Build a custom hash table suitable for serializing to JSON in PowerShell End block
          # *Cannot* serialize the raw [PanDevice] object direclty. Needs some massaging to get
          # the Credential.Password [SecureString] and Key [SecureString] to their encrypted serializable/storable form.
@@ -96,13 +95,13 @@ PowerPAN private helper function to serialize and store PanDevice objects from P
 
    End {
       if(-not [String]::IsNullorEmpty($StoredDeviceAgg) ) {
-         Write-Debug ('{0}: Storing {1} device(s) to {2}' -f $MyInvocation.MyCommand.Name,$StoredDeviceAgg.Count,$StoredJsonPath)
+         Write-Verbose ('{0}: Storing {1} device(s) to {2}' -f $MyInvocation.MyCommand.Name,$StoredDeviceAgg.Count,$StoredJsonPath)
          # Serialize and write to storage
          ConvertTo-Json -InputObject $StoredDeviceAgg -Depth 10 | Set-Content -Path $StoredJsonPath -Force | Out-Null
       }
       elseif([String]::IsNullOrEmpty($StoredDeviceAgg) -and (($Global:PanDeviceDb | Where-Object {$_.Persist -eq $true} | Measure-Object).Count -eq 0)) {
          # Despite an empty StoredDeviceAgg, double-check $Global:PanDeviceDb before clearing out on-disk inventory
-         Write-Debug ('{0}: Storing 0 devices. Wiping {1}' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
+         Write-Verbose ('{0}: Storing 0 devices. Wiping {1}' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
          # Serialize and clear out the file
          Set-Content -Path $StoredJsonPath -Value $null -Force | Out-Null
       }

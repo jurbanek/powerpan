@@ -24,11 +24,10 @@ None
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
       # Initialize PanDeviceDb
       InitializePanDeviceDb
@@ -40,12 +39,12 @@ None
    Process {
       # If PanDeviceDb is NOT populated, there will be nothing to remove.
       if( $Global:PanDeviceDb.Count -eq 0 ) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': PanDeviceDb empty')
       }
 
       # ParameterSetName 'Device'
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Device ParameterSetName')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Device ParameterSetName')
          # Iterate through each PanDevice in $Device argument to confirm the PanDevice is in PanDeviceDb
          # Use cases can arise where PanDevice's are created that don't live in PanDeviceDb. If one of these is passed in for removal
          # from PanDeviceDb, we will silently ignore it
@@ -53,10 +52,10 @@ None
          foreach($DeviceCur in $Device) {
             if($DeviceCur.Name -in $Global:PanDeviceDb.Name) {
                $DeviceAgg += $DeviceCur
-               Write-Debug ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' queued for removal')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' queued for removal')
             }
             else {
-               Write-Debug ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' not found in PanDeviceDb. Ignoring')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' not found in PanDeviceDb. Ignoring')
             }
          }
       } # elseif ParameterSetName 'Device'
@@ -70,7 +69,7 @@ None
       # When -Session, -Label, -Name are used together, specific behavior (above) still applies, but each in use must hit.
       # Simultaneous use is logical AND (all) for a hit.
       elseif($PSCmdlet.ParameterSetName -eq 'Filter') {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Filter ParameterSetName')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Filter ParameterSetName')
          # Iterate through each PanDevice in PanDeviceDb
          foreach($DeviceCur in $Global:PanDeviceDb) {
             # Prime the Verdict
@@ -108,7 +107,7 @@ None
             # Process the verdict
             if($Verdict) {
                $DeviceAgg += $DeviceCur
-               Write-Debug ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' queued for removal')
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': ' + $DeviceCur.Name + ' queued for removal')
             }
          }
       } # elseif ParameterSetName 'Filter'
@@ -116,14 +115,14 @@ None
 
    End {
       if($DeviceAgg.Count -gt 0) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Removing ' + $DeviceAgg.Count + ' from PanDeviceDb' )
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Removing ' + $DeviceAgg.Count + ' from PanDeviceDb' )
          foreach($DeviceCur in $DeviceAgg) {
             if($PSCmdlet.ShouldProcess('PanDeviceDb','Remove ' + $DeviceCur.Name)) {
                # Return an array without the offender
                $Global:PanDeviceDb = $Global:PanDeviceDb | Where-Object {$_.Name -ne $DeviceCur.Name}
             }
          }
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Serializing')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Serializing')
          ExportPanDeviceDb
       }
    } # End block

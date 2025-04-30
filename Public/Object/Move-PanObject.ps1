@@ -47,11 +47,10 @@ PanServiceGroup
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
+      Write-Verbose ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
 
       # Terminating error if called directly. Use a supported alias.
       if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
@@ -71,7 +70,7 @@ PanServiceGroup
       # ParameterSetName InputObject, applies for every $MyInvocation.InvocationName (any alias)
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
-            Write-Debug ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} DstLocation: {6} ' -f
+            Write-Verbose ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} DstLocation: {6} ' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,$InputObjectCur.GetType().Name,
                $InputObjectCur.Name,$PSBoundParameters.DstLocation)
 
@@ -84,7 +83,7 @@ PanServiceGroup
             $SrcXPath = '{0}{1}' -f $InputObjectCur.Device.Location.($InputObjectCur.Location),$Suffix
             $Element = "<selected-list><source xpath=`"{0}`"><member>{1}</member></source></selected-list><all-errors>no</all-errors>" -f $SrcXPath,$InputObjectCur.Name
 
-            Write-Debug ('{0} as ({1}: Device: {2} Config: MultiMove: XPath: {3} Element: {4}' -f 
+            Write-Verbose ('{0} as ({1}: Device: {2} Config: MultiMove: XPath: {3} Element: {4}' -f 
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$DstXPath,$Element)
             $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -MultiMove -XPath $DstXPath -Element $Element
             # Check PanResponse
@@ -108,7 +107,7 @@ PanServiceGroup
       # ParameterSetName Device
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} DstLocation: {5} ' -f 
+            Write-Verbose ('{0} (as {1}): Device: {2} Location: {3} Name: {4} DstLocation: {5} ' -f 
                $MyInvocation.MyCommand.Name, $MyInvocation.InvocationName, $DeviceCur.Name, $PSBoundParameters.Location,
                $PSBoundParameters.Name, $PSBoundParameters.DstLocation)
             # Update Location if past due

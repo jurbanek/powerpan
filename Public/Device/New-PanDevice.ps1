@@ -100,18 +100,17 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
       [Switch] $ImportMode = $false
    )
 
-   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
    # Update -Label parameter based on -ImportMode parameter
    if($ImportMode.IsPresent) {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': ImportMode: Not adding session-based Label')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': ImportMode: Not adding session-based Label')
    }
    else {
-      Write-Debug ($MyInvocation.MyCommand.Name + ': Adding session-based Label')
+      Write-Verbose ($MyInvocation.MyCommand.Name + ': Adding session-based Label')
       $Label.Add("session-$(GetPanSessionGuid)")
    }
 
@@ -120,7 +119,7 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
    # For KeyCredential, ignore the Username portion of the PSCredential.
    if($PSCmdlet.ParameterSetName -eq 'Key' -or $PSCmdlet.ParameterSetName -eq 'KeyCredential') {
       if($PSCmdlet.ParameterSetName -eq 'Key') {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Key parameter set')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Key parameter set')
          # Convert plaintext key to [SecureString] immediately and $null out original.
          $SecureKey = ConvertTo-SecureString -String $Key -AsPlainText -Force
          $Key = $null
@@ -138,7 +137,7 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
 
       # UserPass parameter set :: -Username and -Password
       if($PSCmdlet.ParameterSetName -eq 'UserPass') {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': UserPass parameter set')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': UserPass parameter set')
          # Convert password to [SecureString] immediately and $null out plaintext password variable
          $SecurePassword = ConvertTo-SecureString $Password -AsPlainText -Force
          $Password = $null
@@ -149,36 +148,36 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
       }
       # Credential parameter set :: -Credential
       elseif($PSCmdlet.ParameterSetName -eq 'Credential') {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Credential parameter set')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Credential parameter set')
          # Create base PanDevice object
          $D = [PanDevice]::New($Name, $Credential, $Label, $ValidateCertificate.IsPresent, $Protocol, $Port, $Type)
       }
 
       # Optionally generate API key
       if($Keygen.IsPresent) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: Generating API key')
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': -Keygen: Generating API key')
          $R = Invoke-PanXApi -Device $D -Keygen
 
          if($R.Status -eq 'success'){
-            Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: API key generation successful')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': -Keygen: API key generation successful')
             $D.Key = ConvertTo-SecureString -String $R.Response.result.key -AsPlainText -Force
 
             # Test API key
-            Write-Debug ($MyInvocation.MyCommand.Name + ': -Keygen: Testing generated API key')
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': -Keygen: Testing generated API key')
             $R = Invoke-PanXApi -Device $D -Op -Cmd '<show><system><info></info></system></show>'
             if($R.Status -eq 'success'){
-               Write-Debug ($MyInvocation.MyCommand.Name + ': Keygen: Generated API key tested successfully')
-               Write-Debug ("`t DeviceName: {0} Family: {1} Model: {2}" -f $R.Response.result.system.devicename,$R.Response.result.system.family,$R.Response.result.system.model)
+               Write-Verbose ($MyInvocation.MyCommand.Name + ': Keygen: Generated API key tested successfully')
+               Write-Verbose ("`t DeviceName: {0} Family: {1} Model: {2}" -f $R.Response.result.system.devicename,$R.Response.result.system.family,$R.Response.result.system.model)
                if($R.Response.result.system.family -eq 'vm') {
-                  Write-Debug ("`t VM-License: {0} VM-Mode: {1}" -f $R.Response.result.system.'vm-license',$R.Response.result.system.'vm-mode')
+                  Write-Verbose ("`t VM-License: {0} VM-Mode: {1}" -f $R.Response.result.system.'vm-license',$R.Response.result.system.'vm-mode')
                }
-               Write-Debug ("`t Serial: {0} Software Version: {1}" -f $R.Response.result.system.serial,$R.Response.result.system.'sw-version')
+               Write-Verbose ("`t Serial: {0} Software Version: {1}" -f $R.Response.result.system.serial,$R.Response.result.system.'sw-version')
                if($R.Response.result.system.model -eq 'Panorama') {
-                  Write-Debug ("`t PanDeviceType: {0} (Panorama)" -f [PanDeviceType]::Panorama)
+                  Write-Verbose ("`t PanDeviceType: {0} (Panorama)" -f [PanDeviceType]::Panorama)
                   $D.Type = [PanDeviceType]::Panorama
                }
                else {
-                  Write-Debug ("`t PanDeviceType: {0} (Ngfw)" -f [PanDeviceType]::Ngfw)
+                  Write-Verbose ("`t PanDeviceType: {0} (Ngfw)" -f [PanDeviceType]::Ngfw)
                   $D.Type = [PanDeviceType]::Ngfw
                }
             }

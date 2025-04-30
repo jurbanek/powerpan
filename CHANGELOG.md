@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.4 ???
+
+### Changed
+
+- Migrated all cmdlets from `Write-Debug` to `Write-Verbose` to align with PowerShell best practices.
+
 ## 0.5.3 2025-04-27
 
 ### Changed

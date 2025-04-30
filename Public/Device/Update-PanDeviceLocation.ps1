@@ -26,11 +26,10 @@ None
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
       
       # For comparison
       $Now = Get-Date
@@ -41,10 +40,10 @@ None
 
    Process {
       foreach($DeviceCur in $PSBoundParameters.Device) {
-         Write-Debug ('{0}: Device: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+         Write-Verbose ('{0}: Device: {1}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
          if( (-not $PSBoundParameters.Force.IsPresent) -and $DeviceCur.LocationUpdated.AddSeconds($UpdateInterval.TotalSeconds) -gt $Now ) {
             # If PanDevice has been updated and interval has not passed, no need to update again
-            Write-Debug ('{0}: Device: {1} locations updated already. Next update after {2}' -f
+            Write-Verbose ('{0}: Device: {1} locations updated already. Next update after {2}' -f
                $MyInvocation.MyCommand.Name,$DeviceCur.Name,$DeviceCur.LocationUpdated.AddSeconds($UpdateInterval.TotalSeconds))
             # Next iteration of foreach (next PanDevice)
             continue
@@ -61,11 +60,11 @@ None
          # https://live.paloaltonetworks.com/t5/automation-api-discussions/retrieve-device-list-and-vsys-names-using-pan-rest-api/m-p/15238
          if($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/device-group"
-            Write-Debug ('{0}: Device: {1} Panorama XPath: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$XPath)
+            Write-Verbose ('{0}: Device: {1} Panorama XPath: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$XPath)
          }
          else {
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/vsys"
-            Write-Debug ('{0}: Device: {1} NGFW XPath: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$XPath)
+            Write-Verbose ('{0}: Device: {1} NGFW XPath: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$XPath)
          }
          
          # Fetch the valid device-group (Panorama) or vsys (NGFW) using config action=complete
@@ -90,7 +89,7 @@ None
                $Dirty = $true
                # Update the PanDevice in memory
                $DeviceCur.Location = $NewLocation
-               Write-Debug ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
+               Write-Verbose ('{0}: Device: {1} Location (Update): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
             }
             else {
                $Keys1 = $DeviceCur.Location.Keys
@@ -104,12 +103,12 @@ None
             }
 
             if($Dirty) { 
-               Write-Debug ('{0}: Device: {1} Dirty Location(s) (Updating): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
+               Write-Verbose ('{0}: Device: {1} Dirty Location(s) (Updating): {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,($NewLocation.keys -join ','))
                # Update the PanDevice in memory
                $DeviceCur.Location = $NewLocation
             }
             else {
-               Write-Debug ('{0}: Device: {1} Location(s) Clean (No Update)' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+               Write-Verbose ('{0}: Device: {1} Location(s) Clean (No Update)' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             }
             # Update LocationUpdated regardless to wait for another interval
             $DeviceCur.LocationUpdated = Get-Date
@@ -121,7 +120,7 @@ None
    End {
       # If Dirty and ImportMode is not in play, reserialize to disk
       if($Dirty -and -not $PSBoundParameters.ImportMode.IsPresent) {
-         Write-Debug ('{0}: Dirty. Serializing Required' -f $MyInvocation.MyCommand.Name)
+         Write-Verbose ('{0}: Dirty. Serializing Required' -f $MyInvocation.MyCommand.Name)
          ExportPanDeviceDb
       }
    } # End block

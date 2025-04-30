@@ -28,11 +28,10 @@ No prompt for confirmation
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
       # PAN operational command to restart
       $Cmd = '<request><restart><system></system></restart></request>'
@@ -42,10 +41,10 @@ No prompt for confirmation
       if($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
             if($Force -or $PSCmdlet.ShouldProcess($DeviceCur.Name, 'request restart system')) {
-               Write-Debug ('{0}: Device: {1} Cmd: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name, $Cmd)
+               Write-Verbose ('{0}: Device: {1} Cmd: {2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name, $Cmd)
                $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
                if($R.Status -eq 'success') {
-                  Write-Debug ('{0}: Device: {1} Restart system success' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
+                  Write-Verbose ('{0}: Device: {1} Restart system success' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
                }
                else {
                   Write-Error ('Device: {0} Restart system failed. Status: {1} Code: {2} Message: {3}' -f $DeviceCur.Name,$R.Status,$R.Code,$R.Message)
@@ -63,10 +62,10 @@ No prompt for confirmation
                Write-Error ('{0}: Device Name: {1} Not Found' -f $MyInvocation.MyCommand.Name,$NameCur)
             }
             elseif($Force -or $PSCmdlet.ShouldProcess($TargetDevice.Name, 'request restart system')) {
-               Write-Debug ('{0}: Device: {1} Cmd: {2}' -f $MyInvocation.MyCommand.Name,$TargetDevice.Name,$Cmd)
+               Write-Verbose ('{0}: Device: {1} Cmd: {2}' -f $MyInvocation.MyCommand.Name,$TargetDevice.Name,$Cmd)
                $R = Invoke-PanXApi -Device $TargetDevice -Op -Cmd $Cmd
                if($R.Status -eq 'success') {
-                  Write-Debug ('{0}: Device: {1} Restart system success' -f $MyInvocation.MyCommand.Name,$TargetDevice.Name)
+                  Write-Verbose ('{0}: Device: {1} Restart system success' -f $MyInvocation.MyCommand.Name,$TargetDevice.Name)
                }
                else {
                   Write-Error ('Device: {0} Restart system failed. Status: {1} Code: {2} Message: {3}' -f $TargetDevice.Name,$R.Status,$R.Code,$R.Message)

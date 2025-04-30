@@ -13,11 +13,10 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
    param(
    )
 
-   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
    # Detect PowerShell Core automatic variables for MacOS and Linux
    if($IsMacOS -or $IsLinux) {
@@ -29,11 +28,11 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
    }
 
    if(-not (Test-Path -Path $StoredJsonPath -PathType Leaf)) {
-      Write-Debug ('{0}: {1} file does not exist. Nothing to get' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
+      Write-Verbose ('{0}: {1} file does not exist. Nothing to get' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
    }
    else {
       # Get the content and convert from JSON to a usable PowerShell object
-      Write-Debug ('{0}: {1} file found. Getting contents' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
+      Write-Verbose ('{0}: {1} file found. Getting contents' -f $MyInvocation.MyCommand.Name,$StoredJsonPath)
       
       # Need to account for rare corner-case where Locations have same name, but different CASE
       # Imagine the following JSON blob for Location
@@ -67,16 +66,16 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
       }
       
       if(-not ($StoredDevice | Measure-Object).Count) {
-         Write-Debug ('{0}: No valid contents found' -f $MyInvocation.MyCommand.Name)
+         Write-Verbose ('{0}: No valid contents found' -f $MyInvocation.MyCommand.Name)
       }
       else {
-         Write-Debug ('{0}: {1} devices found. Creating PanDevice objects' -f $MyInvocation.MyCommand.Name,($StoredDevice | Measure-Object).Count)
+         Write-Verbose ('{0}: {1} devices found. Creating PanDevice objects' -f $MyInvocation.MyCommand.Name,($StoredDevice | Measure-Object).Count)
 
          # $DeviceAgg to hold unserialized [PanDevices] through iteration
          $DeviceAgg = @()
 
          foreach($StoredCur in $StoredDevice) {
-            Write-Debug ('{0}: Device Name: {1}' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
+            Write-Verbose ('{0}: Device Name: {1}' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
             # Label
             # If no stored label, avoid sending $null to the constructor. Causes trouble down the road when calling Label.Add(), Label.Contains() and other methods.
             if([String]::IsNullOrEmpty($StoredCur.Label)) {
@@ -96,7 +95,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
             }
             # Username, Password, and Key are defined, build a new [PanDevice] with all three
             if( -not [String]::IsNullOrEmpty($StoredCur.Username) -and -not [String]::IsNullOrEmpty($StoredCur.Password) -and -not [String]::IsNullOrEmpty($StoredCur.Key) ) {
-               Write-Debug ('{0}: Building {1} with Username, Password, Key' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
+               Write-Verbose ('{0}: Building {1} with Username, Password, Key' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
                # Create [PSCredential] from Username and encrypted string Password
                $Credential = New-Object -TypeName PSCredential -ArgumentList $StoredCur.Username,$(ConvertTo-SecureString -String $StoredCur.Password)
                # Create [SecureString] from from encrypted string Key
@@ -111,7 +110,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
 
             # Only Username and Password defined, build new [PanDevice] with just Username and Password
             elseif( -not [String]::IsNullOrEmpty($StoredCur.Username) -and -not [String]::IsNullOrEmpty($StoredCur.Password) ) {
-               Write-Debug ('{0}: Building {1} with Username, Password' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
+               Write-Verbose ('{0}: Building {1} with Username, Password' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
                # Create [PSCredential] from Username and encrypted string Password
                $Credential = New-Object -TypeName PSCredential -ArgumentList $StoredCur.Username,$(ConvertTo-SecureString -String $StoredCur.Password)
                # Create new [PanDevice] using some original retrieved values and just created [PSCredential]
@@ -124,7 +123,7 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
 
             # Only Key defined, build new [PanDevice] with just Key
             elseif( -not [String]::IsNullOrEmpty($StoredCur.Key) ) {
-               Write-Debug ('{0}: Building {1} with Key' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
+               Write-Verbose ('{0}: Building {1} with Key' -f $MyInvocation.MyCommand.Name,$StoredCur.Name)
                # Create [SecureString] from from encrypted string Key
                $Key = ConvertTo-SecureString -String $StoredCur.Key
                # Create new [PanDevice] using some original retrieved values and just created [SecureString]
@@ -139,11 +138,11 @@ PowerPAN private helper function to get JSON contents and unserialize into PanDe
          } # foreach StoredCur
 
          if(($DeviceAgg | Measure-Object).Count) {
-            Write-Debug ('{0}: Imported {1} device(s). Adding to PanDeviceDb' -f $MyInvocation.MyCommand.Name,($DeviceAgg | Measure-Object).Count)
+            Write-Verbose ('{0}: Imported {1} device(s). Adding to PanDeviceDb' -f $MyInvocation.MyCommand.Name,($DeviceAgg | Measure-Object).Count)
             Add-PanDevice -Device $DeviceAgg -ImportMode
          }
          else {
-            Write-Debug ('{0}: Imported 0 device(s). Nothing to add to PanDeviceDb' -f $MyInvocation.MyCommand.Name)
+            Write-Verbose ('{0}: Imported 0 device(s). Nothing to add to PanDeviceDb' -f $MyInvocation.MyCommand.Name)
          }
          
       } # DeviceAgg else
