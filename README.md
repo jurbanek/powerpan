@@ -62,8 +62,8 @@ Get-Help Set-PanAddress
 - No need to `New-PanDevice` every time, saves time
 
 ```powershell
-# Name can be FQDN or IP address. Prompt for PAN-OS username and password using PSCredential (secure input)
-New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen
+# Name can be FQDN or IP address. Prompt for PAN-OS password using PSCredential (secure input)
+New-PanDevice -Name "fw.lab.local" -Credential "myusername" -Keygen
 
 # Retrieve PanDevice, test the API. Test-PanDevice returns a raw PanResponse, by design.
 Get-PanDevice fw.lab.local | Test-PanDevice
@@ -76,7 +76,27 @@ Other examples for creating a new `PanDevice`. See `help New-PanDevice -Full` fo
 New-PanDevice -Name "10.0.0.250" -Username "admin" -Password "admin123" -Keygen
 
 # Validate NGFW x.509 SSL/TLS certificate is trusted by local PowerShell session. Validation is disabled by default. Per device setting is persists.
-New-PanDevice -Name "fw.lab.local" -Credential $(Get-Credential) -Keygen -ValidateCertificate
+New-PanDevice -Name "fw.lab.local" -Credential "myusername" -Keygen -ValidateCertificate
+
+# Panorama also works
+New-PanDevice -Name "panorama.lab.local" -Credential "myusername" -Keygen
+```
+
+### Get a PanDevice
+
+- PanDevice(s) created through `New-PanDevice` are stored in-memory for immediate use and on-disk for persistence across PowerShell sessions
+- The on-disk secret storage is transparent and encrypted using serialized SecureString that is only decryptable by the local user account
+- Come back the next day and just `Get-PanDevice -All` or `Get-PanDevice "fw.lab.local"`, no need to create again
+
+```powershell
+# Retrieve all devices
+Get-PanDevice -All
+
+# Retrieve a single
+Get-PanDevice "fw.lab.local"
+
+# Retrieve multiple
+Get-PanDevice "10.0.0.1","10.128.0.1" | Get-PanAddress
 ```
 
 ### PAN-OS Object Operations
@@ -196,7 +216,7 @@ Get-PanDevice 'fw.lab.local' |
 #### `Construct-`
 
 - Create a local object in the PowerShell session only. Used *instead* of calling class `::new()` constructors.
-- Class `::new()` constructors are not available outside of the PowerPAN module since the PowerMan module is considered a ScriptModule. PowerShell limitation.
+- Class `::new()` constructors are not available outside of the PowerPAN module since the PowerPAN module is considered a ScriptModule. PowerShell limitation.
 - The `Construct-` cmdlets use an *unapproved* verb (Construct), by design.
 - The approved verb would be `New-` but the behavioral semantics of the `Contstruct-` cmdlets do *not* match other object cmdlets (which apply changes to candidate configuration). `Construct-` it is.
 

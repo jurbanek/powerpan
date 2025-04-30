@@ -41,5 +41,8 @@ foreach($f in @($Class + $Public + $Private) ) {
     }
 }
 
-# As of 0.2.1 using Manifest FunctionsToExport() instead of Export-ModuleMember to aid module auto-load
-# Export-ModuleMember -Function $Public.BaseName
+# Manifest's FunctionsToExport() is used instead of Export-Module to aid in module auto-load
+# However, for Pester testing we also want to export everything:
+# if(Get-Module Pester) {
+#   Export-ModuleMember -Function * -Variable * -Alias *
+# }
