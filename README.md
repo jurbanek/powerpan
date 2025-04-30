@@ -216,7 +216,7 @@ Get-PanDevice 'fw.lab.local' |
 #### `Construct-`
 
 - Create a local object in the PowerShell session only. Used *instead* of calling class `::new()` constructors.
-- Class `::new()` constructors are not available outside of the PowerPAN module since the PowerMan module is considered a ScriptModule. PowerShell limitation.
+- Class `::new()` constructors are not available outside of the PowerPAN module since the PowerPAN module is considered a ScriptModule. PowerShell limitation.
 - The `Construct-` cmdlets use an *unapproved* verb (Construct), by design.
 - The approved verb would be `New-` but the behavioral semantics of the `Contstruct-` cmdlets do *not* match other object cmdlets (which apply changes to candidate configuration). `Construct-` it is.
 
