@@ -14,25 +14,17 @@ None
 #>
    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
    param(
-      [parameter(
-         Mandatory=$true,
-         ValueFromPipeline=$true,
-         HelpMessage='PanDevice(s) to which label operation will be applied')]
+      [parameter(Mandatory=$true,ValueFromPipeline=$true,HelpMessage='PanDevice(s) to which label operation will be applied')]
       [PanDevice[]] $Device,
-      [parameter(
-         Mandatory=$true,
-         Position=0,
-         ValueFromPipeline=$false,
-         HelpMessage='Label')]
+      [parameter(Mandatory=$true,Position=0,ValueFromPipeline=$false,HelpMessage='Label')]
       [String[]] $Label
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
       # Initialize PanDeviceDb
       InitializePanDeviceDb
@@ -44,7 +36,7 @@ None
 
    Process {
       foreach($DeviceCur in $Device) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
          if($DeviceCur.Label.Count -eq 0) {
             # No labels on this device. Nothing to do.
             continue

@@ -33,14 +33,13 @@ NewPanRegisteredIp -Ip "2.2.2.2" -Tag @("HerTag","HisTag") -Vsys "vsys1"
       [PanDevice] $Device
    )
 
-   # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-   if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+   # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
    if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
    # Announce
-   Write-Debug ($MyInvocation.MyCommand.Name + ':')
+   Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
    if($PSCmdlet.ParameterSetName -eq 'ParentDevice') {
-      Write-Debug $($MyInvocation.MyCommand.Name + ': ParentDevice specified')
+      Write-Verbose $($MyInvocation.MyCommand.Name + ': ParentDevice specified')
       return [PanRegisteredIp]::new($Ip, $Tag, $Device)
    }
    else {

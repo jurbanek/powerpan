@@ -48,11 +48,10 @@ PanServiceGroup
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
+      Write-Verbose ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
 
       # Terminating error if called directly. Use a supported alias.
       if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
@@ -72,7 +71,7 @@ PanServiceGroup
       # ParameterSetName InputObject, applies for every $MyInvocation.InvocationName (any alias)
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
-            Write-Debug ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} DstLocation: {6} NewName: {7} ' -f
+            Write-Verbose ('{0} (as {1}): InputObject Device: {2} Location: {3} Name: [{4}] {5} DstLocation: {6} NewName: {7} ' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $InputObjectCur.Device.Name,$InputObjectCur.Location,
                $InputObjectCur.GetType().Name, $InputObjectCur.Name,$PSBoundParameters.DstLocation,$PSBoundParameters.NewName)
             
@@ -116,7 +115,7 @@ PanServiceGroup
             
             $Msg = '{0} (as {1}: ' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName
             $Msg += foreach($ParamCur in $InvokeParams.GetEnumerator()) {'{0}: {1} ' -f $ParamCur.Key,$ParamCur.Value}
-            Write-Debug ($Msg)
+            Write-Verbose ($Msg)
             # Call API with splat
             $R = Invoke-PanXApi @InvokeParams
             # Check PanResponse
@@ -167,7 +166,7 @@ PanServiceGroup
       # ParameterSetName Device
       elseif($PSCmdlet.ParameterSetName -eq 'Device') {
          foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug ('{0} (as {1}): Device: {2} Location: {3} Name: {4} DstLocation: {5} NewName: {6} ' -f
+            Write-Verbose ('{0} (as {1}): Device: {2} Location: {3} Name: {4} DstLocation: {5} NewName: {6} ' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName, $PSBoundParameters.Device.Name,$PSBoundParameters.Location,
                $PSBoundParameters.Name,$PSBoundParameters.DstLocation,$PSBoundParameters.NewName)
             # Update Location if past due
@@ -215,7 +214,7 @@ PanServiceGroup
             
             $Msg = '{0} (as {1}: ' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName
             $Msg += foreach($ParamCur in $InvokeParams.GetEnumerator()) {'{0}: {1} ' -f $ParamCur.Key,$ParamCur.Value}
-            Write-Debug ($Msg)
+            Write-Verbose ($Msg)
             # Call API with splat
             $R = Invoke-PanXApi @InvokeParams
             # Check PanResponse

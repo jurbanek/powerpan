@@ -183,11 +183,10 @@ Syntactic sugar for fetching an object recently set with less typing.
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
+      Write-Verbose ('{0} (as {1}):' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName)
 
       # Terminating error if called directly. Use a supported alias.
       if($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
@@ -196,9 +195,9 @@ Syntactic sugar for fetching an object recently set with less typing.
       }
 
       switch -Wildcard ($PSCmdlet.ParameterSetName) {
-         '*-NoFilter'   { Write-Debug ('{0} (as {1}): No Filter Applied' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName); continue }
-         '*-Filter'     { Write-Debug ('{0} (as {1}): Filter Applied "{2}"' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$PSBoundParameters.Filter); continue }
-         '*-Name'       { Write-Debug ('{0} (as {1}): Exact match Name Applied "{2}"' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$PSBoundParameters.Name); continue}
+         '*-NoFilter'   { Write-Verbose ('{0} (as {1}): No Filter Applied' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName); continue }
+         '*-Filter'     { Write-Verbose ('{0} (as {1}): Filter Applied "{2}"' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$PSBoundParameters.Filter); continue }
+         '*-Name'       { Write-Verbose ('{0} (as {1}): Exact match Name Applied "{2}"' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$PSBoundParameters.Name); continue}
       }
 
       # Aggregate to hold objects until End {} block. See note at end
@@ -255,7 +254,7 @@ Syntactic sugar for fetching an object recently set with less typing.
       # InputObject ParameterSetName
       if($PSCmdlet.ParameterSetName -eq 'InputObject') {
          foreach($InputObjectCur in $PSBoundParameters.InputObject) {
-            Write-Debug ('{0} (as {1}): InputObject Device: {2} XPath: {3}' -f
+            Write-Verbose ('{0} (as {1}): InputObject Device: {2} XPath: {3}' -f
                $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$InputObjectCur.Device.Name,$InputObjectCur.XPath)
             $R = Invoke-PanXApi -Device $InputObjectCur.Device -Config -Get -XPath $InputObjectCur.XPath
             # Check PanResponse
@@ -268,7 +267,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                elseif($InputObjectCur.Device.Type -eq [PanDeviceType]::Ngfw) {
                   $Entry = $R.Response.result.entry
                }
-               Write-Debug ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
+               Write-Verbose ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
                   $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$R.Response.result.entry.Count,$Entry.Count)
                # Build new object based on InvocationName. Only one object given InputObject, no loop required
                [System.Xml.XmlDocument]$XDoc = $Entry.OuterXml
@@ -290,7 +289,7 @@ Syntactic sugar for fetching an object recently set with less typing.
       # NoFilter and Filter ParameterSetName
       else {
          foreach($DeviceCur in $PSBoundParameters.Device) {
-            Write-Debug ('{0} (as {1}): Device: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name)
+            Write-Verbose ('{0} (as {1}): Device: {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name)
             # Update Location if past due
             if($PSBoundParameters.Device.LocationUpdated.AddSeconds($Global:PanDeviceLocRefSec) -lt (Get-Date)) { Update-PanDeviceLocation -Device $PSBoundParameters.Device }
             # If PanDevice Location(s) are missing, move on. Should not happen under normal circumstances but could by accident if users
@@ -331,7 +330,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                      }
                   }
                }
-               Write-Debug ('{0} (as {1}): Location Search(Limited): {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,($Search.Keys -join ','))
+               Write-Verbose ('{0} (as {1}): Location Search(Limited): {2}' -f $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,($Search.Keys -join ','))
             }
             
             # No -Location specified, search all Locations on the PanDevice
@@ -357,7 +356,7 @@ Syntactic sugar for fetching an object recently set with less typing.
    
             # Call the API. The actual search used ($Search or $SearchCustom) is determined by ParameterSetName
             foreach($SearchCur in $(if($PSCmdlet.ParameterSetName -like '*-Filter' -or $PSCmdlet.ParameterSetName -like '*-Name'){ $SearchCustom.GetEnumerator() } else{ $Search.GetEnumerator() })) {
-               Write-Debug ('{0} (as {1}): Device: {2} Type: {3} Location: {4} XPath: {5}' -f
+               Write-Verbose ('{0} (as {1}): Device: {2} Type: {3} Location: {4} XPath: {5}' -f
                   $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$DeviceCur.Name,$DeviceCur.Type,$SearchCur.Key,$SearchCur.Value)
                
                $R = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $SearchCur.Value
@@ -371,7 +370,7 @@ Syntactic sugar for fetching an object recently set with less typing.
                   elseif($DeviceCur.Type -eq [PanDeviceType]::Ngfw) {
                      $Entry = $R.Response.result.entry
                   }
-                  Write-Debug ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
+                  Write-Verbose ('{0} (as {1}): API return entry count: {2} Post-"loc" attribute filter: {3}' -f
                      $MyInvocation.MyCommand.Name,$MyInvocation.InvocationName,$R.Response.result.entry.Count,$Entry.Count)
                   
                   foreach($EntryCur in $Entry) {

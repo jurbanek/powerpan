@@ -51,7 +51,6 @@ class PanResponse {
       $this.Device = $Device
       
       if($WebResponse.Headers.'Content-Type' -Match 'application\/xml') {
-         Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/xml')
          # Turn the XML body into an XmlDocument object with XmlDocument doing the parse heavy lifting
          # Interesting note, [xml] is the PowerShell type accelerator (alias) for [System.Xml.XmlDocument]. Let's be verbose.
          $XDoc = [System.Xml.XmlDocument]$WebResponse.Content
@@ -79,8 +78,6 @@ class PanResponse {
       }
       <#
       elseif ($WebResponse.Headers.'Content-Type' -Match 'application\/json') {
-         Write-Debug $($MyInvocation.MyCommand.Name + ': Content-Type: application/json')
-   
          # Turn the JSON body into a JSON object
          $JsonContentObj = ConvertFrom-Json -InputObject $WebResponse.Content
          # Populate with JSON body details

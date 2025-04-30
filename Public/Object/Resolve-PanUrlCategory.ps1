@@ -34,11 +34,10 @@ function Resolve-PanUrlCategory {
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}):' -f $MyInvocation.MyCommand.Name)
 
       # Initialize PanDeviceDb
       InitializePanDeviceDb
@@ -46,16 +45,16 @@ function Resolve-PanUrlCategory {
 
    Process {
       foreach($DeviceCur in $PSBoundParameters['Device']) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
 
          foreach($UrlCur in $PSBoundParameters['Url']) {
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Url: ' + $UrlCur)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': Url: ' + $UrlCur)
             $Cmd = '<test><url>{0}</url></test>' -f $UrlCur
-            Write-Debug ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': Cmd: ' + $Cmd)
 
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
-            Write-Debug ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': PanResponseStatus: ' + $R.Status)
+            Write-Verbose ($MyInvocation.MyCommand.Name + ': PanResponseMsg: ' + $R.Message)
 
             if($R.Status -eq 'success') {
                # Two lines of text returned, separated by newline
@@ -63,13 +62,13 @@ function Resolve-PanUrlCategory {
 
                # First [0] is the Base Db (management-plane), grab a named capture group 'cat'
                if( $SplitResult[0] -match "$UrlCur (?<cat>[-\w\s]+) \(Base db\)" ) {
-                  Write-Debug ($MyInvocation.MyCommand.Name + ': Base Db: ' + $Matches['cat'])
+                  Write-Verbose ($MyInvocation.MyCommand.Name + ': Base Db: ' + $Matches['cat'])
                   $BaseDbCat = $Matches['cat']
                }
 
                # Second [1] is the Cloud Db (PanDb), grab a named capture group 'cat'
                if( $SplitResult[1] -match "$UrlCur (?<cat>[-\w\s]+) \(Cloud db\)" ) {
-                  Write-Debug ($MyInvocation.MyCommand.Name + ': Cloud Db: ' + $Matches['cat'])
+                  Write-Verbose ($MyInvocation.MyCommand.Name + ': Cloud Db: ' + $Matches['cat'])
                   $CloudDbCat = $Matches['cat']
                }
 

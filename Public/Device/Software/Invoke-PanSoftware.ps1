@@ -53,16 +53,15 @@ Delete specified software version. Does not return a value.
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
    } # Begin Block
 
    Process {
       foreach($DeviceCur in $PSBoundParameters.Device) {
-         Write-Debug ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
+         Write-Verbose ($MyInvocation.MyCommand.Name + ': Device: ' + $DeviceCur.Name)
 
          # ParameterSetName Info
          if($PSCmdlet.ParameterSetName -eq 'Info') {
@@ -70,18 +69,18 @@ Delete specified software version. Does not return a value.
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/timezone"
             $R = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
             if($R.Status -eq 'success') {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
+                Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
                 $TimeZoneName = $R.Response.result.timezone
             }
             else {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
+                Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
                 Write-Error ('Retrieving Device Time Zone not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 Write-Warning ('Unable to determine Device Time Zone, using "UTC"')
                 $TimeZoneName = 'UTC'
             }
 
             $Cmd = '<request><system><software><info></info></software></system></request>'
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Info Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Info Cmd: {0}' -f $Cmd))
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
             if($R.Status -eq 'success') {
                NewPanSoftware -Response $R -Device $DeviceCur -TimeZoneName $TimeZoneName
@@ -97,18 +96,18 @@ Delete specified software version. Does not return a value.
             $XPath = "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/timezone"
             $R = Invoke-PanXApi -Device $DeviceCur -Config -Get -XPath $XPath
             if($R.Status -eq 'success') {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
+                Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0} Time Zone: {1}' -f $DeviceCur.Name, $R.Response.result.timezone))
                 $TimeZoneName = $R.Response.result.timezone
             }
             else {
-                Write-Debug ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
+                Write-Verbose ($MyInvocation.MyCommand.Name + (': Device: {0} Unable to determine Device Time Zone, using "UTC"' -f $DeviceCur.Name))
                 Write-Error ('Retrieving Device Time Zone not successful Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message)
                 Write-Warning ('Unable to determine Device Time Zone, using "UTC"')
                 $TimeZoneName = 'UTC'
             }
             
             $Cmd = '<request><system><software><check></check></software></system></request>'
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Check Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Check Cmd: {0}' -f $Cmd))
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
             if($R.Status -eq 'success') {
                NewPanSoftware -Response $R -Device $DeviceCur -TimeZoneName $TimeZoneName
@@ -127,7 +126,7 @@ Delete specified software version. Does not return a value.
             else {
                $Cmd = '<request><system><software><download><version>{0}</version></download></software></system></request>' -f $PSBoundParameters.Version
             }
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Download Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Download Cmd: {0}' -f $Cmd))
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
             if($R.Status -eq 'success') {
                # Inform an interactive user of the JobID using Write-Host given this operation is asynchronous
@@ -143,7 +142,7 @@ Delete specified software version. Does not return a value.
          # ParameterSetName Install
          elseif($PSCmdlet.ParameterSetName -eq 'Install') {
             $Cmd = '<request><system><software><install><version>{0}</version></install></software></system></request>' -f $PSBoundParameters.Version
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Install Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Install Cmd: {0}' -f $Cmd))
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
                if($R.Status -eq 'success') {
                   # Inform an interactive user of the JobID using Write-Host given operation is asynchronous
@@ -159,7 +158,7 @@ Delete specified software version. Does not return a value.
          # ParameterSetName Delete
          elseif($PSCmdlet.ParameterSetName -eq 'Delete') {
             $Cmd = '<delete><software><version>{0}</version></software></delete>' -f $PSBoundParameters.Version
-            Write-Debug ($MyInvocation.MyCommand.Name + (': -Delete Cmd: {0}' -f $Cmd))
+            Write-Verbose ($MyInvocation.MyCommand.Name + (': -Delete Cmd: {0}' -f $Cmd))
             $R = Invoke-PanXApi -Device $DeviceCur -Op -Cmd $Cmd
                if($R.Status -eq 'success') {
                   # No need for Write-Host since there is no error and no asynchronous Job. Keep in Verbose stream.

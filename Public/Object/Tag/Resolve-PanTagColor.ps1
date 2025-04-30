@@ -1,41 +1,35 @@
 function Resolve-PanTagColor {
-   <#
-   .SYNOPSIS
-   Resolve PAN-OS tag friendly and raw color values
-   .DESCRIPTION
-   Resolve PAN-OS tag friendly and raw color values
-   .NOTES
-   .INPUTS
-   None
-   .OUTPUTS
-   String or System.Collections.Hashtable
-   .EXAMPLE
-   PS> Resolve-PanTagColor "green","color3"
-   Will return an two strings, the first "color2" and the second "blue"
-   .EXAMPLE
-   PS> Resolve-PanTagColor
-   When called with no arguments, returns the entire internal hashtable for mapping friendly names to API values and reverse.
+<#
+.SYNOPSIS
+Resolve PAN-OS tag friendly and raw color values
+.DESCRIPTION
+Resolve PAN-OS tag friendly and raw color values
+.NOTES
+.INPUTS
+None
+.OUTPUTS
+String or System.Collections.Hashtable
+.EXAMPLE
+PS> Resolve-PanTagColor "green","color3"
+Will return an two strings, the first "color2" and the second "blue"
+.EXAMPLE
+PS> Resolve-PanTagColor
+When called with no arguments, returns the entire internal hashtable for mapping friendly names to API values and reverse.
 
-   Hashtable is returned without modification, reflecting how it is retrieved from memory (NOT sorted alphanumerically).
-   #>
+Hashtable is returned without modification, reflecting how it is retrieved from memory (NOT sorted alphanumerically).
+#>
    [CmdletBinding(DefaultParameterSetName='Empty')]
    [OutputType([String],[Hashtable])]
    param(
-      [parameter(
-         Mandatory=$true,
-         Position=0,
-         ValueFromPipeline=$true,
-         ParameterSetName='Filter',
-         HelpMessage='Color(s) to resolve')]
+      [parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ParameterSetName='Filter',HelpMessage='Color(s) to resolve')]
       [String[]] $Name
    )
 
    Begin {
-      # Propagate -Debug and -Verbose to this module function, https://tinyurl.com/y5dcbb34
-      if($PSBoundParameters.Debug) { $DebugPreference = 'Continue' }
+      # Propagate -Verbose to this module function, https://tinyurl.com/y5dcbb34
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
-      Write-Debug ($MyInvocation.MyCommand.Name + ':')
+      Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
 
       # Initialize PanDeviceDb
       InitializePanDeviceDb
