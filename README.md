@@ -84,7 +84,7 @@ New-PanDevice -Name "panorama.lab.local" -Credential "myusername" -Keygen
 
 ### Get a PanDevice
 
-- PanDevice(s) created through `New-Device` are stored in-memory for immediate use and on-disk for persistence across PowerShell sessions
+- PanDevice(s) created through `New-PanDevice` are stored in-memory for immediate use and on-disk for persistence across PowerShell sessions
 - The on-disk secret storage is transparent and encrypted using serialized SecureString that is only decryptable by the local user account
 - Come back the next day and just `Get-PanDevice -All` or `Get-PanDevice "fw.lab.local"`, no need to create again
 
