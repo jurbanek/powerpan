@@ -160,7 +160,7 @@ completed as a one-liner.
                   # </result>
                   # </response>
                   
-                  Write-Warning ('{0}: Running this cmdlet against Panorama does not produce reliable output' -f $MyInvocation.MyCommand.Name)
+                  Write-Warning ('{0}: Running this cmdlet against Panorama does not produce reliable output. DAG runtime state is avaiable on NGFW only' -f $MyInvocation.MyCommand.Name)
                   
                   $DgEntry = $R.Response.result.'device-groups'.entry
                   Write-Verbose ('{0}: API return device-group entry count: {1}' -f $MyInvocation.MyCommand.Name,$DgEntry.Count)
@@ -241,7 +241,7 @@ completed as a one-liner.
                }
                # Panorama
                elseif($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
-                  Write-Warning ('{0}: Running this cmdlet against Panorama does not produce reliable output' -f $MyInvocation.MyCommand.Name)
+                  Write-Warning ('{0}: Running this cmdlet against Panorama does not produce reliable output. DAG runtime state is avaiable on NGFW only' -f $MyInvocation.MyCommand.Name)
 
                   if(-not [String]::IsNullOrEmpty($PSBoundParameters.Location)) {
                      # Filter based on Location parameter
