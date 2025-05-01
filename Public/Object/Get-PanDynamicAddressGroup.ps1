@@ -160,6 +160,8 @@ completed as a one-liner.
                   # </result>
                   # </response>
                   
+                  Write-Warning ('{0}: Running this cmdlet against Panorama does not produce reliable output' -f $MyInvocation.MyCommand.Name)
+                  
                   $DgEntry = $R.Response.result.'device-groups'.entry
                   Write-Verbose ('{0}: API return device-group entry count: {1}' -f $MyInvocation.MyCommand.Name,$DgEntry.Count)
                   foreach($DgEntryCur in $DgEntry) {
@@ -168,8 +170,10 @@ completed as a one-liner.
                         # Create a new entry with name attribute representing the location
                         $S = '<entry name="{0}"></entry>' -f $DgEntryCur.name
                         $XDoc = [System.Xml.XmlDocument]$S
-                        # Import/append the inner <address-group> with deep-copy
-                        $XDoc.Item('entry').ImportNode($AgCur,$true)
+                        # Import the inner <address-group> with deep-copy
+                        $ImportedNode = $XDoc.ImportNode($AgCur,$true)
+                        # Append
+                        $XDoc.Item('entry').AppendChild($ImportedNode) | Out-Null
                         # Send to pipeline
                         [PanDynamicAddressGroup]::new($InputObjectCur.Device,$XDoc)
                      }
@@ -237,6 +241,8 @@ completed as a one-liner.
                }
                # Panorama
                elseif($DeviceCur.Type -eq [PanDeviceType]::Panorama) {
+                  Write-Warning ('{0}: Running this cmdlet against Panorama does not produce reliable output' -f $MyInvocation.MyCommand.Name)
+
                   if(-not [String]::IsNullOrEmpty($PSBoundParameters.Location)) {
                      # Filter based on Location parameter
                      $DgEntry = $R.Response.result.'device-groups'.entry | Where-Object {$_.name -in $PSBoundParameters.Location}
@@ -255,8 +261,10 @@ completed as a one-liner.
                         # Create a new entry with name attribute representing the location
                         $S = '<entry name="{0}"></entry>' -f $DgEntryCur.name
                         $XDoc = [System.Xml.XmlDocument]$S
-                        # Import/append the inner <address-group> with deep-copy
-                        $XDoc.Item('entry').ImportNode($AgCur,$true)
+                        # Import the inner <address-group> with deep-copy
+                        $ImportedNode = $XDoc.ImportNode($AgCur,$true)
+                        # Append
+                        $XDoc.Item('entry').AppendChild($ImportedNode) | Out-Null
                         # Send to pipeline
                         [PanDynamicAddressGroup]::new($DeviceCur,$XDoc)
                      }
