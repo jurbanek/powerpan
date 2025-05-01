@@ -14,6 +14,8 @@ class PanObject : System.ICloneable {
         $this.XDoc = $XDoc
     }
 
+
+
     # Static constructor for creating ScriptProperty properties using Update-TypeData
     # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor
     # Update-TypeData within static constructor runs ONLY ONCE the first time the type is used is the PowerShell session
