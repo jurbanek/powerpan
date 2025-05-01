@@ -47,10 +47,7 @@ class PanDynamicAddressGroup : PanObject {
             $MemberAgg = @()
             $MemberList = $this.XDoc.SelectNodes('/entry/member-list/entry')
             foreach($Cur in $MemberList) {
-               $MemberAgg += [PSCustomObject]@{
-                  Name = $Cur.GetAttribute('name')
-                  Type = $Cur.GetAttribute('type')
-               }
+               $MemberAgg += $Cur.GetAttribute('name')
             }
             return $MemberAgg
          }
@@ -58,10 +55,7 @@ class PanDynamicAddressGroup : PanObject {
             $MemberAgg = @()
             $MemberList = $this.XDoc.SelectNodes('/entry/address-group/member-list/entry')
             foreach($Cur in $MemberList) {
-               $MemberAgg += [PSCustomObject]@{
-                  Name = $Cur.GetAttribute('name')
-                  Type = $Cur.GetAttribute('type')
-               }
+               $MemberAgg += $Cur.GetAttribute('name')
             }
             return $MemberAgg
          }
