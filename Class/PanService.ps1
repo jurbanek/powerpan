@@ -1,14 +1,14 @@
 class PanService : PanObject, System.ICloneable {
-   # Defined in the base class
+   # Defined in base class
    # [PanDevice] $Device
    # [String] $XPath
    # [System.Xml.XmlDocument] $XDoc
 
    # Constructor accepting XML content with call to base class to do assignment
    PanService([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base() {
+      $this.Device = $Device
       $this.XPath = $XPath
       $this.XDoc = $XDoc
-      $this.Device = $Device
    } # End constructor
 
    # Constructor for building a basic shell from non-XML content. Build/assign XML content in this constructor.
@@ -20,9 +20,9 @@ class PanService : PanObject, System.ICloneable {
       $Xml = "<entry name='{0}'><protocol><tcp><port>0</port></tcp></protocol></entry>" -f $Name
       $XDoc = [System.Xml.XmlDocument]$Xml
       
+      $this.Device = $Device
       $this.XPath = $XPath
       $this.XDoc = $XDoc
-      $this.Device = $Device
    } # End constructor
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
@@ -31,18 +31,19 @@ class PanService : PanObject, System.ICloneable {
    # Contrast with Add-Member within regular constructor runs EVERY TIME a new object is created from the class
    # Be careful choosing where to use linebreaks in the middle of the Update-TypeData cmdlet call. Using linebreaks for getter/setter readability
    static PanService() {
-      # Base class static constructor adds the following standard properties via Update-Type. Do not need to redefine here.
-      # Name
-      # Tag
-      # Description
-      # DisableOverride
-      # Location
-      # Overrides
+      # Call base class static methods to add properties via Update-Type. Do not need to redefine them.
+      $TypeName = 'PanService'
+      [PanObject]::AddName($TypeName)
+      [PanObject]::AddTag($TypeName)
+      [PanObject]::AddDescription($TypeName)
+      [PanObject]::AddDisableOverride($TypeName)
+      [PanObject]::AddLocation($TypeName)
+      [PanObject]::AddOverrides($TypeName)
       
       # Define what is unique to derived class only
 
       # Protocol ScriptProperty linked to $XDoc.entry.protocol.tcp or udp
-      'PanService' | Update-TypeData -MemberName Protocol -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Protocol -MemberType ScriptProperty -Value {
          # Getter
          if($this.XDoc.Item('entry').Item('protocol').Item('tcp')) { return 'tcp' }
          elseif($this.XDoc.Item('entry').Item('protocol').Item('udp')) { return 'udp' }
@@ -68,7 +69,7 @@ class PanService : PanObject, System.ICloneable {
       } -Force
 
       # Port ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).port.InnerText
-      'PanService' | Update-TypeData -MemberName Port -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Port -MemberType ScriptProperty -Value {
          # Getter
          return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('port').InnerText
       } -SecondValue {
@@ -105,7 +106,7 @@ class PanService : PanObject, System.ICloneable {
       } -Force
 
       # Timeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.yes.timeout.InnerText
-      'PanService' | Update-TypeData -MemberName Timeout -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Timeout -MemberType ScriptProperty -Value {
          # Getter
          return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timeout').InnerText
       } -SecondValue {
@@ -153,7 +154,7 @@ class PanService : PanObject, System.ICloneable {
       } -Force
 
       # HalfCloseTimeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.yes.halfclose-timeout.InnerText
-      'PanService' | Update-TypeData -MemberName HalfCloseTimeout -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName HalfCloseTimeout -MemberType ScriptProperty -Value {
          # Getter
          return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('halfclose-timeout').InnerText
       } -SecondValue {
@@ -201,7 +202,7 @@ class PanService : PanObject, System.ICloneable {
       } -Force
 
       # TimeWaitTimeout ScriptProperty linked to $XDoc.entry.protocol.Item(*Protocol*).override.yes.timewait-timeout.InnerText
-      'PanService' | Update-TypeData -MemberName TimeWaitTimeout -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName TimeWaitTimeout -MemberType ScriptProperty -Value {
          # Getter
          return $this.XDoc.Item('entry').Item('protocol').Item($this.Protocol).Item('override').Item('yes').Item('timewait-timeout').InnerText
       } -SecondValue {
@@ -252,9 +253,9 @@ class PanService : PanObject, System.ICloneable {
    # Clone() method as part of ICloneable interface
    [Object] Clone() {
       return [PanService]::new(
-         $this.XDoc.Clone(),
+         $this.Device,
          $this.XPath.Clone(),
-         $this.Device
+         $this.XDoc.Clone()
       )
    } # End method
 

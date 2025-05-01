@@ -6,9 +6,9 @@ class PanServiceGroup : PanObject, ICloneable {
 
    # Constructor accepting XML content with call to base class to do assignment
    PanServiceGroup([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base() {
+      $this.Device = $Device
       $this.XPath = $XPath
       $this.XDoc = $XDoc
-      $this.Device = $Device
    } # End constructor
 
    # Constructor for building a basic shell from non-XML content. Build/assign XML content in this constructor.
@@ -20,9 +20,9 @@ class PanServiceGroup : PanObject, ICloneable {
       $Xml = "<entry name='{0}'><members></members></entry>" -f $Name
       $XDoc = [System.Xml.XmlDocument]$Xml
 
+      $this.Device = $Device
       $this.XPath = $XPath
       $this.XDoc = $XDoc
-      $this.Device = $Device
    } # End constructor
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
@@ -31,19 +31,20 @@ class PanServiceGroup : PanObject, ICloneable {
    # Contrast with Add-Member within regular constructor runs EVERY TIME a new object is created from the class
    # Be careful choosing where to use linebreaks in the middle of the Update-TypeData cmdlet call. Using linebreaks for getter/setter readability
    static PanServiceGroup() {
-      # Base class static constructor adds the following standard properties via Update-Type. Do not need to redefine here.
-      # Name
-      # Tag
-      # Description
-      # DisableOverride
-      # Location
-      # Overrides
+      # Call base class static methods to add properties via Update-Type. Do not need to redefine them.
+      $TypeName = 'PanServiceGroup'
+      [PanObject]::AddName($TypeName)
+      [PanObject]::AddTag($TypeName)
+      [PanObject]::AddDescription($TypeName)
+      [PanObject]::AddDisableOverride($TypeName)
+      [PanObject]::AddLocation($TypeName)
+      [PanObject]::AddOverrides($TypeName)
       
       # Define what is unique to derived class only
       
       # Member ScriptProperty linked to $XDoc.entry.static.member It's also an array, watch out.
       # <members><member>tcp-80</member><member>tcp-443</member><members>
-      'PanServiceGroup' | Update-TypeData -MemberName Member -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Member -MemberType ScriptProperty -Value {
       # Getter
          return $this.XDoc.Item('entry').Item('members').GetElementsByTagName('member').InnerText
       } -SecondValue {
@@ -73,9 +74,9 @@ class PanServiceGroup : PanObject, ICloneable {
    # Clone() method as part of ICloneable interface
    [Object] Clone() {
       return [PanServiceGroup]::new(
-         $this.XDoc.Clone(),
+         $this.Device,
          $this.XPath.Clone(),
-         $this.Device
+         $this.XDoc.Clone()
       )
    } # End method
 

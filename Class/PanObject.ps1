@@ -15,26 +15,22 @@ class PanObject : System.ICloneable {
     }
 
 
-
-    # Static constructor for creating ScriptProperty properties using Update-TypeData
-    # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor
-    # Update-TypeData within static constructor runs ONLY ONCE the first time the type is used is the PowerShell session
-    # Contrast with Add-Member within regular constructor runs EVERY TIME a new object is created from the class
-    # Be careful choosing where to use linebreaks in the middle of the Update-TypeData cmdlet call. Using linebreaks for getter/setter readability
-    static PanObject() {
+    static [void] AddName([String] $TypeName) {
         # Name ScriptProperty linked to $XDoc.entry.name
-        'PanObject' | Update-TypeData -MemberName Name -MemberType ScriptProperty -Value {
-        # Getter
+        Update-TypeData -TypeName $TypeName -MemberName Name -MemberType ScriptProperty -Value {
+            # Getter
             return $this.XDoc.Item('entry').GetAttribute('name')
         } -SecondValue {
-        # Setter
+            # Setter
             param($Set)
             $this.XDoc.Item('entry').SetAttribute('name',$Set)
         } -Force
+    }
 
+    static [void] AddTag([String] $TypeName) {
         # Tag ScriptProperty linked to $XDoc.entry.tag It's also an array, watch out.
         # <tag><member>tag1</member><member>tag2</member><tag>
-        'PanObject' | Update-TypeData -MemberName Tag -MemberType ScriptProperty -Value {
+        Update-TypeData -TypeName $TypeName -MemberName Tag -MemberType ScriptProperty -Value {
         # Getter
             return $this.XDoc.Item('entry').Item('tag').GetElementsByTagName('member').InnerText
         } -SecondValue {
@@ -58,9 +54,11 @@ class PanObject : System.ICloneable {
                 $this.XDoc.Item('entry').Item('tag').AppendChild($XMember)
             }
         } -Force
+    }
 
+    static [void] AddDescription([String] $TypeName) {
         # Description ScriptProperty linked to $XDoc.Item('entry').Item('description').InnerText
-        'PanObject' | Update-TypeData -MemberName Description -MemberType ScriptProperty -Value {
+        Update-TypeData -TypeName $TypeName -MemberName Description -MemberType ScriptProperty -Value {
         # Getter
             return $this.XDoc.Item('entry').Item('description').InnerText
         } -SecondValue {
@@ -85,9 +83,11 @@ class PanObject : System.ICloneable {
                 $this.XDoc.Item('entry').AppendChild($XDescription)
             }
         } -Force
+    }
 
+    static [void] AddDisableOverride([String] $TypeName) {
         # DisableOverride ScriptProperty linked to $XDoc.entry.Item('disable-override').InnerText
-        'PanObject' | Update-TypeData -MemberName DisableOverride -MemberType ScriptProperty -Value {
+        Update-TypeData -TypeName $TypeName -MemberName DisableOverride -MemberType ScriptProperty -Value {
         # Getter
             switch ($this.XDoc.Item('entry').Item('disable-override').InnerText) {
                 no       { return $false }
@@ -128,12 +128,14 @@ class PanObject : System.ICloneable {
                 $this.XDoc.Item('entry').AppendChild($XDisable)
             }
         } -Force
-     
+    }
+
+    static [void] AddLocation([String] $TypeName) {
         # Location ScriptProperty linked to $XPath matching 
         #  Panorama 'MyDeviceGroup' part of device-group/entry[@name='MyDeviceGroup']
         #  Ngfw 'vsys1' part of vsys/entry[@name='vsys1']
         # PowerShell regex characters that need escaping [().\^$|?*+{
-        'PanObject' | Update-TypeData -MemberName Location -MemberType ScriptProperty -Value {
+        Update-TypeData -TypeName $TypeName -MemberName Location -MemberType ScriptProperty -Value {
         # Getter
            # Match includes a capture group to isolate the string literal device-group names or vsys1, vsys2, etc. for actual Location
            # shared
@@ -170,9 +172,11 @@ class PanObject : System.ICloneable {
                 # $this.XPath = [Regex]::Replace($this.XPath,$RegexReplace,"vsys/entry[@name='{0}']" -f $Set)
             }
         } -Force
-        
+    }
+
+    static [void] AddOverrides([String] $TypeName) {
         # Overrides ScriptProperty linked to $XDoc.entry.overrides
-        'PanObject' | Update-TypeData -MemberName Overrides -MemberType ScriptProperty -Value {
+        Update-TypeData -TypeName $TypeName -MemberName Overrides -MemberType ScriptProperty -Value {
         # Getter
             return $this.XDoc.Item('entry').GetAttribute('overrides')
         } -SecondValue {
@@ -180,15 +184,22 @@ class PanObject : System.ICloneable {
             param($Set)
             $this.XDoc.Item('entry').SetAttribute('overrides',$Set)
         } -Force
+    }
 
+    # Static constructor for creating ScriptProperty properties using Update-TypeData
+    # Update-TypeData in static contructor is PREFERRED to Add-Member in regular contructor
+    # Update-TypeData within static constructor runs ONLY ONCE the first time the type is used is the PowerShell session
+    # Contrast with Add-Member within regular constructor runs EVERY TIME a new object is created from the class
+    # Be careful choosing where to use linebreaks in the middle of the Update-TypeData cmdlet call. Using linebreaks for getter/setter readability
+    static PanObject() {
     } # End static constructor
 
     # Clone() method as part of ICloneable interface
-   [Object] Clone() {
-    return [PanObject]::new(
-       $this.XDoc.Clone(),
-       $this.XPath.Clone(),
-       $this.Device
-    )
- } # End method
+    [Object] Clone() {
+        return [PanObject]::new(
+            $this.XDoc.Clone(),
+            $this.XPath.Clone(),
+            $this.Device
+        )
+    } # End method
 }
