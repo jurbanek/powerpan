@@ -2,11 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.5.4 ???
+## 0.5.4 2025-05-01
+
+### Added
+
+- `Get-PanDynamicAddressGroup` cmdlet to get runtime members of Dynamic Address Groups (DAG). Required a separate cmdlet for situations where the DAG is defined in Panorama, but the runtime information is needed from a NGFW (which is very common with Panorama deployments). Trying to integrate the functionality into the existing `Get-PanAddressGroup` (not dynamic) made the user-experience too clumsy.
 
 ### Changed
 
-- Migrated all cmdlets from `Write-Debug` to `Write-Verbose` to align with PowerShell best practices.
+- Migrated all cmdlets from `Write-Debug` to `Write-Verbose` to align with PowerShell best practices. To see additional details, just use `-Verbose`.
+- Internal redesign of how `[PanObject]` performs `Update-Type`. Derived classes now call static methods like `[PanObject]::AddName(('PanAddress')` to have the `Name` property added. Increases flexibility for some derived classes that need only a subset of properties available in the base class.
 
 ## 0.5.3 2025-04-27
 

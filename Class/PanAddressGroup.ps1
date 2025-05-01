@@ -1,14 +1,14 @@
 class PanAddressGroup : PanObject, ICloneable {
-   # Defined in the base class
+   # Defined in base class
    # [PanDevice] $Device
    # [String] $XPath
    # [System.Xml.XmlDocument] $XDoc
 
    # Constructor accepting XML content with call to base class to do assignment
    PanAddressGroup([PanDevice] $Device, [String] $XPath, [System.Xml.XmlDocument] $XDoc) : base() {
+      $this.Device = $Device
       $this.XPath = $XPath
       $this.XDoc = $XDoc
-      $this.Device = $Device
    } # End constructor
 
    # Constructor for building a basic shell from non-XML content. Build/assign XML content in this constructor.
@@ -20,9 +20,9 @@ class PanAddressGroup : PanObject, ICloneable {
       $Xml = "<entry name='{0}'><static></static></entry>" -f $Name
       $XDoc = [System.Xml.XmlDocument]$Xml
 
+      $this.Device = $Device
       $this.XPath = $XPath
       $this.XDoc = $XDoc
-      $this.Device = $Device
    } # End constructor
 
    # Static constructor for creating ScriptProperty properties using Update-TypeData
@@ -31,18 +31,19 @@ class PanAddressGroup : PanObject, ICloneable {
    # Contrast with Add-Member within regular constructor runs EVERY TIME a new object is created from the class
    # Be careful choosing where to use linebreaks in the middle of the Update-TypeData cmdlet call. Using linebreaks for getter/setter readability
    static PanAddressGroup() {
-      # Base class static constructor adds the following standard properties via Update-Type. Do not need to redefine here.
-      # Name
-      # Tag
-      # Description
-      # DisableOverride
-      # Location
-      # Overrides
-      
+      # Call base class static methods to add properties via Update-Type. Do not need to redefine them.
+      $TypeName = 'PanAddressGroup'
+      [PanObject]::AddName($TypeName)
+      [PanObject]::AddTag($TypeName)
+      [PanObject]::AddDescription($TypeName)
+      [PanObject]::AddDisableOverride($TypeName)
+      [PanObject]::AddLocation($TypeName)
+      [PanObject]::AddOverrides($TypeName)
+
       # Define what is unique to derived class only
 
       # Type ScriptProperty linked to $XDoc.entry.static or $XDoc.entry.dynamic, etc.
-      'PanAddressGroup' | Update-TypeData -MemberName Type -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Type -MemberType ScriptProperty -Value {
       # Getter
          if($this.XDoc.Item('entry').Item('static')) { return 'static' }
          elseif($this.XDoc.Item('entry').Item('dynamic')) { return 'dynamic' }
@@ -65,7 +66,7 @@ class PanAddressGroup : PanObject, ICloneable {
       
       # Member ScriptProperty linked to $XDoc.entry.static.member It's also an array, watch out.
       # <static><member>A-1</member><member>A-2</member><static>
-      'PanAddressGroup' | Update-TypeData -MemberName Member -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Member -MemberType ScriptProperty -Value {
       # Getter
          return $this.XDoc.Item('entry').Item('static').GetElementsByTagName('member').InnerText
       } -SecondValue {
@@ -91,7 +92,7 @@ class PanAddressGroup : PanObject, ICloneable {
       } -Force
  
       # Filter ScriptProperty linked to $XDoc.entry.dynamic.filter.InnerText
-      'PanAddressGroup' | Update-TypeData -MemberName Filter -MemberType ScriptProperty -Value {
+      Update-TypeData -TypeName $TypeName -MemberName Filter -MemberType ScriptProperty -Value {
       # Getter
          return $this.XDoc.Item('entry').Item('dynamic').Item('filter').InnerText
       } -SecondValue {
@@ -127,9 +128,9 @@ class PanAddressGroup : PanObject, ICloneable {
    # Clone() method as part of ICloneable interface
    [Object] Clone() {
       return [PanAddressGroup]::new(
-         $this.XDoc.Clone(),
+         $this.Device,
          $this.XPath.Clone(),
-         $this.Device
+         $this.XDoc.Clone()
       )
    } # End method
 

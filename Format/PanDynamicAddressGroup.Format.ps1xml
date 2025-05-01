@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+   <ViewDefinitions>
+      <View>
+         <Name>DefaultTable</Name>
+         <ViewSelectedBy>
+            <TypeName>PanDynamicAddressGroup</TypeName>
+         </ViewSelectedBy>
+         <TableControl>
+            <TableHeaders>
+               <TableColumnHeader><Label>Name</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Member</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Filter</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Device</Label></TableColumnHeader>
+               <TableColumnHeader><Label>Location</Label></TableColumnHeader>
+
+            </TableHeaders>
+            <TableRowEntries>
+               <TableRowEntry>
+                  <TableColumnItems>
+                        <TableColumnItem><PropertyName>Name</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Member</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Filter</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Device</PropertyName></TableColumnItem>
+                        <TableColumnItem><PropertyName>Location</PropertyName></TableColumnItem>
+                  </TableColumnItems>
+               </TableRowEntry>
+            </TableRowEntries>
+         </TableControl>
+      </View>
+      <View>
+         <Name>DefaultList</Name>
+         <ViewSelectedBy>
+            <TypeName>PanDynamicAddressGroup</TypeName>
+         </ViewSelectedBy>
+         <ListControl>
+            <ListEntries>
+               <ListEntry>
+                  <ListItems>
+                     <ListItem><PropertyName>Name</PropertyName></ListItem>
+                     <ListItem><PropertyName>Member</PropertyName></ListItem>
+                     <ListItem><PropertyName>Filter</PropertyName></ListItem>
+                     <ListItem><PropertyName>Device</PropertyName></ListItem>
+                     <ListItem><PropertyName>Location</PropertyName></ListItem>
+                  </ListItems>
+               </ListEntry>
+            </ListEntries>
+         </ListControl>
+      </View>
+   </ViewDefinitions>
+</Configuration>

@@ -244,11 +244,29 @@ $SG.Member = @('tcp-443','tcp-49152-65535')
 $SG | Set-PanServiceGroup
 ```
 
+### Dynamic Address Groups
+
+- Use `Get-PanDynamicAddressGroup` to see the runtime state of DAG's
+- `Get-PanAddressGroup` (not the dynamic one) will get you all address groups, static and dynamic, but the `Member` property for DAG's will be empty
+- It's like this for a reason... DAG's defined in Panorama, but need to be runtime checked on a firewall... creates a headache a standalone cmdlet can accommodate cleanly
+
+```powershell
+# Accepts Device as pipeline input like most cmdlets
+Get-PanDevice fw.lab.local | Get-PanDynamicAddressGroup
+
+# Verbose example of Panorama defined DAG being used to lookup runtime DAG membership on a NGFW
+$P = Get-PanDevice panorama.lab.local
+$D = Get-PanDevice fw.lab.local
+$AG = Get-PanAddressGroup -Device $P -Location "Grandparent" -Name "MyDAG"
+Get-PanDynamicAddressGroup -Device $D -Name $AG.Name
+```
+
 ### Registered-IP Tagging (to populate Dynamic Address Groups)
 
-- registered-ip's are *not* address objects
-- They are not visible in the CANDIDATE or ACTIVE config; they are commitless. They persist across reboots (yep).
-- registered-ip tags are frequently used in dyanmic address group (DAG) match criteria
+- registered-ip's are *not* address objects like you see in the GUI/CLI
+- They are *not* visible in the CANDIDATE or ACTIVE config; they are commitless. They persist across reboots (yep). They can only be added using the API (or `debug object registered-ip` CLI)
+- registered-ip consist of an IP address and a series of assigned *tags*. The tags are *not* required to be defined ahead of time in the GUI. They can be anything.
+- Dynamic Address Group (DAG) match/filter criteria are written against registered-ip tags
 
 ```powershell
 # Add the tag to the registered-ip. Creates a new registered-ip if doesn't already exist.
