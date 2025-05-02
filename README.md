@@ -487,11 +487,11 @@ Full Posh-ACME workflow is **not** included below. After you generate with Posh-
 ```powershell
 # Snippet below conveys usage/idea. Production use would include more Posh-ACME, logic, and use of variables instead of string literals.
 $D = Get-PanDevice '10.0.0.1'
-# Don't be confused by the "PA" prefix of Posh-ACME cmdlets. It does not stand for Palo Alto :)
+# Don't be confused by the "PA" prefix of Posh-ACME cmdlets. It does *not* stand for Palo Alto :)
 # Assumes you've already generated with New-PACertificate or Submit-Renewal
 $LECert = Get-PACertificate
 
-# Add -Debug and -Verbose if you want to see more detail
+# Add -Verbose if you want to see more detail
 # -Category 'keypair' is for certificate including private key. -Category 'certificate' is for certificate only
 # Consider appending an ISO8601 date suffix representing issue date on the end, especially when renewing every 30/60 days
 $R = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
