@@ -1,6 +1,6 @@
-# PowerPAN - PowerShell Module for Palo Alto Networks NGFW
+# PowerPAN
 
-PowerPAN is a PowerShell module for the Palo Alto Networks NGFW & Panorama
+PowerPAN is a **PowerShell module** for the Palo Alto Networks NGFW & Panorama
 
 ## Features
 
