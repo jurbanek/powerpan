@@ -24,19 +24,19 @@ PowerPAN is a **PowerShell module** for the Palo Alto Networks NGFW & Panorama
   - `PanDeviceDb` and `PanDevice` cmdlets for managing the persistent secure storage of device credentials between PowerShell sessions
 
 ### Multi-vsys and Panorama Support
-  - Each `[PanDevice]` has a `Location` property mapping out `shared`, `vsys1`, `vsys2`, `MyDeviceGroup`.
+  - Each `[PanDevice]` has a `Location` property mapping out `shared`, `vsys1`, `vsys2`, `MyDeviceGroup`, etc.
   - The `Get-`, `Set-`, `Copy-`, etc. Address/AddressGroup/etc. cmdlets can be scoped with a `-Location` parameter
   - For "custom" work not yet implemented with specific object focused cmdlets, `Invoke-PanXApi` supports Panorama just fine. The `PanDevice.Location` property is of great help.
 
 ### PowerShell Support
   - PowerShell 7.4 LTS (works on Windows, MacOS, and Linux).
-  - PowerShell 7.2 LTS (works on Windows and MacOS). PowerShell 7.2 LTS is end of support, upgrade to PowerShell 7.4 LTS.
+  - PowerShell 7.2 LTS (works on Windows, MacOS, and Linux). PowerShell 7.2 LTS is end of support, upgrade to PowerShell 7.4 LTS.
   - Windows PowerShell 5.1
   - Other PowerShell versions will likely work, but will not be tested explicitly
 
 ## Status
 
-PowerPAN is broadly considered experimental and incomplete, but parts of it function well for production use cases.
+PowerPAN is broadly considered experimental and incomplete, but what is modeled functions well for production use cases.
 
 ## Install
 
