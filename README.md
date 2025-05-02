@@ -491,7 +491,7 @@ $D = Get-PanDevice '10.0.0.1'
 # Assumes you've already generated with New-PACertificate or Submit-Renewal
 $LECert = Get-PACertificate
 
-# Add -Verbose if you want to see more detail
+# Upload the certificate including private key (pkcs12 format). Add -Verbose if you want to see more detail
 # -Category 'keypair' is for certificate including private key. -Category 'certificate' is for certificate only
 # Consider appending an ISO8601 date suffix representing issue date on the end, especially when renewing every 30/60 days
 $R = Invoke-PanXApi -Device $D -Import -Category 'keypair' -File $LECert.Pfxfile -CertName 'gp.acme.io-20250221' -CertFormat 'pkcs12' -CertPassphrase 'SameUsedbyPoshACME'
@@ -503,6 +503,7 @@ else {
 }
 
 # Optionally, update a SSL/TLS Service Profile to use the certificate
+# Using Invoke-PanXApi (can do anything) lacking a more specific cmdlet
 $XPath = "/config/shared/ssl-tls-service-profile/entry[@name='{0}']" -f 'GP-Portal-Gateway-Profile'
 $Element = "<certificate>{0}</certificate>" -f 'gp.acme.io-20250221'
 $R = Invoke-PanXApi -Device $D -Config -Set -XPath $XPath -Element $Element
