@@ -319,6 +319,14 @@ Get-PanJob -Id $Job.Id
 $D = Get-PanDevice fw.lab.local
 $Job = Invoke-PanSoftware -Device $D -Install -Version '11.2.5'
 Get-PanJob -Id $Job.Id
+
+# Groovy one-liner for removing software packages downloaded, but not installed, and not base images
+# This can take a while if there are a lot of software images or if running it against multiple devices
+# Sure beats doing it manually... across hundreds of devices
+Get-PanDevice fw.lab.local |
+	Invoke-PanSoftware -Info |
+	Where-Object {$_.Downloaded -eq $true -and $_.Current -eq $false -and $_.ReleaseType -ne 'Base' } |
+	ForEach-Object {Invoke-PanSoftware -Device $_.Device -Delete -Version $_.Version}
 ```
 
 ### Commit
