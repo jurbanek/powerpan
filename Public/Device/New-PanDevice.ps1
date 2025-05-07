@@ -195,9 +195,11 @@ New-PanDevice -Name $Env:MYPANHOST -Key $Env:MYPANKEY -NoPersist
 
    # Specify Persist(ence)
    $D.Persist = -not $PSBoundParameters.NoPersist.IsPresent
-   # Update Location
-   Update-PanDeviceLocation -Device $D
+   
+   # Add to PanDeviceDb first (to ensure PanDeviceDb is initialized), then update the Device's Location(s)
    Add-PanDevice -Device $D -ImportMode:$PSBoundParameters.ImportMode.IsPresent
-   # Send to pipeline
+   # Update Location(s)
+   Update-PanDeviceLocation -Device $D -ImportMode:$PSBoundParameters.ImportMode.IsPresent
+   # Send to pipeline (but also available via Get-PanDevice)
    return $D
 } # End New-PanDevice
