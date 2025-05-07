@@ -183,7 +183,10 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
       [parameter(ParameterSetName='Import-Cert-Key',HelpMessage='Required when including the certificate private key')]
       [String] $CertPassphrase,
       [parameter(ParameterSetName='Import-Cert-Key',HelpMessage='Optional. If empty, defaults to shared')]
-      [String] $CertVsys
+      [String] $CertVsys,
+      # TimeoutSec valid in all ParameterSets with default value
+      [parameter(HelpMessage='Max duration of a connection from setup through teardown')]
+      [Int] $TimeoutSec = 15
    )
 
    Begin {
@@ -197,7 +200,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
       foreach($DeviceCur in $PSBoundParameters.Device) {
          # API type=keygen
          if ($PSCmdlet.ParameterSetName -eq 'Keygen') {
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=keygen')
+            Write-Verbose ('{0}: Device: {1} type=keygen' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             $PanApiType = 'keygen'
             $InvokeParams = [ordered]@{
                'Method' = 'Post';
@@ -216,7 +219,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=version
          elseif ($PSCmdlet.ParameterSetName -eq 'Version') {
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=version')
+            Write-Verbose ('{0}: Device: {1} type=version' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             $PanApiType = 'version'
             $InvokeParams = [ordered]@{
                'Method' = 'Post';
@@ -234,7 +237,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=op
          elseif ($PSCmdlet.ParameterSetName -eq 'Op') {
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=op')
+            Write-Verbose ('{0}: Device: {1} type=op' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             $PanApiType = 'op'
             $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = [ordered]@{
@@ -254,7 +257,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=user-id
          elseif ($PSCmdlet.ParameterSetName -eq 'Uid') {
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=user-id')
+            Write-Verbose ('{0}: Device: {1} type=user-id' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             $PanApiType = 'user-id'
             $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = [ordered]@{
@@ -274,7 +277,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=commit
          elseif ($PSCmdlet.ParameterSetName -eq 'Commit') {
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=commit')
+            Write-Verbose ('{0}: Device: {1} type=commit' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
             $PanApiType = 'commit'
             $PanApiCmd = $PSBoundParameters.Cmd
             $InvokeParams = [ordered]@{
@@ -310,7 +313,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
             elseif ($PSBoundParameters.Clone.IsPresent) { $PanApiAction = 'clone' }
             elseif ($PSBoundParameters.MultiClone.IsPresent) { $PanApiAction = 'multi-clone' }
             elseif ($PSBoundParameters.Complete.IsPresent) { $PanApiAction = 'complete' }
-            Write-Verbose ("{0}: type=config action={1}" -f $MyInvocation.MyCommand.Name,$PanApiAction)
+            Write-Verbose ('{0}: Device: {1} type=config action={2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PanApiAction)
 
             $PanApiXPath = $PSBoundParameters.XPath
             $PanApiElement = $PSBoundParameters.Element
@@ -344,12 +347,11 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
          # API type=import
          elseif ($PSCmdlet.ParameterSetName -like 'Import-*') {
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': type=Import')
+            Write-Verbose ('{0}: Device: {1} type=import category={2}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$PSBoundParameters.Category)
             $PanApiType = 'import'
-            Write-Verbose ($MyInvocation.MyCommand.Name + ': category=' + $Category)
 
             if($PSCmdlet.ParameterSetName -eq 'Import-Default') {
-               Write-Verbose ($MyInvocation.MyCommand.Name + ": type=Import (Default)")
+               Write-Verbose ('{0}: Device: {1} type=import (Default)' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
                $InvokeParams = [ordered]@{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api?key={3}&type={4}&category={5}' -f `
@@ -372,7 +374,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
             } # end ParameterSetName Import-Default
 
             elseif($PSCmdlet.ParameterSetName -eq 'Import-Cert-Key') {
-               Write-Verbose ($MyInvocation.MyCommand.Name + ": type=Import (Cert-Key)")
+               Write-Verbose ('{0}: Device: {1} type=import (Cert-Key)' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name)
                $InvokeParams = [ordered]@{
                   'Method' = 'Post';
                   'Uri' = $('{0}://{1}:{2}/api?key={3}&type={4}&category={5}&certificate-name={6}&format={7}' -f `
@@ -396,11 +398,11 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
 
                # If Certificate passphrase is specified, include it in Uri
                if($PSBoundParameters.ContainsKey('CertPassphrase')){
-                  $InvokeParams.Uri += '&passphrase={0}' -f $CertPassphrase
+                  $InvokeParams.Uri += '&passphrase={0}' -f $PSBoundParameters.CertPassphrase
                }
                # If Certificate vsys is specified, include it in Uri. If omitted, API defaults to shared
                if($PSBoundParameters.ContainsKey('CertVsys')){
-                  $InvokeParams.Uri += '&vsys={0}' -f $CertVsys
+                  $InvokeParams.Uri += '&vsys={0}' -f $PSBoundParameters.CertVsys
                }
             } # end ParameterSetName Import-Cert-Key
          } # End API type=import
@@ -411,7 +413,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
             # PowerShell 7+ x.509 Validation Policy can be set directly on Invoke-WebRequest
             if($PSVersionTable.PSVersion.Major -ge 7) {
                # Note the addition of -SkipCertificateCheck, supported in PowerShell 6+
-               $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck:(-not $DeviceCur.ValidateCertificate)), $DeviceCur )
+               $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing -SkipCertificateCheck:(-not $DeviceCur.ValidateCertificate) -TimeoutSec $TimeoutSec), $DeviceCur )
             }
             # PowerShell 5 x.509 Validation Policy set using specific helper cmdlet
             else {
@@ -421,9 +423,9 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
                else {
                   SetX509CertificateValidation -NoValidate
                }
-               $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing), $DeviceCur)
+               $R = [PanResponse]::new((Invoke-WebRequest @InvokeParams -UseBasicParsing -TimeoutSec $TimeoutSec), $DeviceCur)
             }
-            Write-Verbose ($MyInvocation.MyCommand.Name + (': Status: {0} Code: {1} Message: {2}' -f $R.Status,$R.Code,$R.Message))
+            Write-Verbose ('{0}: Device: {1} Status: {2} Code: {3} Message: {4}' -f $MyInvocation.MyCommand.Name,$DeviceCur.Name,$R.Status,$R.Code,$R.Message)
             return $R
          }
       } # Process block outermost foreach

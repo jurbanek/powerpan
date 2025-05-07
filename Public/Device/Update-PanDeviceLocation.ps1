@@ -30,7 +30,6 @@ None
       if($PSBoundParameters.Verbose) { $VerbosePreference = 'Continue' }
       # Announce
       Write-Verbose ('{0}:' -f $MyInvocation.MyCommand.Name)
-      
       # For comparison
       $Now = Get-Date
       $UpdateInterval = New-TimeSpan -Seconds $Global:PanDeviceLocRefSec

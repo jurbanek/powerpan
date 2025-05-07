@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.5 2025-05-07
+
+### Added
+
+- Added optional `TimeoutSec` parameter to `Invoke-PanXApi`. Used to control the amount of time to wait for initial connection timeout. Underlying defaults of `Invoke-WebRequest` at `100` is far too high. New default is `15`.
+
+### Changed
+
+- Fixed issue where calling `New-PanDevice` could generate and display an an innocuous inconsequential error (but annoying and confusing) related to the Location refresh interval.
+- Improved `Write-Verbose` output in `Invoke-PanXApi`
+
 ## 0.5.4 2025-05-01
 
 ### Added
