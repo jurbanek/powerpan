@@ -358,7 +358,7 @@ Get-PanDevice fw.lab.local | Invoke-PanCommit -PendingChanges
 ```powershell
 # High-Availability info/state
 $D = Get-PanDevice fw.lab.local
-$State = Invoke-PanHaState -Info
+$State = Invoke-PanHaState -Device $D -Info
 # HA administratively enabled ($True or $False)
 $State.Enabled
 # Local state 'active' or 'passive'
