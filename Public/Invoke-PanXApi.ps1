@@ -186,7 +186,7 @@ Invoke-PanXApi -Device $Device -Import -Category certificate -File "C:\path\to\c
       [String] $CertVsys,
       # TimeoutSec valid in all ParameterSets with default value
       [parameter(HelpMessage='Max duration of a connection from setup through teardown')]
-      [Int] $TimeoutSec = 15
+      [Int] $TimeoutSec = 45
    )
 
    Begin {
