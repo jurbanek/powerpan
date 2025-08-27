@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.6 2025-08-27
+
+### Changed
+
+ - Changed `TimeoutSec` parameter default value to 45 (from 15) within `Invoke-PanXApi`. There is no perfect number, but a few months of usage has led me to believe 45 is a better default value.
+  - Some older or slower firewalls frequently take more than 15 seconds to send HTTP response headers. A good example is a check for new software updates with `Invoke-PanSoftware -Check`. The HTTP response headers aren't returned until the PAN hosted update server results are returned and processed.
+  - This specific change has zero effect during working conditions. It will however, increase the amount of time it takes to detect an unreachable firewall/Panorama (from 15 to 45 seconds, or just Ctrl-C).
+  - PS 7.4+ made a few changes to the way the underlying `Invoke-WebRequest -TimeoutSec` parameter is used (which `Invoke-PanXApi -TimeoutSec` parameter maps to), but not relevant at this time.
+   - PS 7.4+ changes: [https://github.com/PowerShell/PowerShell/pull/19558](https://github.com/PowerShell/PowerShell/pull/19558)
+
 ## 0.5.5 2025-05-07
 
 ### Added
